@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BF1D94891F9C1C38004216B9 /* Roxas.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; };
 		BFA1C8DE1ECD01C100DEA99D /* Harmony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFA1C8D41ECD01C100DEA99D /* Harmony.framework */; };
 		BFA1C8E31ECD01C100DEA99D /* HarmonyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA1C8E21ECD01C100DEA99D /* HarmonyTests.swift */; };
 		BFA1C8E51ECD01C100DEA99D /* Harmony.h in Headers */ = {isa = PBXBuildFile; fileRef = BFA1C8D71ECD01C100DEA99D /* Harmony.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -23,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BF1D948A1F9C1C38004216B9 /* Roxas.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Roxas.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFA1C8D41ECD01C100DEA99D /* Harmony.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Harmony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFA1C8D71ECD01C100DEA99D /* Harmony.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Harmony.h; sourceTree = "<group>"; };
 		BFA1C8D81ECD01C100DEA99D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -36,6 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF1D94891F9C1C38004216B9 /* Roxas.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -50,12 +53,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BF1D94881F9C1C38004216B9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BF1D948A1F9C1C38004216B9 /* Roxas.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BFA1C8CA1ECD01C100DEA99D = {
 			isa = PBXGroup;
 			children = (
 				BFA1C8D61ECD01C100DEA99D /* Harmony */,
 				BFA1C8E11ECD01C100DEA99D /* HarmonyTests */,
 				BFA1C8D51ECD01C100DEA99D /* Products */,
+				BF1D94881F9C1C38004216B9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
