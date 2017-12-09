@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13772" systemVersion="16G1036" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="LocalRecord" representedClassName="LocalRecord" syncable="YES">
+        <attribute name="isConflicted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="recordedObjectURI" attributeType="String" syncable="YES"/>
+        <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
+        <relationship name="remoteRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RemoteRecord" inverseName="localRecord" inverseEntity="RemoteRecord" syncable="YES"/>
+        <fetchIndex name="byExternalEntityURIIndex">
+            <fetchIndexElement property="recordedObjectURI" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byStatusIndex">
+            <fetchIndexElement property="status" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="recordedObjectURI"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <entity name="RemoteRecord" representedClassName="RemoteRecord" syncable="YES">
+        <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
+        <relationship name="localRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LocalRecord" inverseName="remoteRecord" inverseEntity="LocalRecord" syncable="YES"/>
+    </entity>
+    <configuration name="External"/>
+    <configuration name="Harmony">
+        <memberEntity name="LocalRecord"/>
+        <memberEntity name="RemoteRecord"/>
+    </configuration>
+    <elements>
+        <element name="LocalRecord" positionX="160" positionY="192" width="128" height="118"/>
+        <element name="RemoteRecord" positionX="378" positionY="198" width="128" height="88"/>
+    </elements>
+</model>

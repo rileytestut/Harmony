@@ -1,3 +1,6 @@
 [submodule "External/Roxas"]
 	path = External/Roxas
 	url = https://github.com/rileytestut/Roxas.git
+[submodule "External/CwlPreconditionTesting"]
+	path = External/CwlPreconditionTesting
+	url = https://github.com/mattgallagher/CwlPreconditionTesting.git

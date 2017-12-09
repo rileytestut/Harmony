@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13532" systemVersion="16G29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Course" representedClassName="Course" syncable="YES" codeGenerationType="category">
+        <attribute name="identifier" attributeType="String" syncable="YES"/>
+        <attribute name="name" attributeType="String" syncable="YES"/>
+        <relationship name="homeworks" toMany="YES" deletionRule="Cascade" destinationEntity="Homework" inverseName="course" inverseEntity="Homework" syncable="YES"/>
+        <relationship name="professor" maxCount="1" deletionRule="Cascade" destinationEntity="Professor" inverseName="courses" inverseEntity="Professor" syncable="YES"/>
+    </entity>
+    <entity name="Homework" representedClassName="Homework" syncable="YES" codeGenerationType="category">
+        <attribute name="bookmark" attributeType="Binary" syncable="YES"/>
+        <attribute name="dueDate" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="identifier" attributeType="String" syncable="YES"/>
+        <attribute name="name" attributeType="String" syncable="YES"/>
+        <relationship name="course" maxCount="1" deletionRule="Nullify" destinationEntity="Course" inverseName="homeworks" inverseEntity="Course" syncable="YES"/>
+    </entity>
+    <entity name="Professor" representedClassName="Professor" syncable="YES" codeGenerationType="category">
+        <attribute name="identifier" attributeType="String" syncable="YES"/>
+        <attribute name="name" attributeType="String" syncable="YES"/>
+        <relationship name="courses" toMany="YES" deletionRule="Nullify" destinationEntity="Course" inverseName="professor" inverseEntity="Course" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Course" positionX="-2" positionY="-135" width="128" height="103"/>
+        <element name="Homework" positionX="169" positionY="-0" width="128" height="118"/>
+        <element name="Professor" positionX="-207" positionY="-0" width="128" height="88"/>
+    </elements>
+</model>
