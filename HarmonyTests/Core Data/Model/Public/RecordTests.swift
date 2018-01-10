@@ -13,42 +13,36 @@ import CoreData
 
 class RecordTests: HarmonyTestCase
 {
-    private var localRecord: LocalRecord!
-    private var record: Record<Professor>!
-    
-    override func setUp()
-    {
-        super.setUp()
-        
-        self.localRecord = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
-        self.record = Record<Professor>(localRecord: self.localRecord)!
-    }
 }
 
 extension RecordTests
 {
     func testInitialization()
     {
+        let professor = Professor.make()
+        let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
+        
         var record: Record<Professor>?
-        XCTAssertNotNil(record = Record<Professor>(localRecord: self.localRecord))
+        XCTAssertNotNil(record = Record<Professor>(localRecord: localRecord))
         
-        XCTAssertEqual(record?.recordedObject, self.professor)
+        XCTAssertEqual(record?.recordedObject, professor)
         
-        let version = Record.Version(identifier: self.localRecord.versionIdentifier, recordedObject: self.professor)
+        let version = Record.Version(identifier: localRecord.versionIdentifier, recordedObject: professor)
         XCTAssertEqual(record?.version, version)
     }
     
     func testInitializationInvalid()
     {
         // Nil NSManagedObjectContext
-        self.recordController.viewContext.delete(self.localRecord)
+        var localRecord = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
+        self.recordController.viewContext.delete(localRecord)
         
         try! self.recordController.viewContext.save()
         
-        XCTAssertFatalError(Record<Professor>(localRecord: self.localRecord))
+        XCTAssertFatalError(Record<Professor>(localRecord: localRecord))
         
         // Mismatched Records
-        let localRecord = try! LocalRecord(managedObject: self.homework, managedObjectContext: self.recordController.viewContext)
+        localRecord = try! LocalRecord(managedObject: Homework.make(), managedObjectContext: self.recordController.viewContext)
         XCTAssertNil(Record<Professor>(localRecord: localRecord))
     }
 }
@@ -57,26 +51,32 @@ extension RecordTests
 {
     func testStatus()
     {
-        XCTAssertEqual(self.record.status, Record<Professor>.Status(self.localRecord.status))
-
-        self.localRecord.status = .normal
-        XCTAssertEqual(self.record.status, .normal)
-
-        self.localRecord.status = .updated
-        XCTAssertEqual(self.record.status, .updated)
+        let localRecord = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
+        let record = Record<Professor>(localRecord: localRecord)!
         
-        self.localRecord.status = .deleted
-        XCTAssertEqual(self.record.status, .deleted)
+        XCTAssertEqual(record.status, Record<Professor>.Status(localRecord.status))
+
+        localRecord.status = .normal
+        XCTAssertEqual(record.status, .normal)
+
+        localRecord.status = .updated
+        XCTAssertEqual(record.status, .updated)
+        
+        localRecord.status = .deleted
+        XCTAssertEqual(record.status, .deleted)
     }
 
     func testIsConflicted()
     {
-        XCTAssertEqual(self.record.isConflicted, self.localRecord.isConflicted)
+        let localRecord = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
+        let record = Record<Professor>(localRecord: localRecord)!
+        
+        XCTAssertEqual(record.isConflicted, localRecord.isConflicted)
 
-        self.localRecord.isConflicted = true
-        XCTAssertEqual(self.record.isConflicted, true)
+        localRecord.isConflicted = true
+        XCTAssertEqual(record.isConflicted, true)
 
-        self.localRecord.isConflicted = false
-        XCTAssertEqual(self.record.isConflicted, false)
+        localRecord.isConflicted = false
+        XCTAssertEqual(record.isConflicted, false)
     }
 }

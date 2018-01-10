@@ -13,22 +13,17 @@ import CoreData
 
 class RecordVersionTests: HarmonyTestCase
 {
-    private var version: Record<Professor>.Version!
-    
-    override func setUp()
-    {
-        super.setUp()
-        
-        self.version = Record<Professor>.Version(identifier: "professor", recordedObject: self.professor)
-    }
 }
 
 extension RecordVersionTests
 {
     func testInitialization()
     {
-        XCTAssertEqual(self.version.identifier, "professor")
-        XCTAssertEqual(self.version.recordedObject, self.professor)
+        let professor = Professor.make()
+        let version = Record.Version(identifier: "professor", recordedObject: professor)
+        
+        XCTAssertEqual(version.identifier, "professor")
+        XCTAssertEqual(version.recordedObject, professor)
     }
 }
 
@@ -36,18 +31,51 @@ extension RecordVersionTests
 {
     func testHashable()
     {
-        var set = Set([self.version])
-        XCTAssert(set.contains(self.version))
+        let professor1 = Professor.make()
+        let professor2 = Professor.make()
         
-        set = Set([Record<Professor>.Version(identifier: "notprofessor", recordedObject: self.professor)])
-        XCTAssertFalse(set.contains(self.version))
+        let version1 = Record.Version(identifier: "1", recordedObject: professor1)
+        let version2 = Record.Version(identifier: "1", recordedObject: professor1)
+        let version3 = Record.Version(identifier: "2", recordedObject: professor1)
+        let version4 = Record.Version(identifier: "1", recordedObject: professor2)
+        let version5 = Record.Version(identifier: "2", recordedObject: professor2)
         
-        let professor = Professor(context: self.recordController.viewContext)
-        professor.name = "Who?"
+        var set: Set<Record<Professor>.Version>
         
-        set = Set([Record<Professor>.Version(identifier: "notprofessor", recordedObject: professor)])
-        XCTAssertFalse(set.contains(self.version))
+        // Same recordedObject and identifiers
+        set = [version1, version2]
+        XCTAssert(set.contains(version1))
+        XCTAssert(set.contains(version2))
+        XCTAssertFalse(set.contains(version3))
+        XCTAssertFalse(set.contains(version4))
+        XCTAssertFalse(set.contains(version5))
+        XCTAssertEqual(set.count, 1)
         
-        professor.managedObjectContext?.delete(professor)
+        // Same recordedObject, different identifiers
+        set = [version1, version3]
+        XCTAssert(set.contains(version1))
+        XCTAssert(set.contains(version2))
+        XCTAssert(set.contains(version3))
+        XCTAssertFalse(set.contains(version4))
+        XCTAssertFalse(set.contains(version5))
+        XCTAssertEqual(set.count, 2)
+        
+        // Same identifiers, different recordedObjects
+        set = [version4, version5]
+        XCTAssertFalse(set.contains(version1))
+        XCTAssertFalse(set.contains(version2))
+        XCTAssertFalse(set.contains(version3))
+        XCTAssert(set.contains(version4))
+        XCTAssert(set.contains(version5))
+        XCTAssertEqual(set.count, 2)
+        
+        // All versions in one set
+        set = [version1, version2, version3, version4, version5]
+        XCTAssert(set.contains(version1))
+        XCTAssert(set.contains(version2))
+        XCTAssert(set.contains(version3))
+        XCTAssert(set.contains(version4))
+        XCTAssert(set.contains(version5))
+        XCTAssertEqual(set.count, 4)
     }
 }

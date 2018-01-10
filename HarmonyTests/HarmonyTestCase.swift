@@ -24,10 +24,6 @@ class HarmonyTestCase: XCTestCase
     
     var performSaveInTearDown = true
     
-    var professor: Professor!
-    var course: Course!
-    var homework: Homework!
-    
     // Must use same NSManagedObjectModel instance for all tests or else Bad Things Happen™.
     private static let managedObjectModel: NSManagedObjectModel = {
         let modelURL = Bundle(for: HarmonyTestCase.self).url(forResource: "HarmonyTests", withExtension: "momd")!
@@ -44,22 +40,6 @@ class HarmonyTestCase: XCTestCase
         self.performSaveInTearDown = true
                 
         self.prepareDatabase()
-        
-        self.professor = Professor(context: self.recordController.viewContext)
-        self.professor.name = "Michael Shindler"
-        self.professor.identifier = UUID().uuidString
-        
-        self.course = Course(context: self.recordController.viewContext)
-        self.course.name = "Introduction to Computer Systems"
-        self.course.identifier = "CSCI-356"
-        self.course.professor = self.professor
-        
-        self.homework = Homework(context: self.recordController.viewContext)
-        self.homework.identifier = UUID().uuidString
-        self.homework.dueDate = self.dateFormatter.date(from: "2017-01-30")
-        self.homework.name = "Project 1: Manipulating Bits"
-        self.homework.fileURL = Bundle(for: HarmonyTestCase.self).url(forResource: "Project1", withExtension: "pdf")!
-        self.homework.course = self.course
     }
     
     override func tearDown()
@@ -104,5 +84,7 @@ extension HarmonyTestCase
         self.recordController.start { (errors) in
             assert(errors.count == 0)
         }
+        
+        NSManagedObjectContext.harmonyTestsFactoryDefault = self.recordController.viewContext
     }
 }

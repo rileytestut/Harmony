@@ -19,22 +19,21 @@ extension LocalRecordTests
 {
     func testInitialization()
     {
+        let professor = Professor.make()
         try! self.recordController.viewContext.save()
 
         var record: LocalRecord! = nil
-        XCTAssertNoThrow(record = try LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext))
+        XCTAssertNoThrow(record = try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
         
         XCTAssertNotEqual(record.versionIdentifier, "")
         
-        XCTAssertEqual(record.recordedObject, self.professor)
-        XCTAssertEqual(record.recordedObjectID, self.professor.objectID)
+        XCTAssertEqual(record.recordedObject, professor)
+        XCTAssertEqual(record.recordedObjectID, professor.objectID)
     }
     
     func testInitializationWithTemporaryObject()
     {
-        let professor = Professor(context: self.recordController.viewContext)
-        professor.name = "Riley Testut"
-        professor.identifier = UUID().uuidString
+        let professor = Professor.make()
         
         var record: LocalRecord! = nil
         XCTAssertNoThrow(record = try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
@@ -52,10 +51,7 @@ extension LocalRecordTests
     
     func testInitializationWithTemporaryObjectInvalid()
     {
-        // Insert into nil NSManagedObjectContext.
-        let professor = Professor(entity: Professor.entity(), insertInto: nil)
-        professor.name = "Michael Shindler"
-        professor.identifier = UUID().uuidString
+        let professor = Professor.make(context: nil)
         
         XCTAssertFatalError(try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
     }
@@ -65,12 +61,11 @@ extension LocalRecordTests
 {
     func testFetching()
     {
-        let record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        let record = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
         
         XCTAssertNoThrow(try self.recordController.viewContext.save())
         
         let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
-        
         let records = try! self.recordController.viewContext.fetch(fetchRequest)
         
         XCTAssertEqual(records.count, 1)
@@ -83,7 +78,7 @@ extension LocalRecordTests
     func testRecordedObjectIDInvalid()
     {
         // Nil NSManagedObjectContext
-        var record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        var record = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
         self.recordController.viewContext.delete(record)
 
         try! self.recordController.viewContext.save()
@@ -91,13 +86,13 @@ extension LocalRecordTests
         XCTAssertFatalError(record.recordedObjectID)
 
         // Invalid entity URI
-        record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        record = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
         record.setValue("🤷‍♂️", forKey: "recordedObjectURI")
 
         XCTAssertFatalError(record.recordedObjectID)
         
         // Deleted Store
-        record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        record = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
         
         for store in self.recordController.persistentStoreCoordinator.persistentStores
         {
@@ -111,15 +106,17 @@ extension LocalRecordTests
     
     func testRecordedObject()
     {
-        let record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        let professor = Professor.make()
         
-        XCTAssertEqual(record.recordedObject, self.professor)
+        let record = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
+        
+        XCTAssertEqual(record.recordedObject, professor)
     }
     
     func testRecordedObjectInvalid()
     {
         // Nil NSManagedObjectContext
-        var record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        var record = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
         self.recordController.viewContext.delete(record)
         
         try! self.recordController.viewContext.save()
@@ -127,18 +124,18 @@ extension LocalRecordTests
         XCTAssertFatalError(record.recordedObject)
         
         // Deleted Object
-        record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
-        
-        self.recordController.viewContext.delete(self.professor)
-        self.recordController.viewContext.delete(self.course)
-        self.recordController.viewContext.delete(self.homework)
-        
+        let professor = Professor.make()
         try! self.recordController.viewContext.save()
+        
+        self.recordController.viewContext.delete(professor)
+        try! self.recordController.viewContext.save()
+        
+        record = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
         
         XCTAssertNil(record.recordedObject)
         
         // Nil External Relationship
-        record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        record = try! LocalRecord(managedObject: Course.make(), managedObjectContext: self.recordController.viewContext)
         
         for store in self.recordController.persistentStoreCoordinator.persistentStores
         {
@@ -156,7 +153,7 @@ extension LocalRecordTests
     func testStatus()
     {
         // KVO
-        var record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        var record = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
         
         let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: LocalRecord.Status.updated.rawValue)
         record.status = .updated
@@ -173,7 +170,7 @@ extension LocalRecordTests
         
         let remoteRecord = RemoteRecord(versionIdentifier: "identifier", status: .updated, managedObjectContext: self.recordController.viewContext)
         
-        record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        record = try! LocalRecord(managedObject: Homework.make(), managedObjectContext: self.recordController.viewContext)
         record.remoteRecord = remoteRecord
         record.status = .deleted
         
@@ -183,7 +180,7 @@ extension LocalRecordTests
     
     func testStatusInvalid()
     {
-        let record = try! LocalRecord(managedObject: self.professor, managedObjectContext: self.recordController.viewContext)
+        let record = try! LocalRecord(managedObject: Course.make(), managedObjectContext: self.recordController.viewContext)
         record.setPrimitiveValue(100, forKey: #keyPath(LocalRecord.status))
         
         XCTAssertEqual(record.status, .updated)

@@ -36,6 +36,7 @@
 		BFE4EAC31FDB945900855951 /* RecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC21FDB945900855951 /* RecordTests.swift */; };
 		BFE4EAC51FDB9A7D00855951 /* RecordVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC41FDB9A7D00855951 /* RecordVersionTests.swift */; };
 		BFE4EAC71FDBB00600855951 /* FileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC61FDBB00600855951 /* FileTests.swift */; };
+		BFFAA627200582D700C4E475 /* HarmonyTests+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -150,6 +151,7 @@
 		BFE4EAC21FDB945900855951 /* RecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordTests.swift; sourceTree = "<group>"; };
 		BFE4EAC41FDB9A7D00855951 /* RecordVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordVersionTests.swift; sourceTree = "<group>"; };
 		BFE4EAC61FDBB00600855951 /* FileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTests.swift; sourceTree = "<group>"; };
+		BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HarmonyTests+Factories.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -241,6 +243,7 @@
 			isa = PBXGroup;
 			children = (
 				BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */,
+				BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -597,6 +600,7 @@
 				BFE4EAC31FDB945900855951 /* RecordTests.swift in Sources */,
 				BF6C9EF71F9BF7D9001B3F37 /* Homework.swift in Sources */,
 				BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */,
+				BFFAA627200582D700C4E475 /* HarmonyTests+Factories.swift in Sources */,
 				BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */,
 				BF6C9EF21F9BF441001B3F37 /* HarmonyTests.xcdatamodeld in Sources */,
 				BF6DADDF1F9EB86A00F04D61 /* LocalRecordTests.swift in Sources */,
