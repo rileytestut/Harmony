@@ -85,6 +85,7 @@ extension HarmonyTestCase
             assert(errors.count == 0)
         }
         
+        NSManagedObjectContext.harmonyFactoryDefault = self.recordController.viewContext
         NSManagedObjectContext.harmonyTestsFactoryDefault = self.recordController.viewContext
     }
 }

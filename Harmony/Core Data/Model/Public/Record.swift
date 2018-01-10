@@ -17,7 +17,7 @@ extension Record
         case updated
         case deleted
         
-        internal init(_ status: LocalRecord.Status)
+        internal init(_ status: ManagedRecordStatus)
         {
             switch status
             {
@@ -59,6 +59,7 @@ public struct Record<RecordedObjectType: SyncableManagedObject>
         self.localRecord = localRecord
         self.managedRecordContext = managedObjectContext
         
-        self.version = Version(identifier: localRecord.versionIdentifier, recordedObject: recordedObject)
+        let isLocalVersion = (localRecord.versionIdentifier == localRecord.remoteRecord?.versionIdentifier)
+        self.version = Version(recordedObject: recordedObject, identifier: localRecord.versionIdentifier, date: localRecord.versionDate, isLocal: isLocalVersion)
     }
 }

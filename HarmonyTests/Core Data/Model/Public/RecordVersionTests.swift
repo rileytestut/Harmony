@@ -20,10 +20,25 @@ extension RecordVersionTests
     func testInitialization()
     {
         let professor = Professor.make()
-        let version = Record.Version(identifier: "professor", recordedObject: professor)
+        let identifier = "professor"
+        let date = Date()
+        let isLocal = false
         
-        XCTAssertEqual(version.identifier, "professor")
+        let version = Record.Version(recordedObject: professor, identifier: identifier, date: date, isLocal: isLocal)
+        
         XCTAssertEqual(version.recordedObject, professor)
+        XCTAssertEqual(version.identifier, identifier)
+        XCTAssertEqual(version.date, date)
+        XCTAssertEqual(version.isLocal, isLocal)
+    }
+    
+    func testInitializationWithDefaultParameters()
+    {
+        let professor = Professor.make()
+        let version = Record.Version(recordedObject: professor)
+        
+        XCTAssertEqual(version.recordedObject, professor)
+        XCTAssertEqual(version.isLocal, true)
     }
 }
 
@@ -34,11 +49,11 @@ extension RecordVersionTests
         let professor1 = Professor.make()
         let professor2 = Professor.make()
         
-        let version1 = Record.Version(identifier: "1", recordedObject: professor1)
-        let version2 = Record.Version(identifier: "1", recordedObject: professor1)
-        let version3 = Record.Version(identifier: "2", recordedObject: professor1)
-        let version4 = Record.Version(identifier: "1", recordedObject: professor2)
-        let version5 = Record.Version(identifier: "2", recordedObject: professor2)
+        let version1 = Record.Version(recordedObject: professor1, identifier: "1")
+        let version2 = Record.Version(recordedObject: professor1, identifier: "1")
+        let version3 = Record.Version(recordedObject: professor1, identifier: "2")
+        let version4 = Record.Version(recordedObject: professor2, identifier: "1")
+        let version5 = Record.Version(recordedObject: professor2, identifier: "2")
         
         var set: Set<Record<Professor>.Version>
         

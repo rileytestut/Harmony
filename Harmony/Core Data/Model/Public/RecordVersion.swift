@@ -12,13 +12,21 @@ extension Record
 {
     public struct Version
     {
-        public var identifier: String
         public var recordedObject: RecordedObjectType
         
-        internal init(identifier: String, recordedObject: RecordedObjectType)
+        public var identifier: String
+        public var date: Date
+        
+        public var isLocal: Bool
+        
+        internal init(recordedObject: RecordedObjectType, identifier: String = UUID().uuidString, date: Date = Date(), isLocal: Bool = true)
         {
-            self.identifier = identifier
             self.recordedObject = recordedObject
+            
+            self.identifier = identifier
+            self.date = date
+            
+            self.isLocal = isLocal
         }
     }
 }

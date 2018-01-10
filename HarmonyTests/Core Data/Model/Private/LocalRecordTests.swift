@@ -20,7 +20,7 @@ extension LocalRecordTests
     func testInitialization()
     {
         let professor = Professor.make()
-        try! self.recordController.viewContext.save()
+        try! self.persistentContainer.viewContext.save()
 
         var record: LocalRecord! = nil
         XCTAssertNoThrow(record = try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
@@ -130,9 +130,7 @@ extension LocalRecordTests
         self.recordController.viewContext.delete(professor)
         try! self.recordController.viewContext.save()
         
-        record = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
-        
-        XCTAssertNil(record.recordedObject)
+        XCTAssertThrowsError(try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
         
         // Nil External Relationship
         record = try! LocalRecord(managedObject: Course.make(), managedObjectContext: self.recordController.viewContext)
@@ -155,7 +153,7 @@ extension LocalRecordTests
         // KVO
         var record = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
         
-        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: LocalRecord.Status.updated.rawValue)
+        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: ManagedRecordStatus.updated.rawValue)
         record.status = .updated
         
         XCTAssertEqual(record.status, .updated)
@@ -167,11 +165,9 @@ extension LocalRecordTests
         
         XCTAssertEqual(record.status, .deleted)
         XCTAssertTrue(record.isDeleted)
-        
-        let remoteRecord = RemoteRecord(versionIdentifier: "identifier", status: .updated, managedObjectContext: self.recordController.viewContext)
-        
+                
         record = try! LocalRecord(managedObject: Homework.make(), managedObjectContext: self.recordController.viewContext)
-        record.remoteRecord = remoteRecord
+        record.remoteRecord = .make()
         record.status = .deleted
         
         XCTAssertEqual(record.status, .deleted)

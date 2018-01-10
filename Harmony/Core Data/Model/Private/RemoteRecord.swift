@@ -9,16 +9,19 @@
 import CoreData
 
 @objc(RemoteRecord)
-public class RemoteRecord: NSManagedObject
+class RemoteRecord: NSManagedObject, ManagedRecord
 {
-    @NSManaged var versionIdentifier: String
+    @NSManaged var identifier: String
     
-    @objc dynamic var status: LocalRecord.Status {
+    @NSManaged var versionIdentifier: String
+    @NSManaged var versionDate: Date
+    
+    @objc dynamic var status: ManagedRecordStatus {
         get {
             self.willAccessValue(forKey: #keyPath(RemoteRecord.status))
             defer { self.didAccessValue(forKey: #keyPath(RemoteRecord.status)) }
             
-            let status = LocalRecord.Status(rawValue: self.primitiveStatus.int16Value) ?? .updated
+            let status = ManagedRecordStatus(rawValue: self.primitiveStatus.int16Value) ?? .updated
             return status
         }
         set {
@@ -42,14 +45,22 @@ public class RemoteRecord: NSManagedObject
         
     @NSManaged var localRecord: LocalRecord?
     
-    init(versionIdentifier: String, status: LocalRecord.Status, managedObjectContext: NSManagedObjectContext)
+    init(identifier: String, versionIdentifier: String, versionDate: Date, status: ManagedRecordStatus, managedObjectContext: NSManagedObjectContext)
     {
         super.init(entity: RemoteRecord.entity(), insertInto: managedObjectContext)
         
-        self.versionIdentifier = versionIdentifier
+        self.identifier = identifier
         
-        // Set primitive status to prevent custom setter from running in initializer
+        self.versionIdentifier = versionIdentifier
+        self.versionDate = versionDate
+        
+        // Set primitive status to prevent custom setter from running in initializer.
         self.primitiveStatus = NSNumber(value: status.rawValue)
+    }
+    
+    private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
+    {
+        super.init(entity: entity, insertInto: context)
     }
 }
 

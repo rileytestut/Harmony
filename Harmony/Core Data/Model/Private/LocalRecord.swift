@@ -11,28 +11,36 @@ import CoreData
 
 extension LocalRecord
 {
-    @objc enum Status: Int16
+    enum Error: Swift.Error
     {
-        case normal
-        case updated
-        case deleted
+        case invalidSyncableIdentifier
+        
+        var localizedDescription: String {
+            switch self
+            {
+            case .invalidSyncableIdentifier: return NSLocalizedString("The managed object to be recorded has an invalid syncable identifier.", comment: "")
+            }
+        }
     }
 }
 
 @objc(LocalRecord)
-class LocalRecord: NSManagedObject
+class LocalRecord: NSManagedObject, ManagedRecord
 {
     /* Properties */
+    @NSManaged var identifier: String
+    
     @NSManaged var versionIdentifier: String
+    @NSManaged var versionDate: Date
     
     @NSManaged var isConflicted: Bool
     
-    @objc dynamic var status: Status {
+    @objc dynamic var status: ManagedRecordStatus {
         get {
             self.willAccessValue(forKey: #keyPath(LocalRecord.status))
             defer { self.didAccessValue(forKey: #keyPath(LocalRecord.status)) }
             
-            let status = Status(rawValue: self.primitiveStatus.int16Value) ?? .updated
+            let status = ManagedRecordStatus(rawValue: self.primitiveStatus.int16Value) ?? .updated
             return status
         }
         set {
@@ -70,6 +78,9 @@ class LocalRecord: NSManagedObject
         // Don't insert into managedObjectContext yet, since the initializer may fail.
         super.init(entity: LocalRecord.entity(), insertInto: nil)
 
+        // Must be after super.init() or else Swift compiler will crash (as of Swift 4.0)
+        guard let syncableIdentifier = managedObject.syncableIdentifier else { throw Error.invalidSyncableIdentifier }
+        
         if managedObject.objectID.isTemporaryID
         {
             guard let context = managedObject.managedObjectContext else {
@@ -78,12 +89,21 @@ class LocalRecord: NSManagedObject
 
             try context.obtainPermanentIDs(for: [managedObject])
         }
+        
+        self.identifier = managedObject.syncableType + "-" + syncableIdentifier
+        
+        self.versionIdentifier = UUID().uuidString
+        self.versionDate = Date()
 
         self.recordedObjectURI = managedObject.objectID.uriRepresentation().absoluteString
-        self.versionIdentifier = UUID().uuidString
 
         // We know initialization didn't fail, so insert self into managed object context.
         managedObjectContext.insert(self)
+    }
+    
+    private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
+    {
+        super.init(entity: entity, insertInto: context)
     }
 }
 

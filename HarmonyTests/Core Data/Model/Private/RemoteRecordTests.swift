@@ -19,10 +19,17 @@ extension RemoteRecordTests
 {
     func testInitialization()
     {
-         let record = RemoteRecord(versionIdentifier: "identifier", status: .deleted, managedObjectContext: self.recordController.viewContext)
+        let identifier = "identifier"
+        let versionIdentifier = "versionIdentifier"
+        let versionDate = Date()
+        let status = ManagedRecordStatus.deleted
         
-        XCTAssertEqual(record.versionIdentifier, "identifier")
-        XCTAssertEqual(record.status, .deleted)
+        let record = RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, status: status, managedObjectContext: self.recordController.viewContext)
+        
+        XCTAssertEqual(record.identifier, identifier)
+        XCTAssertEqual(record.versionIdentifier, versionIdentifier)
+        XCTAssertEqual(record.versionDate, versionDate)
+        XCTAssertEqual(record.status, status)
     }
 }
 
@@ -31,9 +38,9 @@ extension RemoteRecordTests
     func testStatus()
     {
         // KVO
-        var record = RemoteRecord(versionIdentifier: "identifier", status: .deleted, managedObjectContext: self.recordController.viewContext)
+        var record = RemoteRecord.make()
         
-        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: LocalRecord.Status.updated.rawValue)
+        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: ManagedRecordStatus.updated.rawValue)
         record.status = .updated
         
         XCTAssertEqual(record.status, .updated)
@@ -52,7 +59,7 @@ extension RemoteRecordTests
         
         let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
         
-        record = RemoteRecord(versionIdentifier: "identifier", status: .deleted, managedObjectContext: self.recordController.viewContext)
+        record = RemoteRecord.make()
         record.localRecord = localRecord
         record.status = .deleted
         
@@ -62,7 +69,7 @@ extension RemoteRecordTests
     
     func testStatusInvalid()
     {
-        let record = RemoteRecord(versionIdentifier: "identifier", status: .deleted, managedObjectContext: self.recordController.viewContext)
+        let record = RemoteRecord.make()
         record.setPrimitiveValue(100, forKey: #keyPath(RemoteRecord.status))
         
         XCTAssertEqual(record.status, .updated)
@@ -73,7 +80,7 @@ extension RemoteRecordTests
 {
     func testFetching()
     {
-        let record = RemoteRecord(versionIdentifier: "identifier", status: .normal, managedObjectContext: self.recordController.viewContext)
+        let record = RemoteRecord.make()
         
         XCTAssertNoThrow(try self.recordController.viewContext.save())
         

@@ -27,7 +27,7 @@ extension RecordTests
         
         XCTAssertEqual(record?.recordedObject, professor)
         
-        let version = Record.Version(identifier: localRecord.versionIdentifier, recordedObject: professor)
+        let version = Record.Version(recordedObject: professor, identifier: localRecord.versionIdentifier)
         XCTAssertEqual(record?.version, version)
     }
     

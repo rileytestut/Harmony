@@ -10,6 +10,7 @@
 		BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF0499841F9AE06400E0EFEE /* Harmony.xcdatamodeld */; };
 		BF04998B1F9AE06400E0EFEE /* RemoteRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0499861F9AE06400E0EFEE /* RemoteRecord.swift */; };
 		BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0499921F9AEEE900E0EFEE /* Syncable.swift */; };
+		BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */; };
 		BF1D94891F9C1C38004216B9 /* Roxas.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; };
 		BF1D94921F9C24DC004216B9 /* XCAssert+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */; };
 		BF34EE551FD37D41004304AC /* Record.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF34EE541FD37D41004304AC /* Record.swift */; };
@@ -32,11 +33,14 @@
 		BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */; };
 		BFB3396C1FD3A4DF006FACAD /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3396B1FD3A4DF006FACAD /* File.swift */; };
 		BFC5F7571FDB81F500C247D5 /* LocalRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC5F7561FDB81F500C247D5 /* LocalRecord.swift */; };
+		BFE029292006AE54004F70DC /* SyncableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE029282006AE54004F70DC /* SyncableTests.swift */; };
 		BFE4EAB51FDB8E6400855951 /* RemoteRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */; };
 		BFE4EAC31FDB945900855951 /* RecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC21FDB945900855951 /* RecordTests.swift */; };
 		BFE4EAC51FDB9A7D00855951 /* RecordVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC41FDB9A7D00855951 /* RecordVersionTests.swift */; };
 		BFE4EAC71FDBB00600855951 /* FileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC61FDBB00600855951 /* FileTests.swift */; };
+		BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF0169620040FD300210A38 /* ManagedRecord.swift */; };
 		BFFAA627200582D700C4E475 /* HarmonyTests+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */; };
+		BFFAA65020059C5400C4E475 /* Harmony+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -123,6 +127,7 @@
 		BF0499851F9AE06400E0EFEE /* Harmony.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Harmony.xcdatamodel; sourceTree = "<group>"; };
 		BF0499861F9AE06400E0EFEE /* RemoteRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteRecord.swift; sourceTree = "<group>"; };
 		BF0499921F9AEEE900E0EFEE /* Syncable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Syncable.swift; sourceTree = "<group>"; };
+		BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyKeyPath+StringValue.swift"; sourceTree = "<group>"; };
 		BF1D948A1F9C1C38004216B9 /* Roxas.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Roxas.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordControllerTests.swift; sourceTree = "<group>"; };
 		BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCAssert+Harmony.swift"; sourceTree = "<group>"; };
@@ -147,11 +152,14 @@
 		BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPersistentStore+Configuration.swift"; sourceTree = "<group>"; };
 		BFB3396B1FD3A4DF006FACAD /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		BFC5F7561FDB81F500C247D5 /* LocalRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalRecord.swift; sourceTree = "<group>"; };
+		BFE029282006AE54004F70DC /* SyncableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncableTests.swift; sourceTree = "<group>"; };
 		BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRecordTests.swift; sourceTree = "<group>"; };
 		BFE4EAC21FDB945900855951 /* RecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordTests.swift; sourceTree = "<group>"; };
 		BFE4EAC41FDB9A7D00855951 /* RecordVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordVersionTests.swift; sourceTree = "<group>"; };
 		BFE4EAC61FDBB00600855951 /* FileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTests.swift; sourceTree = "<group>"; };
+		BFF0169620040FD300210A38 /* ManagedRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedRecord.swift; sourceTree = "<group>"; };
 		BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HarmonyTests+Factories.swift"; sourceTree = "<group>"; };
+		BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Harmony+Factories.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -198,6 +206,7 @@
 			isa = PBXGroup;
 			children = (
 				BF0499921F9AEEE900E0EFEE /* Syncable.swift */,
+				BFF0169620040FD300210A38 /* ManagedRecord.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -243,6 +252,7 @@
 			isa = PBXGroup;
 			children = (
 				BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */,
+				BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */,
 				BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */,
 			);
 			path = Extensions;
@@ -289,6 +299,7 @@
 				BF7A1FC91F9D5F610061B187 /* NSManagedObject+Harmony.swift */,
 				BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */,
 				BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */,
+				BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -354,6 +365,7 @@
 			children = (
 				BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */,
 				BF1D948D1F9C1D30004216B9 /* Core Data */,
+				BFE0291C2006AE3F004F70DC /* Protocols */,
 				BF6C9EF31F9BF754001B3F37 /* Sample Data */,
 				BF5784001FB17B9200BD043C /* Extensions */,
 				BF7A1FED1F9D666A0061B187 /* External */,
@@ -371,6 +383,14 @@
 				BF6C9EF81F9BFA05001B3F37 /* Professor.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		BFE0291C2006AE3F004F70DC /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				BFE029282006AE54004F70DC /* SyncableTests.swift */,
+			);
+			path = Protocols;
 			sourceTree = "<group>";
 		};
 		BFE4EAC11FDB944F00855951 /* Public */ = {
@@ -578,9 +598,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				BFB3396C1FD3A4DF006FACAD /* File.swift in Sources */,
+				BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */,
 				BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
+				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
 				BF34EE551FD37D41004304AC /* Record.swift in Sources */,
 				BF04998B1F9AE06400E0EFEE /* RemoteRecord.swift in Sources */,
 				BFC5F7571FDB81F500C247D5 /* LocalRecord.swift in Sources */,
@@ -597,9 +619,11 @@
 			files = (
 				BF6C9EF51F9BF7CC001B3F37 /* Course.swift in Sources */,
 				BF6C9EF91F9BFA05001B3F37 /* Professor.swift in Sources */,
+				BFE029292006AE54004F70DC /* SyncableTests.swift in Sources */,
 				BFE4EAC31FDB945900855951 /* RecordTests.swift in Sources */,
 				BF6C9EF71F9BF7D9001B3F37 /* Homework.swift in Sources */,
 				BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */,
+				BFFAA65020059C5400C4E475 /* Harmony+Factories.swift in Sources */,
 				BFFAA627200582D700C4E475 /* HarmonyTests+Factories.swift in Sources */,
 				BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */,
 				BF6C9EF21F9BF441001B3F37 /* HarmonyTests.xcdatamodeld in Sources */,
