@@ -51,7 +51,6 @@ extension RemoteRecordTests
         record.status = .deleted
         
         XCTAssertEqual(record.status, .deleted)
-        XCTAssertTrue(record.isDeleted)
         
         let professor = Professor(context: self.recordController.viewContext)
         professor.name = "Michael Shindler"

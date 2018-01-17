@@ -164,7 +164,6 @@ extension LocalRecordTests
         record.status = .deleted
         
         XCTAssertEqual(record.status, .deleted)
-        XCTAssertTrue(record.isDeleted)
                 
         record = try! LocalRecord(managedObject: Homework.make(), managedObjectContext: self.recordController.viewContext)
         record.remoteRecord = .make()

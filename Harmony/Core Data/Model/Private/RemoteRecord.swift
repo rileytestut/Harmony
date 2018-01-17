@@ -27,18 +27,7 @@ class RemoteRecord: NSManagedObject, ManagedRecord
         set {
             self.willChangeValue(for: \.status)
             defer { self.didChangeValue(for: \.status) }
-            
-            switch newValue
-            {
-            case .normal, .updated: break
-            case .deleted:
-                // Just delete ourselves if no associated local record
-                if self.localRecord == nil
-                {
-                    self.managedObjectContext?.delete(self)
-                }
-            }
-            
+
             self.primitiveStatus = NSNumber(value: newValue.rawValue)
         }
     }
