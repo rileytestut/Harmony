@@ -29,6 +29,8 @@ extension LocalRecordTests
         
         XCTAssertEqual(record.recordedObject, professor)
         XCTAssertEqual(record.recordedObjectID, professor.objectID)
+        XCTAssertEqual(record.recordedObjectType, professor.syncableType)
+        XCTAssertEqual(record.recordedObjectIdentifier, professor.syncableIdentifier)
     }
     
     func testInitializationWithTemporaryObject()
@@ -43,6 +45,8 @@ extension LocalRecordTests
         
         // Save
         try! self.recordController.viewContext.save()
+        XCTAssertEqual(record.recordedObjectType, professor.syncableType)
+        XCTAssertEqual(record.recordedObjectIdentifier, professor.syncableIdentifier)
         
         // Check relationship is still valid after saving.
         XCTAssertEqual(record.recordedObject, professor)

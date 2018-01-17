@@ -16,9 +16,7 @@ import Foundation
 }
 
 protocol ManagedRecord: NSObjectProtocol
-{
-    var identifier: String { get }
-    
+{    
     var versionIdentifier: String { get }
     var versionDate: Date { get }
     

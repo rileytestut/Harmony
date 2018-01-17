@@ -28,8 +28,6 @@ extension LocalRecord
 class LocalRecord: NSManagedObject, ManagedRecord
 {
     /* Properties */
-    @NSManaged var identifier: String
-    
     @NSManaged var versionIdentifier: String
     @NSManaged var versionDate: Date
     
@@ -51,6 +49,10 @@ class LocalRecord: NSManagedObject, ManagedRecord
         }
     }
     
+    @NSManaged private(set) var recordedObjectType: String
+    @NSManaged private(set) var recordedObjectIdentifier: String
+    @NSManaged private(set) var recordedObjectURI: String
+    
     var recordedObject: SyncableManagedObject? {
         return self.resolveRecordedObject()
     }
@@ -68,7 +70,7 @@ class LocalRecord: NSManagedObject, ManagedRecord
         super.init(entity: LocalRecord.entity(), insertInto: nil)
 
         // Must be after super.init() or else Swift compiler will crash (as of Swift 4.0)
-        guard let syncableIdentifier = managedObject.syncableIdentifier else { throw Error.invalidSyncableIdentifier }
+        guard let recordedObjectIdentifier = managedObject.syncableIdentifier else { throw Error.invalidSyncableIdentifier }
         
         if managedObject.objectID.isTemporaryID
         {
@@ -79,10 +81,12 @@ class LocalRecord: NSManagedObject, ManagedRecord
             try context.obtainPermanentIDs(for: [managedObject])
         }
         
-        self.identifier = managedObject.syncableType + "-" + syncableIdentifier
+        self.recordedObjectType = managedObject.syncableType
+        self.recordedObjectIdentifier = recordedObjectIdentifier
         
         self.versionIdentifier = UUID().uuidString
         self.versionDate = Date()
+        
 
         self.recordedObjectURI = managedObject.objectID.uriRepresentation().absoluteString
 
@@ -98,8 +102,6 @@ class LocalRecord: NSManagedObject, ManagedRecord
 
 private extension LocalRecord
 {
-    @NSManaged var recordedObjectURI: String
-    
     @NSManaged var primitiveStatus: NSNumber
 }
 
