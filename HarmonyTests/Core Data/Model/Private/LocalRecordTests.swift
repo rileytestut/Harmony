@@ -29,6 +29,8 @@ extension LocalRecordTests
         
         XCTAssertEqual(record.recordedObject, professor)
         XCTAssertEqual(record.recordedObjectID, professor.objectID)
+        XCTAssertEqual(record.status, .normal)
+        
         XCTAssertEqual(record.recordedObjectType, professor.syncableType)
         XCTAssertEqual(record.recordedObjectIdentifier, professor.syncableIdentifier)
     }
@@ -42,6 +44,8 @@ extension LocalRecordTests
         
         XCTAssertEqual(record.recordedObject, professor)
         XCTAssertEqual(record.recordedObjectID, professor.objectID)
+        
+        XCTAssertEqual(record.status, .normal)
         
         // Save
         try! self.recordController.viewContext.save()

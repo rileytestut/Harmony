@@ -87,6 +87,7 @@ class LocalRecord: NSManagedObject, ManagedRecord
         self.versionIdentifier = UUID().uuidString
         self.versionDate = Date()
         
+        self.status = .normal
 
         self.recordedObjectURI = managedObject.objectID.uriRepresentation().absoluteString
 
