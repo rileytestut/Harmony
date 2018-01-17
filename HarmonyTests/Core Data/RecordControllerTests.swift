@@ -15,6 +15,8 @@ class RecordControllerTests: HarmonyTestCase
 {
     override func setUp()
     {
+        self.automaticallyRecordsManagedObjects = true
+        
         super.setUp()
     }
 }
@@ -38,10 +40,24 @@ extension RecordControllerTests
         XCTAssertFatalError(RecordController(persistentContainer: persistentContainer), "NSPersistentContainer's model must be a merged Harmony model.")
     }
     
-    func testStart()
+    func testStartSynchronous()
     {
         let recordController = RecordController(persistentContainer: self.persistentContainer)
-        recordController.persistentStoreDescriptions.forEach { $0.type = NSInMemoryStoreType }
+        recordController.persistentStoreDescriptions.forEach { $0.type = NSInMemoryStoreType; $0.shouldAddStoreAsynchronously = false }
+        
+        let expection = self.expectation(description: "RecordController.start()")
+        recordController.start { (errors) in
+            XCTAssertEqual(errors.count, 0)
+            expection.fulfill()
+        }
+        
+        self.wait(for: [expection], timeout: 5.0)
+    }
+    
+    func testStartAsynchronous()
+    {
+        let recordController = RecordController(persistentContainer: self.persistentContainer)
+        recordController.persistentStoreDescriptions.forEach { $0.type = NSInMemoryStoreType; $0.shouldAddStoreAsynchronously = true }
         
         let expection = self.expectation(description: "RecordController.start()")
         recordController.start { (errors) in
@@ -89,5 +105,333 @@ extension RecordControllerTests
         let managedObjectContext = self.recordController.newBackgroundContext()
         
         XCTAssertEqual(managedObjectContext.mergePolicy as! NSObject, NSMergeByPropertyObjectTrumpMergePolicy as! NSObject)
+    }
+}
+
+extension RecordControllerTests
+{
+    func testCreatingRecords()
+    {
+        let context = self.persistentContainer.newBackgroundContext()
+        context.performAndWait {
+            _ = Professor.make(name: "Trina Gregory", context: context, automaticallySave: true)
+        }
+        
+        self.waitForRecordControllerToProcessUpdates()
+
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        XCTAssertEqual(records.count, 1)
+        
+        let recordedObject = records.first?.recordedObject
+        XCTAssert(recordedObject is Professor)
+    }
+    
+    func testCreatingRecordsForInvalidObjects()
+    {
+        let context = self.persistentContainer.newBackgroundContext()
+        context.performAndWait {
+            _ = Placeholder.make(context: context, automaticallySave: true)
+        }
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        XCTAssert(records.isEmpty)
+    }
+    
+    func testCreatingRecordsForDuplicateObjects()
+    {
+        let identifier = UUID().uuidString
+        
+        let context = self.persistentContainer.newBackgroundContext()
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        context.performAndWait {
+            _ = Professor.make(identifier: identifier, context: context, automaticallySave: true)
+        }
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        context.performAndWait {
+            _ = Professor.make(identifier: identifier, context: context, automaticallySave: true)
+        }
+        
+        self.waitForRecordControllerToProcessUpdates()
+
+        let professors = try! self.recordController.viewContext.fetch(Professor.fetchRequest())
+        XCTAssertEqual(professors.count, 1)
+
+        let records = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest())
+        XCTAssertEqual(records.count, 1)
+    }
+    
+    func testCreatingRecordsForDuplicateSimultaneousObjects()
+    {
+        let context = self.persistentContainer.newBackgroundContext()
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        context.performAndWait {
+            
+            let identifier = UUID().uuidString
+            
+            _ = Professor.make(identifier: identifier, context: context, automaticallySave: false)
+            _ = Professor.make(identifier: identifier, context: context, automaticallySave: false)
+            
+            try! context.save()
+        }
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let professors = try! self.recordController.viewContext.fetch(Professor.fetchRequest())
+        XCTAssertEqual(professors.count, 1)
+        
+        let records = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest())
+        XCTAssertEqual(records.count, 1)
+    }
+}
+
+extension RecordControllerTests
+{
+    func testUpdatingRecord()
+    {
+        let professor = Professor.make(name: "Riley Testut")
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        let record = records.first
+        let recordedProfessor = record?.recordedObject as? Professor
+        XCTAssertEqual(recordedProfessor?.name, "Riley Testut")
+        
+        professor.name = "Jayce Testut"
+        try! professor.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+
+        // Ensure the in-memory versions have been updated
+        XCTAssertEqual(record?.status, .updated)
+        XCTAssertEqual(recordedProfessor?.name, "Jayce Testut")
+        
+        let backgroundContext = self.recordController.newBackgroundContext()
+        backgroundContext.performAndWait {
+            let records = try! backgroundContext.fetch(fetchRequest)
+            let record = records.first
+            let recordedProfessor = record?.recordedObject as? Professor
+            
+            // Ensure the fetched versions have been updated
+            XCTAssertEqual(records.count, 1)
+            XCTAssertEqual(record?.status, .updated)
+            XCTAssertEqual(recordedProfessor?.name, "Jayce Testut")
+        }
+    }
+    
+    func testUpdatingRecordsSimultaneously()
+    {
+        let professor1 = Professor.make(name: "Riley Testut", identifier: "1", automaticallySave: false)
+        let professor2 = Professor.make(name: "Jayce Testut", identifier: "2", automaticallySave: false)
+        
+        try! professor1.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \LocalRecord.recordedObjectIdentifier, ascending: true)]
+        
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        XCTAssertEqual(records.count, 2)
+        
+        guard records.count == 2 else { return }
+        
+        let record1 = records[0]
+        let record2 = records[1]
+        
+        let recordedProfessor1 = record1.recordedObject as? Professor
+        let recordedProfessor2 = record2.recordedObject as? Professor
+        
+        XCTAssertNotNil(recordedProfessor1)
+        XCTAssertNotNil(recordedProfessor2)
+        XCTAssertEqual(recordedProfessor1?.name, "Riley Testut")
+        XCTAssertEqual(recordedProfessor2?.name, "Jayce Testut")
+        
+        professor1.name = "Riley Shane"
+        professor2.name = "Jayce Randall"
+        try! professor1.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        // Ensure the in-memory versions have been updated
+        XCTAssertEqual(record1.status, .updated)
+        XCTAssertEqual(record2.status, .updated)
+        XCTAssertEqual(recordedProfessor1?.name, "Riley Shane")
+        XCTAssertEqual(recordedProfessor2?.name, "Jayce Randall")
+        
+        let backgroundContext = self.recordController.newBackgroundContext()
+        backgroundContext.performAndWait {
+            let records = try! backgroundContext.fetch(fetchRequest)
+            XCTAssertEqual(records.count, 2)
+            
+            guard records.count == 2 else { return }
+            
+            let record1 = records[0]
+            let record2 = records[1]
+            
+            let recordedProfessor1 = record1.recordedObject as? Professor
+            let recordedProfessor2 = record2.recordedObject as? Professor
+            
+            XCTAssertEqual(record1.status, .updated)
+            XCTAssertEqual(record2.status, .updated)
+            
+            XCTAssertEqual(recordedProfessor1?.name, "Riley Shane")
+            XCTAssertEqual(recordedProfessor2?.name, "Jayce Randall")
+        }
+    }
+    
+    func testUpdatingRecordsWithValidAndInvalidObjects()
+    {
+        let professor = Professor.make(name: "Riley Testut", automaticallySave: false)
+        let placeholder = Placeholder.make(name: "Placeholder", automaticallySave: false)
+        
+        try! professor.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        let record = records.first
+        let recordedProfessor = record?.recordedObject as? Professor
+        
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(record?.status, .normal)
+        XCTAssertEqual(recordedProfessor?.name, "Riley Testut")
+        
+        professor.name = "Riley Shane"
+        placeholder.name = "Updated Placeholder"
+        try! professor.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        // Ensure the in-memory versions have been updated
+        XCTAssertEqual(record?.status, .updated)
+        XCTAssertEqual(recordedProfessor?.name, "Riley Shane")
+        
+        let backgroundContext = self.recordController.newBackgroundContext()
+        backgroundContext.performAndWait {
+            let records = try! backgroundContext.fetch(fetchRequest)
+            let record = records.first
+            let recordedProfessor = record?.recordedObject as? Professor
+            
+            XCTAssertEqual(records.count, 1)
+            XCTAssertEqual(record?.status, .updated)
+            XCTAssertEqual(recordedProfessor?.name, "Riley Shane")
+        }
+    }
+}
+
+extension RecordControllerTests
+{
+    func testDeletingRecords()
+    {
+        let professor = Professor.make()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        professor.managedObjectContext?.delete(professor)
+        try! professor.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        let record = records.first
+        
+        let recordedObjectID = self.recordController.viewContext.object(with: professor.objectID).objectID
+
+        XCTAssertEqual(record?.status, .deleted)
+        XCTAssertEqual(record?.recordedObjectID, recordedObjectID)
+        XCTAssertEqual(record?.recordedObject?.isDeleted, true)
+        
+        let backgroundContext = self.recordController.newBackgroundContext()
+        backgroundContext.performAndWait {
+            let records = try! backgroundContext.fetch(fetchRequest)
+            let record = records.first
+            
+            let recordedObjectID = backgroundContext.object(with: professor.objectID).objectID
+            
+            XCTAssertEqual(record?.status, .deleted)
+            XCTAssertEqual(record?.recordedObjectID, recordedObjectID)
+            XCTAssertNil(record?.recordedObject)
+        }
+    }
+    
+    func testDeletingRecordsWithInvalidObjects()
+    {
+        let placeholder = Placeholder.make()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        placeholder.managedObjectContext?.delete(placeholder)
+        try! placeholder.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let records = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest() as NSFetchRequest<LocalRecord>)
+        XCTAssertTrue(records.isEmpty)
+    }
+}
+
+extension RecordControllerTests
+{
+    func testCreatingAndDeletingRecordsSimultaneously()
+    {
+        let professor = Professor.make(automaticallySave: false)
+        professor.managedObjectContext?.delete(professor)
+        
+        try! professor.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let records = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest() as NSFetchRequest<LocalRecord>)
+        XCTAssertTrue(records.isEmpty)
+    }
+    
+    func testUpdatingAndDeletingRecordsSimultaneously()
+    {
+        let professor = Professor.make()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        professor.name = "Riley Testut"
+        professor.managedObjectContext?.delete(professor)
+        
+        try! professor.managedObjectContext?.save()
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        let record = records.first
+        
+        let recordedObjectID = self.recordController.viewContext.object(with: professor.objectID).objectID
+        
+        XCTAssertEqual(record?.status, .deleted)
+        XCTAssertEqual(record?.recordedObjectID, recordedObjectID)
+        XCTAssertEqual(record?.recordedObject?.isDeleted, true)
+        
+        let backgroundContext = self.recordController.newBackgroundContext()
+        backgroundContext.performAndWait {
+            let records = try! backgroundContext.fetch(fetchRequest)
+            let record = records.first
+            
+            let recordedObjectID = backgroundContext.object(with: professor.objectID).objectID
+            
+            XCTAssertEqual(record?.status, .deleted)
+            XCTAssertEqual(record?.recordedObjectID, recordedObjectID)
+            XCTAssertNil(record?.recordedObject)
+        }
     }
 }

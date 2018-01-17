@@ -142,6 +142,11 @@ private extension LocalRecord
             let managedObject = try managedObjectContext.existingObject(with: objectID) as? SyncableManagedObject
             return managedObject
         }
+        catch CocoaError.managedObjectReferentialIntegrity
+        {
+            // Recorded object has been deleted. Ignore error.
+            return nil
+        }
         catch
         {
             print(error)

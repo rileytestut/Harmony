@@ -23,6 +23,7 @@ class HarmonyTestCase: XCTestCase
     }()
     
     var performSaveInTearDown = true
+    var automaticallyRecordsManagedObjects = false
     
     // Must use same NSManagedObjectModel instance for all tests or else Bad Things Happen™.
     private static let managedObjectModel: NSManagedObjectModel = {
@@ -50,7 +51,30 @@ class HarmonyTestCase: XCTestCase
             XCTAssertNoThrow(try self.recordController.viewContext.save())
         }
         
+        self.deletePersistentStores(for: self.persistentContainer.persistentStoreCoordinator)
+        self.deletePersistentStores(for: self.recordController.persistentStoreCoordinator)
+        
         super.tearDown()
+    }
+
+    private func deletePersistentStores(for persistentStoreCoordinator: NSPersistentStoreCoordinator)
+    {
+        for store in persistentStoreCoordinator.persistentStores
+        {
+            guard store.type != NSInMemoryStoreType else { continue }
+            
+            do
+            {
+                try persistentStoreCoordinator.destroyPersistentStore(at: store.url!, ofType: NSSQLiteStoreType, options: store.options)
+            }
+            catch let error where error._code == NSCoreDataError {
+                print(error)
+            }
+            catch
+            {
+                print(error)
+            }
+        }
     }
 }
 
@@ -66,26 +90,34 @@ extension HarmonyTestCase
     {
         let managedObjectModel = HarmonyTestCase.managedObjectModel
         self.persistentContainer = NSPersistentContainer(name: "HarmonyTests", managedObjectModel: managedObjectModel)
-        self.persistentContainer.persistentStoreDescriptions.forEach { $0.type = NSInMemoryStoreType }
+        self.persistentContainer.persistentStoreDescriptions.forEach { $0.shouldAddStoreAsynchronously = false }
         
         self.persistentContainer.loadPersistentStores { (description, error) in
             assert(error == nil)
         }
+        
+        NSManagedObjectContext.harmonyTestsFactoryDefault = self.persistentContainer.viewContext
     }
     
     func prepareRecordController()
     {
         self.recordController = RecordController(persistentContainer: self.persistentContainer)
-        self.recordController.persistentStoreDescriptions.forEach {
-            $0.type = NSInMemoryStoreType
-            $0.shouldAddStoreAsynchronously = false
-        }
+        self.recordController.persistentStoreDescriptions.forEach { $0.shouldAddStoreAsynchronously = false }
+        self.recordController.automaticallyRecordsManagedObjects = self.automaticallyRecordsManagedObjects
         
         self.recordController.start { (errors) in
             assert(errors.count == 0)
         }
         
         NSManagedObjectContext.harmonyFactoryDefault = self.recordController.viewContext
-        NSManagedObjectContext.harmonyTestsFactoryDefault = self.recordController.viewContext
+    }
+}
+
+extension HarmonyTestCase
+{
+    func waitForRecordControllerToProcessUpdates()
+    {
+        let expectation = XCTNSNotificationExpectation(name: .recordControllerDidProcessUpdates)
+        self.wait(for: [expectation], timeout: 2.0)
     }
 }

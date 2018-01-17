@@ -19,42 +19,55 @@ extension LocalRecordTests
 {
     func testInitialization()
     {
-        let professor = Professor.make()
-        try! self.persistentContainer.viewContext.save()
+        let identifier = UUID().uuidString
+        let professor = Professor.make(identifier: identifier)
 
         var record: LocalRecord! = nil
         XCTAssertNoThrow(record = try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
-        
+
         XCTAssertNotEqual(record.versionIdentifier, "")
         
-        XCTAssertEqual(record.recordedObject, professor)
-        XCTAssertEqual(record.recordedObjectID, professor.objectID)
         XCTAssertEqual(record.status, .normal)
         
         XCTAssertEqual(record.recordedObjectType, professor.syncableType)
         XCTAssertEqual(record.recordedObjectIdentifier, professor.syncableIdentifier)
+
+        let recordedProfessor = self.recordController.viewContext.object(with: professor.objectID) as! Professor
+        XCTAssertEqual(record.recordedObject, recordedProfessor)
+        XCTAssertEqual(record.recordedObjectID?.uriRepresentation(), professor.objectID.uriRepresentation())
     }
     
     func testInitializationWithTemporaryObject()
     {
-        let professor = Professor.make()
+        let identifier = UUID().uuidString
+        let professor = Professor.make(identifier: identifier, automaticallySave: false)
         
         var record: LocalRecord! = nil
         XCTAssertNoThrow(record = try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
         
-        XCTAssertEqual(record.recordedObject, professor)
-        XCTAssertEqual(record.recordedObjectID, professor.objectID)
+        XCTAssertNil(record.recordedObject)
+        XCTAssertEqual(record.recordedObjectID?.uriRepresentation(), professor.objectID.uriRepresentation())
         
         XCTAssertEqual(record.status, .normal)
         
-        // Save
-        try! self.recordController.viewContext.save()
         XCTAssertEqual(record.recordedObjectType, professor.syncableType)
         XCTAssertEqual(record.recordedObjectIdentifier, professor.syncableIdentifier)
         
-        // Check relationship is still valid after saving.
-        XCTAssertEqual(record.recordedObject, professor)
-        XCTAssertEqual(record.recordedObjectID, professor.objectID)
+        // Save recorded object
+        try! professor.managedObjectContext?.save()
+        
+        // Check recorded object is not nil after saving.
+        let recordedProfessor = self.recordController.viewContext.object(with: professor.objectID) as! Professor
+        XCTAssertEqual(record.recordedObject, recordedProfessor)
+        XCTAssertEqual(record.recordedObjectID?.uriRepresentation(), professor.objectID.uriRepresentation())
+        
+        
+        // Save record
+        try! record.managedObjectContext?.save()
+        
+        // Check relationship is valid after saving.
+        XCTAssertEqual(record.recordedObject, recordedProfessor)
+        XCTAssertEqual(record.recordedObjectID?.uriRepresentation(), professor.objectID.uriRepresentation())
     }
     
     func testInitializationWithTemporaryObjectInvalid()
@@ -62,6 +75,38 @@ extension LocalRecordTests
         let professor = Professor.make(context: nil)
         
         XCTAssertFatalError(try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
+    }
+}
+
+extension LocalRecordTests
+{
+    func testCreatingDuplicates()
+    {
+        let homework = Homework.make()
+        
+        _ = try! LocalRecord(managedObject: homework, managedObjectContext: self.recordController.viewContext)
+        try! self.recordController.viewContext.save()
+        
+        _ = try! LocalRecord(managedObject: homework, managedObjectContext: self.recordController.viewContext)
+        try! self.recordController.viewContext.save()
+        
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        XCTAssertEqual(records.count, 1)
+    }
+    
+    func testCreatingDuplicatesSimultaneously()
+    {
+        let course = Course.make()
+        
+        _ = try! LocalRecord(managedObject: course, managedObjectContext: self.recordController.viewContext)
+        _ = try! LocalRecord(managedObject: course, managedObjectContext: self.recordController.viewContext)
+        
+        try! self.recordController.viewContext.save()
+        
+        let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
+        let records = try! self.recordController.viewContext.fetch(fetchRequest)
+        XCTAssertEqual(records.count, 1)
     }
 }
 
@@ -114,11 +159,13 @@ extension LocalRecordTests
     
     func testRecordedObject()
     {
-        let professor = Professor.make()
+        let identifier = UUID().uuidString
+        let professor = Professor.make(identifier: identifier)
         
         let record = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
         
-        XCTAssertEqual(record.recordedObject, professor)
+        let recordedProfessor = self.recordController.viewContext.object(with: professor.objectID) as! Professor
+        XCTAssertEqual(record.recordedObject, recordedProfessor)
     }
     
     func testRecordedObjectInvalid()
@@ -135,8 +182,8 @@ extension LocalRecordTests
         let professor = Professor.make()
         try! self.recordController.viewContext.save()
         
-        self.recordController.viewContext.delete(professor)
-        try! self.recordController.viewContext.save()
+        self.persistentContainer.viewContext.delete(professor)
+        try! self.persistentContainer.viewContext.save()
         
         XCTAssertThrowsError(try LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext))
         

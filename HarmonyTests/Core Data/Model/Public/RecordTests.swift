@@ -25,9 +25,10 @@ extension RecordTests
         var record: Record<Professor>?
         XCTAssertNotNil(record = Record<Professor>(localRecord: localRecord))
         
-        XCTAssertEqual(record?.recordedObject, professor)
+        let recordedProfessor = self.recordController.viewContext.object(with: professor.objectID) as! Professor
+        XCTAssertEqual(record?.recordedObject, recordedProfessor)
         
-        let version = Record.Version(recordedObject: professor, identifier: localRecord.versionIdentifier)
+        let version = Record.Version(recordedObject: recordedProfessor, identifier: localRecord.versionIdentifier)
         XCTAssertEqual(record?.version, version)
     }
     
