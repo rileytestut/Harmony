@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13532" systemVersion="16G29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13772" systemVersion="16G1114" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Course" representedClassName="Course" syncable="YES" codeGenerationType="category">
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <attribute name="name" attributeType="String" syncable="YES"/>
@@ -13,6 +13,9 @@
         <attribute name="name" attributeType="String" syncable="YES"/>
         <relationship name="course" maxCount="1" deletionRule="Nullify" destinationEntity="Course" inverseName="homeworks" inverseEntity="Course" syncable="YES"/>
     </entity>
+    <entity name="Placeholder" representedClassName="Placeholder" syncable="YES" codeGenerationType="category">
+        <attribute name="name" attributeType="String" syncable="YES"/>
+    </entity>
     <entity name="Professor" representedClassName="Professor" syncable="YES" codeGenerationType="category">
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <attribute name="name" attributeType="String" syncable="YES"/>
@@ -22,5 +25,6 @@
         <element name="Course" positionX="-2" positionY="-135" width="128" height="103"/>
         <element name="Homework" positionX="169" positionY="-0" width="128" height="118"/>
         <element name="Professor" positionX="-207" positionY="-0" width="128" height="88"/>
+        <element name="Placeholder" positionX="-54" positionY="164" width="128" height="58"/>
     </elements>
 </model>

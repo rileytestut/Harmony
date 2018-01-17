@@ -30,6 +30,7 @@
 		BFA1C8DE1ECD01C100DEA99D /* Harmony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFA1C8D41ECD01C100DEA99D /* Harmony.framework */; };
 		BFA1C8E51ECD01C100DEA99D /* Harmony.h in Headers */ = {isa = PBXBuildFile; fileRef = BFA1C8D71ECD01C100DEA99D /* Harmony.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BFAA23B91F9C14CC00969993 /* RecordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFAA23B81F9C14CC00969993 /* RecordController.swift */; };
+		BFAB991520082E9900FF274D /* Placeholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFAB991420082E9900FF274D /* Placeholder.swift */; };
 		BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */; };
 		BFB3396C1FD3A4DF006FACAD /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3396B1FD3A4DF006FACAD /* File.swift */; };
 		BFC5F7571FDB81F500C247D5 /* LocalRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC5F7561FDB81F500C247D5 /* LocalRecord.swift */; };
@@ -149,6 +150,7 @@
 		BFA1C8E21ECD01C100DEA99D /* LocalRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRecordTests.swift; sourceTree = "<group>"; };
 		BFA1C8E41ECD01C100DEA99D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFAA23B81F9C14CC00969993 /* RecordController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordController.swift; sourceTree = "<group>"; };
+		BFAB991420082E9900FF274D /* Placeholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Placeholder.swift; sourceTree = "<group>"; };
 		BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPersistentStore+Configuration.swift"; sourceTree = "<group>"; };
 		BFB3396B1FD3A4DF006FACAD /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		BFC5F7561FDB81F500C247D5 /* LocalRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalRecord.swift; sourceTree = "<group>"; };
@@ -381,6 +383,7 @@
 				BF6C9EF41F9BF7CC001B3F37 /* Course.swift */,
 				BF6C9EF61F9BF7D9001B3F37 /* Homework.swift */,
 				BF6C9EF81F9BFA05001B3F37 /* Professor.swift */,
+				BFAB991420082E9900FF274D /* Placeholder.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -632,6 +635,7 @@
 				BFE4EAC71FDBB00600855951 /* FileTests.swift in Sources */,
 				BF1D94921F9C24DC004216B9 /* XCAssert+Harmony.swift in Sources */,
 				BFE4EAC51FDB9A7D00855951 /* RecordVersionTests.swift in Sources */,
+				BFAB991520082E9900FF274D /* Placeholder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
