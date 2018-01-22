@@ -9,13 +9,13 @@
         <attribute name="versionDate" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
         <relationship name="remoteRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RemoteRecord" inverseName="localRecord" inverseEntity="RemoteRecord" syncable="YES"/>
-        <fetchIndex name="byStatusIndex">
+        <fetchIndex name="byStatus">
             <fetchIndexElement property="status" type="Binary" order="ascending"/>
         </fetchIndex>
-        <fetchIndex name="byRecordedObjectURIIndex">
+        <fetchIndex name="byRecordedObjectURI">
             <fetchIndexElement property="recordedObjectURI" type="Binary" order="ascending"/>
         </fetchIndex>
-        <fetchIndex name="byRecordedObjectIndex">
+        <fetchIndex name="byRecordedObject">
             <fetchIndexElement property="recordedObjectType" type="Binary" order="ascending"/>
             <fetchIndexElement property="recordedObjectIdentifier" type="Binary" order="ascending"/>
         </fetchIndex>
@@ -28,10 +28,16 @@
     </entity>
     <entity name="RemoteRecord" representedClassName="RemoteRecord" syncable="YES">
         <attribute name="identifier" attributeType="String" syncable="YES"/>
+        <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
+        <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="versionDate" attributeType="Date" syncable="YES"/>
         <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
         <relationship name="localRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LocalRecord" inverseName="remoteRecord" inverseEntity="LocalRecord" syncable="YES"/>
+        <fetchIndex name="byRecordedObject">
+            <fetchIndexElement property="recordedObjectType" type="Binary" order="ascending"/>
+            <fetchIndexElement property="recordedObjectIdentifier" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="identifier"/>
@@ -45,6 +51,6 @@
     </configuration>
     <elements>
         <element name="LocalRecord" positionX="160" positionY="192" width="128" height="163"/>
-        <element name="RemoteRecord" positionX="378" positionY="198" width="128" height="118"/>
+        <element name="RemoteRecord" positionX="378" positionY="198" width="128" height="150"/>
     </elements>
 </model>

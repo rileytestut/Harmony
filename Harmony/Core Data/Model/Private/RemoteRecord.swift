@@ -9,32 +9,13 @@
 import CoreData
 
 @objc(RemoteRecord)
-class RemoteRecord: NSManagedObject, ManagedRecord
+class RemoteRecord: ManagedRecord
 {
     @NSManaged var identifier: String
-    
-    @NSManaged var versionIdentifier: String
-    @NSManaged var versionDate: Date
-    
-    @objc dynamic var status: ManagedRecordStatus {
-        get {
-            self.willAccessValue(forKey: #keyPath(RemoteRecord.status))
-            defer { self.didAccessValue(forKey: #keyPath(RemoteRecord.status)) }
-            
-            let status = ManagedRecordStatus(rawValue: self.primitiveStatus.int16Value) ?? .updated
-            return status
-        }
-        set {
-            self.willChangeValue(for: \.status)
-            defer { self.didChangeValue(for: \.status) }
-
-            self.primitiveStatus = NSNumber(value: newValue.rawValue)
-        }
-    }
         
     @NSManaged var localRecord: LocalRecord?
     
-    init(identifier: String, versionIdentifier: String, versionDate: Date, status: ManagedRecordStatus, managedObjectContext: NSManagedObjectContext)
+    init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: ManagedRecordStatus, managedObjectContext: NSManagedObjectContext)
     {
         super.init(entity: RemoteRecord.entity(), insertInto: managedObjectContext)
         
@@ -43,8 +24,10 @@ class RemoteRecord: NSManagedObject, ManagedRecord
         self.versionIdentifier = versionIdentifier
         self.versionDate = versionDate
         
-        // Set primitive status to prevent custom setter from running in initializer.
-        self.primitiveStatus = NSNumber(value: status.rawValue)
+        self.recordedObjectType = recordedObjectType
+        self.recordedObjectIdentifier = recordedObjectIdentifier
+        
+        self.status = status
     }
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
@@ -53,15 +36,18 @@ class RemoteRecord: NSManagedObject, ManagedRecord
     }
 }
 
-private extension RemoteRecord
-{
-    @NSManaged var primitiveStatus: NSNumber
-}
-
 extension RemoteRecord
 {
     @nonobjc class func fetchRequest() -> NSFetchRequest<RemoteRecord>
     {
         return NSFetchRequest<RemoteRecord>(entityName: "RemoteRecord")
+    }
+    
+    class func fetchRequest(for localRecord: LocalRecord) -> NSFetchRequest<RemoteRecord>
+    {
+        let fetchRequest: NSFetchRequest<RemoteRecord> = self.fetchRequest()
+        fetchRequest.predicate = ManagedRecord.predicate(for: localRecord)
+        
+        return fetchRequest
     }
 }

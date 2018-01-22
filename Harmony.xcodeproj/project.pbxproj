@@ -208,7 +208,6 @@
 			isa = PBXGroup;
 			children = (
 				BF0499921F9AEEE900E0EFEE /* Syncable.swift */,
-				BFF0169620040FD300210A38 /* ManagedRecord.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -234,6 +233,7 @@
 			isa = PBXGroup;
 			children = (
 				BF0499841F9AE06400E0EFEE /* Harmony.xcdatamodeld */,
+				BFF0169620040FD300210A38 /* ManagedRecord.swift */,
 				BFC5F7561FDB81F500C247D5 /* LocalRecord.swift */,
 				BF0499861F9AE06400E0EFEE /* RemoteRecord.swift */,
 			);

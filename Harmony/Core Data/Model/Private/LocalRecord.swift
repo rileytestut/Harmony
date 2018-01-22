@@ -25,32 +25,11 @@ extension LocalRecord
 }
 
 @objc(LocalRecord)
-class LocalRecord: NSManagedObject, ManagedRecord
+class LocalRecord: ManagedRecord
 {
     /* Properties */
-    @NSManaged var versionIdentifier: String
-    @NSManaged var versionDate: Date
-    
     @NSManaged var isConflicted: Bool
-    
-    @objc dynamic var status: ManagedRecordStatus {
-        get {
-            self.willAccessValue(forKey: #keyPath(LocalRecord.status))
-            defer { self.didAccessValue(forKey: #keyPath(LocalRecord.status)) }
-            
-            let status = ManagedRecordStatus(rawValue: self.primitiveStatus.int16Value) ?? .updated
-            return status
-        }
-        set {
-            self.willChangeValue(for: \.status)
-            defer { self.didChangeValue(for: \.status) }
-            
-            self.primitiveStatus = NSNumber(value: newValue.rawValue)
-        }
-    }
-    
-    @NSManaged private(set) var recordedObjectType: String
-    @NSManaged private(set) var recordedObjectIdentifier: String
+
     @NSManaged private(set) var recordedObjectURI: String
     
     var recordedObject: SyncableManagedObject? {
@@ -101,16 +80,19 @@ class LocalRecord: NSManagedObject, ManagedRecord
     }
 }
 
-private extension LocalRecord
-{
-    @NSManaged var primitiveStatus: NSNumber
-}
-
 extension LocalRecord
 {
     @nonobjc class func fetchRequest() -> NSFetchRequest<LocalRecord>
     {
         return NSFetchRequest<LocalRecord>(entityName: "LocalRecord")
+    }
+    
+    class func fetchRequest(for remoteRecord: RemoteRecord) -> NSFetchRequest<LocalRecord>
+    {
+        let fetchRequest: NSFetchRequest<LocalRecord> = self.fetchRequest()
+        fetchRequest.predicate = ManagedRecord.predicate(for: remoteRecord)
+        
+        return fetchRequest
     }
 }
 

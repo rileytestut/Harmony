@@ -22,13 +22,17 @@ extension RemoteRecordTests
         let identifier = "identifier"
         let versionIdentifier = "versionIdentifier"
         let versionDate = Date()
+        let recordedObjectType = "type"
+        let recordedObjectIdentifier = "recordedObjectIdentifier"
         let status = ManagedRecordStatus.deleted
         
-        let record = RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, status: status, managedObjectContext: self.recordController.viewContext)
+        let record = RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, recordedObjectType: recordedObjectType, recordedObjectIdentifier: recordedObjectIdentifier, status: status, managedObjectContext: self.recordController.viewContext)
         
         XCTAssertEqual(record.identifier, identifier)
         XCTAssertEqual(record.versionIdentifier, versionIdentifier)
         XCTAssertEqual(record.versionDate, versionDate)
+        XCTAssertEqual(record.recordedObjectType, recordedObjectType)
+        XCTAssertEqual(record.recordedObjectIdentifier, recordedObjectIdentifier)
         XCTAssertEqual(record.status, status)
     }
 }

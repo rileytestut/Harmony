@@ -18,9 +18,15 @@ extension NSManagedObjectContext
 
 extension RemoteRecord
 {
-    class func make(identifier: String = UUID().uuidString, versionIdentifier: String = UUID().uuidString, versionDate: Date = Date(), status: ManagedRecordStatus = .normal, context: NSManagedObjectContext = .harmonyFactoryDefault) -> RemoteRecord
+    class func make(identifier: String = UUID().uuidString, versionIdentifier: String = UUID().uuidString, versionDate: Date = Date(), recordedObjectType: String = "Sora", recordedObjectIdentifier: String = UUID().uuidString, status: ManagedRecordStatus = .normal, context: NSManagedObjectContext = .harmonyFactoryDefault) -> RemoteRecord
     {
-        let record = RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, status: status, managedObjectContext: context)
+        let record = RemoteRecord(identifier: identifier,
+                                  versionIdentifier: versionIdentifier,
+                                  versionDate: versionDate,
+                                  recordedObjectType: recordedObjectType,
+                                  recordedObjectIdentifier: recordedObjectIdentifier,
+                                  status: status,
+                                  managedObjectContext: context)
         return record
     }
 }
