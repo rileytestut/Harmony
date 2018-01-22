@@ -23,7 +23,6 @@ class HarmonyTestCase: XCTestCase
     }()
     
     var performSaveInTearDown = true
-    var automaticallyRecordsManagedObjects = false
     
     // Must use same NSManagedObjectModel instance for all tests or else Bad Things Happen™.
     private static let managedObjectModel: NSManagedObjectModel = {
@@ -103,7 +102,7 @@ extension HarmonyTestCase
     {
         self.recordController = RecordController(persistentContainer: self.persistentContainer)
         self.recordController.persistentStoreDescriptions.forEach { $0.shouldAddStoreAsynchronously = false }
-        self.recordController.automaticallyRecordsManagedObjects = self.automaticallyRecordsManagedObjects
+        self.recordController.automaticallyRecordsManagedObjects = false
         
         self.recordController.start { (errors) in
             assert(errors.count == 0)

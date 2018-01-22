@@ -82,10 +82,7 @@ public extension RecordController
             
             self.processingContext = self.newBackgroundContext()
             
-            if self.automaticallyRecordsManagedObjects
-            {
-                NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(with:)), name: .NSManagedObjectContextDidSave, object: nil)
-            }
+            NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(with:)), name: .NSManagedObjectContextDidSave, object: nil)
             
             completionHandler(errors)
         }
@@ -105,9 +102,55 @@ public extension RecordController
     }
 }
 
+extension RecordController
+{
+    private class func updateRelationships<RecordType: ManagedRecord, RelationshipType: ManagedRecord, CollectionType: Collection> (for records: CollectionType, relationshipKeyPath: ReferenceWritableKeyPath<RecordType, RelationshipType?>, in context: NSManagedObjectContext) throws -> Set<NSManagedObjectID> where CollectionType.Element == RecordType
+    {
+        func key(for record: ManagedRecord) -> String
+        {
+            let key = record.recordedObjectType + "-" + record.recordedObjectIdentifier
+            return key
+        }
+        
+        let recordsDictionary = Dictionary(uniqueKeysWithValues: records.map { (key(for: $0), $0) })
+        
+        let subpredicates = records.map { ManagedRecord.predicate(for: $0) }
+        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: subpredicates)
+        
+        let fetchRequest: NSFetchRequest<RelationshipType> = NSFetchRequest<RelationshipType>(entityName: RelationshipType.entity().name!)
+        fetchRequest.predicate = predicate
+        
+        var objectIDs = Set<NSManagedObjectID>()
+        
+        let fetchedRecords = try context.fetch(fetchRequest)
+        for fetchedRecord in fetchedRecords
+        {
+            let recordKey = key(for: fetchedRecord)
+            guard let record = recordsDictionary[recordKey] else { continue }
+            
+            record[keyPath: relationshipKeyPath] = fetchedRecord
+            
+            objectIDs.insert(record.objectID)
+            objectIDs.insert(fetchedRecord.objectID)
+        }
+        
+        return objectIDs
+    }
+    
+    @discardableResult class func updateRelationships<T: Collection>(for records: T, in context: NSManagedObjectContext) throws -> Set<NSManagedObjectID> where T.Element == LocalRecord
+    {
+        return try self.updateRelationships(for: records, relationshipKeyPath: \LocalRecord.remoteRecord, in: context)
+    }
+    
+    @discardableResult class func updateRelationships<T: Collection>(for records: T, in context: NSManagedObjectContext) throws -> Set<NSManagedObjectID> where T.Element == RemoteRecord
+    {
+        return try self.updateRelationships(for: records, relationshipKeyPath: \RemoteRecord.localRecord, in: context)
+    }
+}
+
 private extension RecordController
 {
-    @discardableResult func createRecords<T: Collection>(for managedObjects: T, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
+    func createRecords<T: Collection>(for managedObjects: T, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
     {
         let records = managedObjects.flatMap { (managedObject) -> LocalRecord? in
             let uri = managedObject.objectID.uriRepresentation()
@@ -130,8 +173,13 @@ private extension RecordController
         
         guard !records.isEmpty else { return [] }
         
+        var objectIDs = records.map { $0.objectID }
+        
         do
         {
+            let updatedObjectIDs = try RecordController.updateRelationships(for: records, in: context)
+            objectIDs.append(contentsOf: updatedObjectIDs)
+            
             try context.save()
         }
         catch
@@ -139,11 +187,10 @@ private extension RecordController
             print(error)
         }
         
-        let objectIDs = records.map { $0.objectID }
         return objectIDs
     }
     
-    @discardableResult func updateRecords<T: Collection>(for recordedObjects: T, with status: ManagedRecordStatus, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
+    func updateRecords<T: Collection>(for recordedObjects: T, with status: ManagedRecordStatus, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
     {
         let uris = recordedObjects.flatMap { (recordedObject) in
             guard recordedObject is SyncableManagedObject else { return nil }
@@ -180,6 +227,8 @@ private extension RecordController
     @objc func managedObjectContextDidSave(with notification: Notification)
     {
         guard let processingContext = self.processingContext else { return }
+        
+        guard self.automaticallyRecordsManagedObjects else { return }
         
         guard
             let managedObjectContext = notification.object as? NSManagedObjectContext,

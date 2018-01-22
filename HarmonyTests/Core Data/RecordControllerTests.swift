@@ -15,9 +15,9 @@ class RecordControllerTests: HarmonyTestCase
 {
     override func setUp()
     {
-        self.automaticallyRecordsManagedObjects = true
-        
         super.setUp()
+        
+        self.recordController.automaticallyRecordsManagedObjects = true
     }
 }
 
@@ -110,7 +110,305 @@ extension RecordControllerTests
 
 extension RecordControllerTests
 {
-    func testCreatingRecords()
+    func prepareUpdateLocalRecordRelationshipsTest(createRemoteRecord: Bool = true) -> Professor
+    {
+        self.recordController.automaticallyRecordsManagedObjects = false
+        
+        let identifier = UUID().uuidString
+        
+        if (createRemoteRecord)
+        {
+            let managedObjectContext = self.recordController.newBackgroundContext()
+            managedObjectContext.performAndWait {
+                _ = RemoteRecord.make(recordedObjectType: "Professor", recordedObjectIdentifier: identifier, context: managedObjectContext)
+                try! managedObjectContext.save()
+            }
+        }
+        
+        let professor = Professor.make(identifier: identifier)
+        return professor
+    }
+    
+    func testUpdateLocalRecordRelationshipsWithSavedLocalRecord()
+    {
+        let professor = self.prepareUpdateLocalRecordRelationshipsTest()
+        
+        let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
+        try! localRecord.managedObjectContext?.save()
+        
+        try! RecordController.updateRelationships(for: [localRecord], in: localRecord.managedObjectContext!)
+        try! localRecord.managedObjectContext?.save()
+        
+        let remoteRecord = try! self.recordController.viewContext.fetch(RemoteRecord.fetchRequest(for: localRecord)).first!
+        XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+        XCTAssertEqual(remoteRecord.localRecord, localRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let localRecord = managedObjectContext.object(with: localRecord.objectID) as! LocalRecord
+            let remoteRecord = try! managedObjectContext.fetch(RemoteRecord.fetchRequest(for: localRecord)).first!
+            
+            XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+            XCTAssertEqual(remoteRecord.localRecord, localRecord)
+        }
+    }
+    
+    func testUpdateLocalRecordRelationshipsWithUnsavedLocalRecord()
+    {
+        let professor = self.prepareUpdateLocalRecordRelationshipsTest()
+        
+        let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
+        
+        try! RecordController.updateRelationships(for: [localRecord], in: localRecord.managedObjectContext!)
+        
+        let remoteRecord = try! self.recordController.viewContext.fetch(RemoteRecord.fetchRequest(for: localRecord)).first!
+        XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+        XCTAssertEqual(remoteRecord.localRecord, localRecord)
+        
+        try! localRecord.managedObjectContext?.save()
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let localRecord = managedObjectContext.object(with: localRecord.objectID) as! LocalRecord
+            let remoteRecord = try! managedObjectContext.fetch(RemoteRecord.fetchRequest(for: localRecord)).first!
+            
+            XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+            XCTAssertEqual(remoteRecord.localRecord, localRecord)
+        }
+    }
+    
+    func testUpdateLocalRecordRelationshipsWithNoLocalRecord()
+    {
+        let professor = self.prepareUpdateLocalRecordRelationshipsTest()
+        
+        let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
+        try! localRecord.managedObjectContext?.save()
+        
+        try! RecordController.updateRelationships(for: [] as [LocalRecord], in: localRecord.managedObjectContext!)
+        try! localRecord.managedObjectContext?.save()
+        
+        let remoteRecord = try! self.recordController.viewContext.fetch(RemoteRecord.fetchRequest(for: localRecord)).first!
+        XCTAssertNil(localRecord.remoteRecord)
+        XCTAssertNil(remoteRecord.localRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let localRecord = managedObjectContext.object(with: localRecord.objectID) as! LocalRecord
+            let remoteRecord = try! managedObjectContext.fetch(RemoteRecord.fetchRequest(for: localRecord)).first!
+            
+            XCTAssertNil(localRecord.remoteRecord)
+            XCTAssertNil(remoteRecord.localRecord)
+        }
+    }
+    
+    func testUpdateLocalRecordRelationshipsWithNoRemoteRecord()
+    {
+        let professor = self.prepareUpdateLocalRecordRelationshipsTest(createRemoteRecord: false)
+        
+        let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
+        try! localRecord.managedObjectContext?.save()
+        
+        try! RecordController.updateRelationships(for: [localRecord], in: localRecord.managedObjectContext!)
+        try! localRecord.managedObjectContext?.save()
+        
+        XCTAssertNil(localRecord.remoteRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let localRecord = managedObjectContext.object(with: localRecord.objectID) as! LocalRecord
+            XCTAssertNil(localRecord.remoteRecord)
+        }
+    }
+    
+    func testUpdateLocalRecordRelationshipsWithInvalidManagedObjectContext()
+    {
+        class InvalidManagedObjectContext: NSManagedObjectContext
+        {
+            struct TestError: Swift.Error {}
+            
+            override func fetch(_ request: NSFetchRequest<NSFetchRequestResult>) throws -> [Any]
+            {
+                throw TestError()
+            }
+        }
+        
+        let professor = self.prepareUpdateLocalRecordRelationshipsTest()
+        
+        let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
+        try! localRecord.managedObjectContext?.save()
+        
+        let invalidManagedObjectContext = InvalidManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        XCTAssertThrowsError(try RecordController.updateRelationships(for: [localRecord], in: invalidManagedObjectContext), "RecordController.updateRelationships did not throw an error with an context.") { (error) in
+            XCTAssert(error is InvalidManagedObjectContext.TestError)
+        }
+        
+        let remoteRecord = try! self.recordController.viewContext.fetch(RemoteRecord.fetchRequest(for: localRecord)).first!
+        XCTAssertNil(localRecord.remoteRecord)
+        XCTAssertNil(remoteRecord.localRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let localRecord = managedObjectContext.object(with: localRecord.objectID) as! LocalRecord
+            let remoteRecord = try! managedObjectContext.fetch(RemoteRecord.fetchRequest(for: localRecord)).first!
+            
+            XCTAssertNil(localRecord.remoteRecord)
+            XCTAssertNil(remoteRecord.localRecord)
+        }
+    }
+}
+
+extension RecordControllerTests
+{
+    func prepareUpdateRemoteRecordRelationshipsTest(createLocalRecord: Bool = true) -> Homework
+    {
+        self.recordController.automaticallyRecordsManagedObjects = false
+        
+        let identifier = UUID().uuidString
+        let homework = Homework.make(identifier: identifier)
+        
+        if (createLocalRecord)
+        {
+            let managedObjectContext = self.recordController.newBackgroundContext()
+            managedObjectContext.performAndWait {
+                let homework = managedObjectContext.object(with: homework.objectID) as! Homework
+                
+                _ = try! LocalRecord(managedObject: homework, managedObjectContext: managedObjectContext)
+                try! managedObjectContext.save()
+            }
+        }
+        
+        return homework
+    }
+    
+    func testUpdateRemoteRecordRelationshipsWithSavedRemoteRecord()
+    {
+        let homework = self.prepareUpdateRemoteRecordRelationshipsTest()
+        
+        let remoteRecord = RemoteRecord.make(recordedObjectType: homework.syncableType, recordedObjectIdentifier: homework.syncableIdentifier!)
+        try! remoteRecord.managedObjectContext?.save()
+        
+        try! RecordController.updateRelationships(for: [remoteRecord], in: remoteRecord.managedObjectContext!)
+        try! remoteRecord.managedObjectContext?.save()
+        
+        let localRecord = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest(for: remoteRecord)).first!
+        XCTAssertEqual(remoteRecord.localRecord, localRecord)
+        XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let remoteRecord = managedObjectContext.object(with: remoteRecord.objectID) as! RemoteRecord
+            let localRecord = try! managedObjectContext.fetch(LocalRecord.fetchRequest(for: remoteRecord)).first!
+            
+            XCTAssertEqual(remoteRecord.localRecord, localRecord)
+            XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+        }
+    }
+    
+    func testUpdateRemoteRecordRelationshipsWithUnsavedRemoteRecord()
+    {
+        let homework = self.prepareUpdateRemoteRecordRelationshipsTest()
+        
+        let remoteRecord = RemoteRecord.make(recordedObjectType: homework.syncableType, recordedObjectIdentifier: homework.syncableIdentifier!)
+        
+        try! RecordController.updateRelationships(for: [remoteRecord], in: remoteRecord.managedObjectContext!)
+        try! remoteRecord.managedObjectContext?.save()
+        
+        let localRecord = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest(for: remoteRecord)).first!
+        XCTAssertEqual(remoteRecord.localRecord, localRecord)
+        XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let remoteRecord = managedObjectContext.object(with: remoteRecord.objectID) as! RemoteRecord
+            let localRecord = try! managedObjectContext.fetch(LocalRecord.fetchRequest(for: remoteRecord)).first!
+            
+            XCTAssertEqual(remoteRecord.localRecord, localRecord)
+            XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+        }
+    }
+    
+    func testUpdateRemoteRecordRelationshipsWithNoRemoteRecord()
+    {
+        let homework = self.prepareUpdateRemoteRecordRelationshipsTest()
+        
+        let remoteRecord = RemoteRecord.make(recordedObjectType: homework.syncableType, recordedObjectIdentifier: homework.syncableIdentifier!)
+        
+        try! RecordController.updateRelationships(for: [] as [RemoteRecord], in: remoteRecord.managedObjectContext!)
+        try! remoteRecord.managedObjectContext?.save()
+        
+        let localRecord = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest(for: remoteRecord)).first!
+        XCTAssertNil(remoteRecord.localRecord)
+        XCTAssertNil(localRecord.remoteRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let remoteRecord = managedObjectContext.object(with: remoteRecord.objectID) as! RemoteRecord
+            let localRecord = try! managedObjectContext.fetch(LocalRecord.fetchRequest(for: remoteRecord)).first!
+            
+            XCTAssertNil(remoteRecord.localRecord)
+            XCTAssertNil(localRecord.remoteRecord)
+        }
+    }
+    
+    func testUpdateRemoteRecordRelationshipsWithNoLocalRecord()
+    {
+        let homework = self.prepareUpdateRemoteRecordRelationshipsTest(createLocalRecord: false)
+        
+        let remoteRecord = RemoteRecord.make(recordedObjectType: homework.syncableType, recordedObjectIdentifier: homework.syncableIdentifier!)
+        try! remoteRecord.managedObjectContext?.save()
+        
+        try! RecordController.updateRelationships(for: [remoteRecord], in: remoteRecord.managedObjectContext!)
+        try! remoteRecord.managedObjectContext?.save()
+        
+        XCTAssertNil(remoteRecord.localRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let remoteRecord = managedObjectContext.object(with: remoteRecord.objectID) as! RemoteRecord
+            XCTAssertNil(remoteRecord.localRecord)
+        }
+    }
+    
+    func testUpdateRemoteRecordRelationshipsWithInvalidManagedObjectContext()
+    {
+        class InvalidManagedObjectContext: NSManagedObjectContext
+        {
+            struct TestError: Swift.Error {}
+            
+            override func fetch(_ request: NSFetchRequest<NSFetchRequestResult>) throws -> [Any]
+            {
+                throw TestError()
+            }
+        }
+        
+        let homework = self.prepareUpdateRemoteRecordRelationshipsTest()
+        
+        let remoteRecord = RemoteRecord.make(recordedObjectType: homework.syncableType, recordedObjectIdentifier: homework.syncableIdentifier!)
+        try! remoteRecord.managedObjectContext?.save()
+        
+        let invalidManagedObjectContext = InvalidManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        XCTAssertThrowsError(try RecordController.updateRelationships(for: [remoteRecord], in: invalidManagedObjectContext), "RecordController.updateRelationships did not throw an error with an context.") { (error) in
+            XCTAssert(error is InvalidManagedObjectContext.TestError)
+        }
+        
+        let localRecord = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest(for: remoteRecord)).first!
+        XCTAssertNil(remoteRecord.localRecord)
+        XCTAssertNil(localRecord.remoteRecord)
+        
+        let managedObjectContext = self.recordController.newBackgroundContext()
+        managedObjectContext.performAndWait {
+            let remoteRecord = managedObjectContext.object(with: remoteRecord.objectID) as! RemoteRecord
+            let localRecord = try! managedObjectContext.fetch(LocalRecord.fetchRequest(for: remoteRecord)).first!
+            
+            XCTAssertNil(remoteRecord.localRecord)
+            XCTAssertNil(localRecord.remoteRecord)
+        }
+    }
+}
+
+extension RecordControllerTests
+{
+    func testCreatingRecordsWithoutRemoteRecords()
     {
         let context = self.persistentContainer.newBackgroundContext()
         context.performAndWait {
@@ -122,9 +420,33 @@ extension RecordControllerTests
         let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
         let records = try! self.recordController.viewContext.fetch(fetchRequest)
         XCTAssertEqual(records.count, 1)
+        XCTAssertNil(records.first?.remoteRecord)
         
         let recordedObject = records.first?.recordedObject
         XCTAssert(recordedObject is Professor)
+    }
+    
+    func testCreatingRecordsWithRemoteRecords()
+    {
+        let identifier = UUID().uuidString
+        
+        let remoteRecord = RemoteRecord.make(recordedObjectType: "Professor", recordedObjectIdentifier: identifier)
+        try! remoteRecord.managedObjectContext?.save()
+        
+        let context = self.persistentContainer.newBackgroundContext()
+        context.performAndWait {
+            _ = Professor.make(name: "Trina Gregory", identifier: identifier, context: context, automaticallySave: true)
+        }
+        
+        self.waitForRecordControllerToProcessUpdates()
+        
+        let localRecords = try! self.recordController.viewContext.fetch(LocalRecord.fetchRequest() as NSFetchRequest<LocalRecord>)
+        let localRecord = localRecords[0]
+        
+        XCTAssertEqual(localRecords.count, 1)
+        XCTAssertEqual(localRecord.remoteRecord, remoteRecord)
+        XCTAssertEqual(remoteRecord.localRecord, localRecord)
+        XCTAssert(localRecord.recordedObject is Professor)
     }
     
     func testCreatingRecordsForInvalidObjects()
