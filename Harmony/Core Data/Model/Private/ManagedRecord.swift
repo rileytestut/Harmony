@@ -9,11 +9,14 @@
 import Foundation
 import CoreData
 
-@objc enum ManagedRecordStatus: Int16
+extension ManagedRecord
 {
-    case normal
-    case updated
-    case deleted
+    @objc enum Status: Int16
+    {
+        case normal
+        case updated
+        case deleted
+    }
 }
 
 class ManagedRecord: NSManagedObject
@@ -24,12 +27,12 @@ class ManagedRecord: NSManagedObject
     @NSManaged var recordedObjectType: String
     @NSManaged var recordedObjectIdentifier: String
     
-    @objc dynamic var status: ManagedRecordStatus {
+    @objc dynamic var status: Status {
         get {
             self.willAccessValue(forKey: #keyPath(ManagedRecord.status))
             defer { self.didAccessValue(forKey: #keyPath(ManagedRecord.status)) }
             
-            let status = ManagedRecordStatus(rawValue: self.primitiveStatus.int16Value) ?? .updated
+            let status = Status(rawValue: self.primitiveStatus.int16Value) ?? .updated
             return status
         }
         set {

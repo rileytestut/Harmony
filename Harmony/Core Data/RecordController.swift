@@ -190,7 +190,7 @@ private extension RecordController
         return objectIDs
     }
     
-    func updateRecords<T: Collection>(for recordedObjects: T, with status: ManagedRecordStatus, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
+    func updateRecords<T: Collection>(for recordedObjects: T, with status: ManagedRecord.Status, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
     {
         let uris = recordedObjects.flatMap { (recordedObject) in
             guard recordedObject is SyncableManagedObject else { return nil }

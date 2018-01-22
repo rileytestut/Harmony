@@ -24,7 +24,7 @@ extension RemoteRecordTests
         let versionDate = Date()
         let recordedObjectType = "type"
         let recordedObjectIdentifier = "recordedObjectIdentifier"
-        let status = ManagedRecordStatus.deleted
+        let status = ManagedRecord.Status.deleted
         
         let record = RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, recordedObjectType: recordedObjectType, recordedObjectIdentifier: recordedObjectIdentifier, status: status, managedObjectContext: self.recordController.viewContext)
         
@@ -44,7 +44,7 @@ extension RemoteRecordTests
         // KVO
         var record = RemoteRecord.make()
         
-        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: ManagedRecordStatus.updated.rawValue)
+        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: ManagedRecord.Status.updated.rawValue)
         record.status = .updated
         
         XCTAssertEqual(record.status, .updated)

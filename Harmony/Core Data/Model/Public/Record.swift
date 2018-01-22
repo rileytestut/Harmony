@@ -17,7 +17,7 @@ extension Record
         case updated
         case deleted
         
-        internal init(_ status: ManagedRecordStatus)
+        internal init(_ status: ManagedRecord.Status)
         {
             switch status
             {

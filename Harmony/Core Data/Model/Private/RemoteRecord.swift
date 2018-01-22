@@ -15,7 +15,7 @@ class RemoteRecord: ManagedRecord
         
     @NSManaged var localRecord: LocalRecord?
     
-    init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: ManagedRecordStatus, managedObjectContext: NSManagedObjectContext)
+    init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: Status, managedObjectContext: NSManagedObjectContext)
     {
         super.init(entity: RemoteRecord.entity(), insertInto: managedObjectContext)
         

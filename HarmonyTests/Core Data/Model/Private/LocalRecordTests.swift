@@ -208,7 +208,7 @@ extension LocalRecordTests
         // KVO
         var record = try! LocalRecord(managedObject: Professor.make(), managedObjectContext: self.recordController.viewContext)
         
-        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: ManagedRecordStatus.updated.rawValue)
+        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: ManagedRecord.Status.updated.rawValue)
         record.status = .updated
         
         XCTAssertEqual(record.status, .updated)
