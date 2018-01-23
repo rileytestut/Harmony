@@ -129,6 +129,27 @@
 			remoteGlobalIDString = BFA1C8D31ECD01C100DEA99D;
 			remoteInfo = Harmony;
 		};
+		BFAC53952017F963006E0D36 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BFECF9F92016982D0012B9FC;
+			remoteInfo = "Harmony-Drive";
+		};
+		BFAC53972017F963006E0D36 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BFECFA022016982E0012B9FC;
+			remoteInfo = "Harmony-DriveTests";
+		};
+		BFAC53992017F963006E0D36 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BFECFAD420169EA20012B9FC;
+			remoteInfo = libGoogleDrive;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -159,6 +180,7 @@
 		BFA1C8E41ECD01C100DEA99D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFAA23B81F9C14CC00969993 /* RecordController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordController.swift; sourceTree = "<group>"; };
 		BFAB991420082E9900FF274D /* Placeholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Placeholder.swift; sourceTree = "<group>"; };
+		BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "Harmony-Drive.xcodeproj"; sourceTree = "<group>"; };
 		BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPersistentStore+Configuration.swift"; sourceTree = "<group>"; };
 		BFB3396B1FD3A4DF006FACAD /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		BFC5F7561FDB81F500C247D5 /* LocalRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalRecord.swift; sourceTree = "<group>"; };
@@ -350,6 +372,7 @@
 			children = (
 				BFA1C8D61ECD01C100DEA99D /* Harmony */,
 				BFA1C8E11ECD01C100DEA99D /* HarmonyTests */,
+				BFAC538D2017F932006E0D36 /* Backends */,
 				BFA1C8D51ECD01C100DEA99D /* Products */,
 				BF1D94881F9C1C38004216B9 /* Frameworks */,
 			);
@@ -405,6 +428,32 @@
 				BFAB991420082E9900FF274D /* Placeholder.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		BFAC538D2017F932006E0D36 /* Backends */ = {
+			isa = PBXGroup;
+			children = (
+				BFAC538E2017F94F006E0D36 /* Drive */,
+			);
+			path = Backends;
+			sourceTree = "<group>";
+		};
+		BFAC538E2017F94F006E0D36 /* Drive */ = {
+			isa = PBXGroup;
+			children = (
+				BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */,
+			);
+			path = Drive;
+			sourceTree = "<group>";
+		};
+		BFAC53902017F963006E0D36 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BFAC53962017F963006E0D36 /* Harmony_Drive.framework */,
+				BFAC53982017F963006E0D36 /* Harmony-DriveTests.xctest */,
+				BFAC539A2017F963006E0D36 /* libGoogleDrive.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		BFE0291C2006AE3F004F70DC /* Protocols */ = {
@@ -556,6 +605,10 @@
 					ProductGroup = BF7A1FEF1F9D667A0061B187 /* Products */;
 					ProjectRef = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
 				},
+				{
+					ProductGroup = BFAC53902017F963006E0D36 /* Products */;
+					ProjectRef = BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -634,6 +687,27 @@
 			fileType = wrapper.cfbundle;
 			path = CwlPreconditionTesting_tvOSTests.xctest;
 			remoteRef = BF7A200E1F9D667B0061B187 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BFAC53962017F963006E0D36 /* Harmony_Drive.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Harmony_Drive.framework;
+			remoteRef = BFAC53952017F963006E0D36 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BFAC53982017F963006E0D36 /* Harmony-DriveTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "Harmony-DriveTests.xctest";
+			remoteRef = BFAC53972017F963006E0D36 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BFAC539A2017F963006E0D36 /* libGoogleDrive.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libGoogleDrive.a;
+			remoteRef = BFAC53992017F963006E0D36 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
