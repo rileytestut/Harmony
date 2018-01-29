@@ -14,7 +14,7 @@ enum ServiceError: Error
     case invalidChangeToken(Data)
 }
 
-protocol Service
+public protocol Service
 {
     var localizedName: String { get }
     
@@ -23,17 +23,17 @@ protocol Service
     func fetchRemoteRecords(sinceChangeToken changeToken: Data?, context: NSManagedObjectContext, completionHandler: @escaping (Result<Set<RemoteRecord>>) -> Void) -> Progress
 }
 
-func ==(lhs: Service, rhs: Service) -> Bool
+public func ==(lhs: Service, rhs: Service) -> Bool
 {
     return lhs.identifier == rhs.identifier
 }
 
-func !=(lhs: Service, rhs: Service) -> Bool
+public func !=(lhs: Service, rhs: Service) -> Bool
 {
     return !(lhs == rhs)
 }
 
-func ~=(lhs: Service, rhs: Service) -> Bool
+public func ~=(lhs: Service, rhs: Service) -> Bool
 {
     return lhs == rhs
 }
