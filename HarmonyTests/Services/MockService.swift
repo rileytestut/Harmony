@@ -13,6 +13,7 @@ import CoreData
 
 struct MockService
 {
+    let localizedName = "MockService"
     let identifier = "MockService"
     
     let latestChangeToken = Data(bytes: [1,2,3,4,5])

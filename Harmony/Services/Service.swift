@@ -16,6 +16,8 @@ enum ServiceError: Error
 
 protocol Service
 {
+    var localizedName: String { get }
+    
     var identifier: String { get }
     
     func fetchRemoteRecords(sinceChangeToken changeToken: Data?, context: NSManagedObjectContext, completionHandler: @escaping (Result<Set<RemoteRecord>>) -> Void) -> Progress
