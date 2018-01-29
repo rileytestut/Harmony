@@ -23,7 +23,19 @@ struct MockService
 }
 
 extension MockService: Service
-{    
+{
+    func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Void>) -> Void)
+    {
+    }
+    
+    func authenticateInBackground(completionHandler: @escaping (Result<Void>) -> Void)
+    {
+    }
+    
+    func deauthenticate(completionHandler: @escaping (Result<Void>) -> Void)
+    {
+    }
+    
     func fetchRemoteRecords(sinceChangeToken changeToken: Data?, context: NSManagedObjectContext, completionHandler: @escaping (Result<Set<RemoteRecord>>) -> Void) -> Progress
     {
         let progress = Progress(totalUnitCount: 0)

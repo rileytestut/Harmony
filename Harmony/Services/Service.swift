@@ -9,16 +9,15 @@
 import Foundation
 import CoreData
 
-enum ServiceError: Error
-{
-    case invalidChangeToken(Data)
-}
-
 public protocol Service
 {
     var localizedName: String { get }
-    
     var identifier: String { get }
+    
+    func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Void>) -> Void)
+    func authenticateInBackground(completionHandler: @escaping (Result<Void>) -> Void)
+    
+    func deauthenticate(completionHandler: @escaping (Result<Void>) -> Void)
     
     func fetchRemoteRecords(sinceChangeToken changeToken: Data?, context: NSManagedObjectContext, completionHandler: @escaping (Result<Set<RemoteRecord>>) -> Void) -> Progress
 }
