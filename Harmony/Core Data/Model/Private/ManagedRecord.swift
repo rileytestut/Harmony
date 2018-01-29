@@ -11,7 +11,7 @@ import CoreData
 
 extension ManagedRecord
 {
-    @objc enum Status: Int16
+    @objc public enum Status: Int16
     {
         case normal
         case updated
@@ -19,15 +19,15 @@ extension ManagedRecord
     }
 }
 
-class ManagedRecord: NSManagedObject
+public class ManagedRecord: NSManagedObject
 {
-    @NSManaged var versionIdentifier: String
-    @NSManaged var versionDate: Date
+    @NSManaged public var versionIdentifier: String
+    @NSManaged public var versionDate: Date
     
-    @NSManaged var recordedObjectType: String
-    @NSManaged var recordedObjectIdentifier: String
+    @NSManaged public var recordedObjectType: String
+    @NSManaged public var recordedObjectIdentifier: String
     
-    @objc dynamic var status: Status {
+    @objc public dynamic var status: Status {
         get {
             self.willAccessValue(forKey: #keyPath(ManagedRecord.status))
             defer { self.didAccessValue(forKey: #keyPath(ManagedRecord.status)) }

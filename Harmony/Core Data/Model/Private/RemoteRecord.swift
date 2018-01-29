@@ -9,13 +9,13 @@
 import CoreData
 
 @objc(RemoteRecord)
-class RemoteRecord: ManagedRecord
+public class RemoteRecord: ManagedRecord
 {
-    @NSManaged var identifier: String
+    @NSManaged public var identifier: String
         
     @NSManaged var localRecord: LocalRecord?
     
-    init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: Status, managedObjectContext: NSManagedObjectContext)
+    public init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: Status, managedObjectContext: NSManagedObjectContext)
     {
         super.init(entity: RemoteRecord.entity(), insertInto: managedObjectContext)
         
