@@ -28,6 +28,8 @@
 		BF7A20101F9D67500061B187 /* CwlCatchException.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20031F9D667B0061B187 /* CwlCatchException.framework */; };
 		BF7A20111F9D67520061B187 /* CwlPreconditionTesting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20051F9D667B0061B187 /* CwlPreconditionTesting.framework */; };
 		BF81658F20164A280025CA9F /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81658E20164A280025CA9F /* OperationTests.swift */; };
+		BF91BA57201FB057004498F3 /* HarmonyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA56201FB057004498F3 /* HarmonyError.swift */; };
+		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
 		BFA1C8DE1ECD01C100DEA99D /* Harmony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFA1C8D41ECD01C100DEA99D /* Harmony.framework */; };
 		BFA1C8E51ECD01C100DEA99D /* Harmony.h in Headers */ = {isa = PBXBuildFile; fileRef = BFA1C8D71ECD01C100DEA99D /* Harmony.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BFAA23B91F9C14CC00969993 /* RecordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFAA23B81F9C14CC00969993 /* RecordController.swift */; };
@@ -177,6 +179,8 @@
 		BF7A1FC91F9D5F610061B187 /* NSManagedObject+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Harmony.swift"; sourceTree = "<group>"; };
 		BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CwlPreconditionTesting.xcodeproj; path = External/CwlPreconditionTesting/CwlPreconditionTesting.xcodeproj; sourceTree = SOURCE_ROOT; };
 		BF81658E20164A280025CA9F /* OperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationTests.swift; sourceTree = "<group>"; };
+		BF91BA56201FB057004498F3 /* HarmonyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyError.swift; sourceTree = "<group>"; };
+		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
 		BFA1C8D41ECD01C100DEA99D /* Harmony.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Harmony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFA1C8D71ECD01C100DEA99D /* Harmony.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Harmony.h; sourceTree = "<group>"; };
 		BFA1C8D81ECD01C100DEA99D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -263,6 +267,7 @@
 			isa = PBXGroup;
 			children = (
 				BF0499921F9AEEE900E0EFEE /* Syncable.swift */,
+				BF91BA56201FB057004498F3 /* HarmonyError.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -357,6 +362,7 @@
 				BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */,
 				BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */,
 				BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */,
+				BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -811,7 +817,9 @@
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
 				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
+				BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */,
 				BF34EE551FD37D41004304AC /* Record.swift in Sources */,
+				BF91BA57201FB057004498F3 /* HarmonyError.swift in Sources */,
 				BF04998B1F9AE06400E0EFEE /* RemoteRecord.swift in Sources */,
 				BFC5F7571FDB81F500C247D5 /* LocalRecord.swift in Sources */,
 				BFFB9B1B200ED7EA00A8F673 /* Service.swift in Sources */,
