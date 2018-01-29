@@ -35,19 +35,19 @@ extension MockService: Service
             {
                 if changeToken == self.latestChangeToken
                 {
-                    result = Result(value: self.changes)
+                    result = .success(self.changes)
                     
                     progress.totalUnitCount = Int64(self.changes.count)
                     progress.completedUnitCount = Int64(self.changes.count)
                 }
                 else
                 {
-                    result = Result(error: ServiceError.invalidChangeToken(changeToken))
+                    result = .failure(ServiceError.invalidChangeToken(changeToken))
                 }
             }
             else
             {
-                result = Result(value: self.records)
+                result = .success(self.records)
                 
                 progress.totalUnitCount = Int64(self.changes.count)
                 progress.completedUnitCount = Int64(self.changes.count)

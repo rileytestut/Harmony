@@ -42,11 +42,11 @@ class FetchRemoteRecordsOperation: Operation
                     {
                         try RecordController.updateRelationships(for: records, in: self.managedObjectContext)
                         
-                        self.result = Result(value: records)
+                        self.result = .success(records)
                     }
                     catch
                     {
-                        self.result = Result(error: error)
+                        self.result = .failure(error)
                     }
                     
                     self.finish()
@@ -54,7 +54,7 @@ class FetchRemoteRecordsOperation: Operation
             }
             catch
             {
-                self.result = Result(error: error)
+                self.result = .failure(error)
                 
                 self.finish()
             }

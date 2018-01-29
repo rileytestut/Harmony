@@ -8,32 +8,24 @@
 
 import Foundation
 
-private enum ResultType<ValueType>
+public enum Result<ValueType>
 {
     case success(ValueType)
     case failure(Error)
-}
-
-public struct Result<ValueType>
-{
-    private let type: ResultType<ValueType>
-    
-    init(value: ValueType)
-    {
-        self.type = .success(value)
-    }
-    
-    init(error: Error)
-    {
-        self.type = .failure(error)
-    }
     
     public func value() throws -> ValueType
     {
-        switch self.type
+        switch self
         {
         case .success(let value): return value
         case .failure(let error): throw error
         }
+    }
+}
+
+public extension Result where ValueType == Void
+{
+    static var success: Result {
+        return .success(())
     }
 }
