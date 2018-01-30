@@ -11,12 +11,19 @@
 		BF04998B1F9AE06400E0EFEE /* RemoteRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0499861F9AE06400E0EFEE /* RemoteRecord.swift */; };
 		BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0499921F9AEEE900E0EFEE /* Syncable.swift */; };
 		BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */; };
+		BF0B5BA12021238B0074CFB9 /* Harmony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFA1C8D41ECD01C100DEA99D /* Harmony.framework */; };
+		BF0B5BA22021238B0074CFB9 /* Harmony.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BFA1C8D41ECD01C100DEA99D /* Harmony.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		BF0B5BA52021238C0074CFB9 /* Harmony_Drive.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFAC53962017F963006E0D36 /* Harmony_Drive.framework */; };
+		BF0B5BA62021238C0074CFB9 /* Harmony_Drive.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BFAC53962017F963006E0D36 /* Harmony_Drive.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		BF0B5BA9202123B00074CFB9 /* Roxas.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; };
+		BF0B5BAA202123B00074CFB9 /* Roxas.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		BF1D94891F9C1C38004216B9 /* Roxas.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; };
 		BF1D94921F9C24DC004216B9 /* XCAssert+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */; };
 		BF34EE551FD37D41004304AC /* Record.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF34EE541FD37D41004304AC /* Record.swift */; };
 		BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */; };
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
 		BF66055A1FDBB42200F10F24 /* RecordVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6605591FDBB42200F10F24 /* RecordVersion.swift */; };
+		BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */; };
 		BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */; };
 		BF6C9EF21F9BF441001B3F37 /* HarmonyTests.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF01F9BF441001B3F37 /* HarmonyTests.xcdatamodeld */; };
 		BF6C9EF51F9BF7CC001B3F37 /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF41F9BF7CC001B3F37 /* Course.swift */; };
@@ -31,6 +38,8 @@
 		BF91BA57201FB057004498F3 /* HarmonyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA56201FB057004498F3 /* HarmonyError.swift */; };
 		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
 		BF91BA6A201FB8FC004498F3 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA69201FB8FC004498F3 /* Errors.swift */; };
+		BF9E9DB2202110A900F09B98 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF9E9DB1202110A900F09B98 /* SystemConfiguration.framework */; };
+		BF9E9DB4202110B900F09B98 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF9E9DB3202110B800F09B98 /* SafariServices.framework */; };
 		BFA1C8DE1ECD01C100DEA99D /* Harmony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFA1C8D41ECD01C100DEA99D /* Harmony.framework */; };
 		BFA1C8E51ECD01C100DEA99D /* Harmony.h in Headers */ = {isa = PBXBuildFile; fileRef = BFA1C8D71ECD01C100DEA99D /* Harmony.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BFAA23B91F9C14CC00969993 /* RecordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFAA23B81F9C14CC00969993 /* RecordController.swift */; };
@@ -60,6 +69,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		BF0B5BA32021238B0074CFB9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFA1C8CB1ECD01C100DEA99D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BFA1C8D31ECD01C100DEA99D;
+			remoteInfo = Harmony;
+		};
+		BF0B5BA72021238C0074CFB9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = BFECF9F82016982D0012B9FC;
+			remoteInfo = "Harmony-Drive";
+		};
 		BF7A1FFC1F9D667B0061B187 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
@@ -160,6 +183,32 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		BF6C059C201FD2EB00271895 /* Embed PlugIns */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed PlugIns";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF9E9DC82021129C00F09B98 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				BF0B5BA62021238C0074CFB9 /* Harmony_Drive.framework in Embed Frameworks */,
+				BF0B5BAA202123B00074CFB9 /* Roxas.framework in Embed Frameworks */,
+				BF0B5BA22021238B0074CFB9 /* Harmony.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		BF0499851F9AE06400E0EFEE /* Harmony.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Harmony.xcdatamodel; sourceTree = "<group>"; };
 		BF0499861F9AE06400E0EFEE /* RemoteRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteRecord.swift; sourceTree = "<group>"; };
@@ -171,6 +220,7 @@
 		BF34EE541FD37D41004304AC /* Record.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Record.swift; sourceTree = "<group>"; };
 		BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Generics.swift"; sourceTree = "<group>"; };
 		BF6605591FDBB42200F10F24 /* RecordVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordVersion.swift; sourceTree = "<group>"; };
+		BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyTestCase.swift; sourceTree = "<group>"; };
 		BF6C9EF11F9BF441001B3F37 /* HarmonyTests.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HarmonyTests.xcdatamodel; sourceTree = "<group>"; };
 		BF6C9EF41F9BF7CC001B3F37 /* Course.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Course.swift; sourceTree = "<group>"; };
@@ -183,6 +233,8 @@
 		BF91BA56201FB057004498F3 /* HarmonyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyError.swift; sourceTree = "<group>"; };
 		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
 		BF91BA69201FB8FC004498F3 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		BF9E9DB1202110A900F09B98 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		BF9E9DB3202110B800F09B98 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
 		BFA1C8D41ECD01C100DEA99D /* Harmony.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Harmony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFA1C8D71ECD01C100DEA99D /* Harmony.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Harmony.h; sourceTree = "<group>"; };
 		BFA1C8D81ECD01C100DEA99D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -241,6 +293,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF0B5BA52021238C0074CFB9 /* Harmony_Drive.framework in Frameworks */,
+				BF0B5BA9202123B00074CFB9 /* Roxas.framework in Frameworks */,
+				BF9E9DB4202110B900F09B98 /* SafariServices.framework in Frameworks */,
+				BF9E9DB2202110A900F09B98 /* SystemConfiguration.framework in Frameworks */,
+				BF0B5BA12021238B0074CFB9 /* Harmony.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,6 +334,8 @@
 		BF1D94881F9C1C38004216B9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BF9E9DB3202110B800F09B98 /* SafariServices.framework */,
+				BF9E9DB1202110A900F09B98 /* SystemConfiguration.framework */,
 				BF1D948A1F9C1C38004216B9 /* Roxas.framework */,
 			);
 			name = Frameworks;
@@ -494,6 +553,7 @@
 				BFAC53AC2017FE5A006E0D36 /* Assets.xcassets */,
 				BFAC53AE2017FE5A006E0D36 /* LaunchScreen.storyboard */,
 				BFAC53B12017FE5A006E0D36 /* Info.plist */,
+				BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */,
 			);
 			path = Example;
 			sourceTree = "<group>";
@@ -616,10 +676,14 @@
 				BFAC539F2017FE5A006E0D36 /* Sources */,
 				BFAC53A02017FE5A006E0D36 /* Frameworks */,
 				BFAC53A12017FE5A006E0D36 /* Resources */,
+				BF6C059C201FD2EB00271895 /* Embed PlugIns */,
+				BF9E9DC82021129C00F09B98 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				BF0B5BA42021238B0074CFB9 /* PBXTargetDependency */,
+				BF0B5BA82021238C0074CFB9 /* PBXTargetDependency */,
 			);
 			name = Example;
 			productName = Example;
@@ -801,6 +865,7 @@
 			files = (
 				BFAC53B02017FE5A006E0D36 /* LaunchScreen.storyboard in Resources */,
 				BFAC53AD2017FE5A006E0D36 /* Assets.xcassets in Resources */,
+				BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */,
 				BFAC53AB2017FE5A006E0D36 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -873,6 +938,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		BF0B5BA42021238B0074CFB9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BFA1C8D31ECD01C100DEA99D /* Harmony */;
+			targetProxy = BF0B5BA32021238B0074CFB9 /* PBXContainerItemProxy */;
+		};
+		BF0B5BA82021238C0074CFB9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "Harmony-Drive";
+			targetProxy = BF0B5BA72021238C0074CFB9 /* PBXContainerItemProxy */;
+		};
 		BFA1C8E01ECD01C100DEA99D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BFA1C8D31ECD01C100DEA99D /* Harmony */;
@@ -1005,7 +1080,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 6XVY5G3U44;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1026,7 +1101,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 6XVY5G3U44;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1073,6 +1148,7 @@
 		BFAC53B32017FE5A006E0D36 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
@@ -1085,10 +1161,15 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6XVY5G3U44;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Backends/Drive/Google",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.rileytestut.Harmony.Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
@@ -1099,6 +1180,7 @@
 		BFAC53B42017FE5A006E0D36 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
@@ -1111,10 +1193,15 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6XVY5G3U44;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Backends/Drive/Google",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.rileytestut.Harmony.Example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
