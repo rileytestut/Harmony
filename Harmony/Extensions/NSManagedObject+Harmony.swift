@@ -8,7 +8,7 @@
 
 import CoreData
 
-extension NSManagedObjectModel
+public extension NSManagedObjectModel
 {
     class func harmonyModel(byMergingWith managedObjectModels: [NSManagedObjectModel]) -> NSManagedObjectModel?
     {
