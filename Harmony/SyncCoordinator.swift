@@ -66,9 +66,7 @@ public extension SyncCoordinator
             {
                 let (_, changeToken) = try result.value()
                 self.changeToken = changeToken
-                
-                try managedObjectContext.save()
-                
+                                
                 completionHandler(.success([]))
             }
             catch

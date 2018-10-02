@@ -60,6 +60,8 @@ class FetchRemoteRecordsOperation: Operation
                         
                         try RecordController.updateRelationships(for: records, in: self.managedObjectContext)
                         
+                        try self.managedObjectContext.save()
+                        
                         self.result = .success((records, changeToken))
                     }
                     catch
