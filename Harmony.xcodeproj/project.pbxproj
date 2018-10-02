@@ -38,6 +38,8 @@
 		BF91BA57201FB057004498F3 /* HarmonyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA56201FB057004498F3 /* HarmonyError.swift */; };
 		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
 		BF91BA6A201FB8FC004498F3 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA69201FB8FC004498F3 /* Errors.swift */; };
+		BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */; };
+		BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */; };
 		BF9E9DB2202110A900F09B98 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF9E9DB1202110A900F09B98 /* SystemConfiguration.framework */; };
 		BF9E9DB4202110B900F09B98 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF9E9DB3202110B800F09B98 /* SafariServices.framework */; };
 		BFA1C8DE1ECD01C100DEA99D /* Harmony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFA1C8D41ECD01C100DEA99D /* Harmony.framework */; };
@@ -233,6 +235,8 @@
 		BF91BA56201FB057004498F3 /* HarmonyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyError.swift; sourceTree = "<group>"; };
 		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
 		BF91BA69201FB8FC004498F3 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncCoordinator.swift; sourceTree = "<group>"; };
+		BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncRecordsOperation.swift; sourceTree = "<group>"; };
 		BF9E9DB1202110A900F09B98 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		BF9E9DB3202110B800F09B98 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
 		BFA1C8D41ECD01C100DEA99D /* Harmony.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Harmony.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -479,6 +483,7 @@
 			isa = PBXGroup;
 			children = (
 				BFA1C8D71ECD01C100DEA99D /* Harmony.h */,
+				BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */,
 				BFFB9B19200ED7BF00A8F673 /* Services */,
 				BF0499821F9AE05100E0EFEE /* Core Data */,
 				BFFB9B07200ED37F00A8F673 /* Operations */,
@@ -580,6 +585,7 @@
 			isa = PBXGroup;
 			children = (
 				BFFB9B17200ED72E00A8F673 /* Operation.swift */,
+				BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */,
 				BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */,
 			);
 			path = Operations;
@@ -880,12 +886,14 @@
 				BFFB9B1E200ED96700A8F673 /* Result.swift in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BFB3396C1FD3A4DF006FACAD /* File.swift in Sources */,
+				BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */,
 				BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */,
 				BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
 				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
 				BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */,
+				BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */,
 				BF34EE551FD37D41004304AC /* Record.swift in Sources */,
 				BF91BA57201FB057004498F3 /* HarmonyError.swift in Sources */,
 				BF04998B1F9AE06400E0EFEE /* RemoteRecord.swift in Sources */,

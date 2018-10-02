@@ -11,12 +11,12 @@ import CoreData
 
 import Roxas
 
-class Operation: RSTOperation, ProgressReporting
+public class Operation: RSTOperation, ProgressReporting
 {
-    let service: Service
-    let managedObjectContext: NSManagedObjectContext
+    public let service: Service
+    public let managedObjectContext: NSManagedObjectContext
     
-    let progress = Progress.discreteProgress(totalUnitCount: 1)
+    public let progress = Progress.discreteProgress(totalUnitCount: 1)
     
     init(service: Service, managedObjectContext: NSManagedObjectContext)
     {
@@ -30,7 +30,7 @@ class Operation: RSTOperation, ProgressReporting
         }
     }
     
-    override func cancel()
+    public override func cancel()
     {
         super.cancel()
         
