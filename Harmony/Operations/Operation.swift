@@ -11,17 +11,26 @@ import CoreData
 
 import Roxas
 
-public class Operation: RSTOperation, ProgressReporting
+class Operation<ResultType>: RSTOperation, ProgressReporting
 {
-    public let service: Service
-    public let managedObjectContext: NSManagedObjectContext
+    let service: Service
+    let managedObjectContext: NSManagedObjectContext
     
-    public let progress = Progress.discreteProgress(totalUnitCount: 1)
+    let progress = Progress.discreteProgress(totalUnitCount: 1)
+    
+    let operationQueue: OperationQueue
+    
+    var result: Result<ResultType>?
+    var resultHandler: ((Result<ResultType>) -> Void)?
     
     init(service: Service, managedObjectContext: NSManagedObjectContext)
     {
         self.service = service
         self.managedObjectContext = managedObjectContext
+        
+        self.operationQueue = OperationQueue()
+        self.operationQueue.name = "com.rileytestut.Harmony.\(type(of: self)).operationQueue"
+        self.operationQueue.qualityOfService = .utility
         
         super.init()
         
@@ -37,6 +46,18 @@ public class Operation: RSTOperation, ProgressReporting
         if !self.progress.isCancelled
         {
             self.progress.cancel()
-        }        
+        }
+        
+        self.operationQueue.cancelAllOperations()
+    }
+    
+    public override func finish()
+    {
+        super.finish()
+        
+        if let result = self.result
+        {
+            self.resultHandler?(result)
+        }
     }
 }

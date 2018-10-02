@@ -20,34 +20,34 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Efz-Qd-pTM">
-                                <rect key="frame" x="105" y="261.5" width="165" height="144"/>
+                                <rect key="frame" x="135" y="261.5" width="105" height="144"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yNL-lf-Dt1">
-                                        <rect key="frame" x="0.0" y="0.0" width="165" height="30"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="105" height="30"/>
                                         <state key="normal" title="Authenticate"/>
                                         <connections>
                                             <action selector="authenticateWith:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ipR-dr-bpN"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WuD-NZ-13U">
-                                        <rect key="frame" x="0.0" y="38" width="165" height="30"/>
+                                        <rect key="frame" x="0.0" y="38" width="105" height="30"/>
                                         <state key="normal" title="Deauthenticate"/>
                                         <connections>
                                             <action selector="deauthenticateWith:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qey-8O-VZu"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EnL-U5-vzz">
-                                        <rect key="frame" x="0.0" y="76" width="165" height="30"/>
-                                        <state key="normal" title="Fetch All Records"/>
+                                        <rect key="frame" x="0.0" y="76" width="105" height="30"/>
+                                        <state key="normal" title="Insert Record"/>
                                         <connections>
-                                            <action selector="fetchAllRecordsWith:" destination="BYZ-38-t0r" eventType="touchUpInside" id="BeH-QK-x7e"/>
+                                            <action selector="insertManagedObject:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eBJ-C6-TAW"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wPf-WH-baA">
-                                        <rect key="frame" x="0.0" y="114" width="165" height="30"/>
-                                        <state key="normal" title="Fetch Changed Records"/>
+                                        <rect key="frame" x="0.0" y="114" width="105" height="30"/>
+                                        <state key="normal" title="Update Record"/>
                                         <connections>
-                                            <action selector="fetchChangedRecordsWith:" destination="BYZ-38-t0r" eventType="touchUpInside" id="QFo-PP-zI2"/>
+                                            <action selector="updateManagedObject:" destination="BYZ-38-t0r" eventType="touchUpInside" id="7Ce-my-BMM"/>
                                         </connections>
                                     </button>
                                 </subviews>

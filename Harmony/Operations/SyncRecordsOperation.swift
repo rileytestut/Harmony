@@ -9,17 +9,11 @@
 import Foundation
 import CoreData
 
-class SyncRecordsOperation: Operation
+class SyncRecordsOperation: Operation<([Result<Void>], Data)>
 {
     let changeToken: Data?
-    
-    var resultHandler: ((Result<([Result<Void>], Data)>) -> Void)?
-    
-    private let operationQueue: OperationQueue
-    
+        
     private var updatedChangeToken: Data?
-
-    private var result: Result<([Result<Void>], Data)>?
     
     override var isAsynchronous: Bool {
         return true
@@ -28,10 +22,6 @@ class SyncRecordsOperation: Operation
     init(service: Service, changeToken: Data?, managedObjectContext: NSManagedObjectContext)
     {
         self.changeToken = changeToken
-        
-        self.operationQueue = OperationQueue()
-        self.operationQueue.name = "com.rileytestut.Harmony.SyncRecordsOperation.operationQueue"
-        self.operationQueue.qualityOfService = .utility
         
         super.init(service: service, managedObjectContext: managedObjectContext)
         
@@ -42,35 +32,31 @@ class SyncRecordsOperation: Operation
     {
         super.main()
         
-        self.managedObjectContext.perform {
-            guard let updatedChangeToken = self.updatedChangeToken else { return }
-            
-            self.result = .success(([], updatedChangeToken))
-            self.finish()
+        let uploadRecordsOperation = UploadRecordsOperation(service: self.service, managedObjectContext: self.managedObjectContext)
+        uploadRecordsOperation.resultHandler = { (result) in
+            print("Uploaded Result:", result)
         }
-    }
-    
-    override func finish()
-    {
-        super.finish()
         
-        if let result = self.result {
-            self.resultHandler?(result)
-        }
+        self.operationQueue.addOperations([uploadRecordsOperation], waitUntilFinished: true)
+        
+        guard let updatedChangeToken = self.updatedChangeToken else { return }
+        
+        self.result = .success(([], updatedChangeToken))
+        self.finish()
     }
 }
 
 private extension SyncRecordsOperation
 {
     func prepareDependencies()
-    {        
+    {
         let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(service: self.service, changeToken: self.changeToken, managedObjectContext: self.managedObjectContext)
         fetchRemoteRecordsOperation.resultHandler = { (result) in
             switch result
             {
             case .success(let updatedRecords, let changeToken):
                 self.updatedChangeToken = changeToken
-                print(updatedRecords)
+                print("Fetch Records Result:", updatedRecords)
                 
             case .failure(let error):
                 self.result = .failure(error)

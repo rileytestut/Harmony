@@ -24,7 +24,8 @@ class ViewController: UIViewController
     {
         super.viewDidLoad()
         
-        let harmonyModel = NSManagedObjectModel.harmonyModel(byMergingWith: [])!
+        let model = NSManagedObjectModel.mergedModel(from: nil)!
+        let harmonyModel = NSManagedObjectModel.harmonyModel(byMergingWith: [model])!
         
         self.persistentContainer = NSPersistentContainer(name: "Harmony Example", managedObjectModel: harmonyModel)
         self.persistentContainer.loadPersistentStores { (description, error) in
@@ -86,43 +87,27 @@ private extension ViewController
         }
     }
     
-    @IBAction func fetchAllRecords(with sender: UIButton)
+    @IBAction func insertManagedObject(_ sender: UIButton)
     {
-        _ = DriveService.shared.fetchAllRemoteRecords(context: self.persistentContainer.newBackgroundContext()) { (result) in
-            do
-            {
-                let (records, token) = try result.value()
-                print("Fetched Records:", records)
-                print("Token:", token)
-                
-                self.changeToken = token
-            }
-            catch
-            {
-                print(error.localizedDescription)
-            }
+        self.persistentContainer.performBackgroundTask { (context) in
+            let professor = Professor(context: context)
+            professor.name = "Riley Testut"
+            professor.identifier = UUID().uuidString
+            
+            try! context.save()
         }
     }
     
-    @IBAction func fetchChangedRecords(with sender: UIButton)
+    @IBAction func updateManagedObject(_ sender: UIButton)
     {
-        guard let changeToken = self.changeToken else { return }
-        
-        _ = DriveService.shared.fetchChangedRemoteRecords(changeToken: changeToken, context: self.persistentContainer.newBackgroundContext(), completionHandler: { (result) in
-            do
-            {
-                let (updatedRecords, deletedIDs, token) = try result.value()
-                print("Updated Records:", updatedRecords)
-                print("Deleted IDs:", deletedIDs)
-                print("Token:", token)
-                
-                self.changeToken = token
-            }
-            catch
-            {
-                print(error.localizedDescription)
-            }
-        })
+        self.persistentContainer.performBackgroundTask { (context) in
+            let fetchRequest = Professor.fetchRequest() as NSFetchRequest<Professor>
+            
+            let professor = try! context.fetch(fetchRequest).first
+            professor?.name = "Jayce Testut"
+            
+            try! context.save()
+        }
     }
 }
 

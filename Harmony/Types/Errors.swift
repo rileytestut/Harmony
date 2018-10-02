@@ -53,3 +53,27 @@ public enum FetchRecordsError: HarmonyError
     }
 }
 
+public enum UploadRecordError: HarmonyError
+{
+    case cancelled
+    case invalidResponse
+    case nilManagedObjectContext
+    case conflicted
+    case service(NSError)
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to upload record.", comment: "")
+    }
+    
+    public var failureReason: String? {
+        switch self
+        {
+        case .cancelled: return NSLocalizedString("The upload was cancelled.", comment: "")
+        case .invalidResponse: return NSLocalizedString("The response from the server is invalid.", comment: "")
+        case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
+        case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
+        case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
+        }
+    }
+}
+

@@ -16,7 +16,7 @@ extension Notification.Name
     static let recordControllerDidProcessUpdates = Notification.Name("recordControllerDidProcessUpdates")
 }
 
-public final class RecordController: NSPersistentContainer
+public final class RecordController: RSTPersistentContainer
 {
     var automaticallyRecordsManagedObjects = true
     
@@ -28,6 +28,8 @@ public final class RecordController: NSPersistentContainer
         precondition(configurations.contains(.harmony) && configurations.contains(.external), "NSPersistentContainer's model must be a merged Harmony model.")
         
         super.init(name: "Harmony", managedObjectModel: persistentContainer.managedObjectModel)
+        
+        self.preferredMergePolicy = MergePolicy()
         
         for description in self.persistentStoreDescriptions
         {
@@ -45,13 +47,6 @@ public final class RecordController: NSPersistentContainer
         {
             description.shouldAddStoreAsynchronously = true
         }
-    }
-    
-    public override func newBackgroundContext() -> NSManagedObjectContext
-    {
-        let context = super.newBackgroundContext()
-        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        return context
     }
     
     public override class func defaultDirectoryURL() -> URL
@@ -78,8 +73,6 @@ public extension RecordController
         
         func finish()
         {
-            self.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-            
             self.processingContext = self.newBackgroundContext()
             
             NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(with:)), name: .NSManagedObjectContextDidSave, object: nil)

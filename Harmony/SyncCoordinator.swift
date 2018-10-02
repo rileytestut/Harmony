@@ -56,7 +56,7 @@ public extension SyncCoordinator
         }
     }
     
-    @discardableResult func sync(completionHandler: @escaping (Result<[Result<Void>]>) -> Void) -> Operation
+    @discardableResult func sync(completionHandler: @escaping (Result<[Result<Void>]>) -> Void) -> (Foundation.Operation & ProgressReporting)
     {
         let managedObjectContext = self.recordController.newBackgroundContext()
         

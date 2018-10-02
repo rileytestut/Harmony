@@ -13,7 +13,7 @@ public class RemoteRecord: ManagedRecord
 {
     @NSManaged public var identifier: String
         
-    @NSManaged var localRecord: LocalRecord?
+    @NSManaged public var localRecord: LocalRecord?
     
     public init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: Status, managedObjectContext: NSManagedObjectContext)
     {

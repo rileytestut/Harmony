@@ -9,14 +9,10 @@
 import Foundation
 import CoreData
 
-class FetchRemoteRecordsOperation: Operation
+class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
 {
     let changeToken: Data?
     
-    var resultHandler: ((Result<(Set<RemoteRecord>, Data)>) -> Void) = { (record) in }
-    
-    private var result: Result<(Set<RemoteRecord>, Data)>?
-        
     override var isAsynchronous: Bool {
         return true
     }
@@ -59,7 +55,6 @@ class FetchRemoteRecordsOperation: Operation
                         }
                         
                         try RecordController.updateRelationships(for: records, in: self.managedObjectContext)
-                        
                         try self.managedObjectContext.save()
                         
                         self.result = .success((records, changeToken))
@@ -112,15 +107,5 @@ class FetchRemoteRecordsOperation: Operation
         }
         
         self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
-    }
-    
-    override func finish()
-    {
-        super.finish()
-        
-        if let result = self.result
-        {
-            self.resultHandler(result)
-        }
     }
 }

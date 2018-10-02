@@ -21,6 +21,8 @@ public protocol Service
     
     func fetchAllRemoteRecords(context: NSManagedObjectContext, completionHandler: @escaping (Result<(Set<RemoteRecord>, Data)>) -> Void) -> Progress
     func fetchChangedRemoteRecords(changeToken: Data, context: NSManagedObjectContext, completionHandler: @escaping (Result<(Set<RemoteRecord>, Set<String>, Data)>) -> Void) -> Progress
+    
+    func upload(_ record: LocalRecord, completionHandler: @escaping (Result<RemoteRecord>) -> Void) -> Progress
 }
 
 public func ==(lhs: Service, rhs: Service) -> Bool
