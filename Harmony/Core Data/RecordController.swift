@@ -24,7 +24,7 @@ public final class RecordController: RSTPersistentContainer
     
     init(persistentContainer: NSPersistentContainer)
     {
-        let configurations = persistentContainer.managedObjectModel.configurations.flatMap(NSManagedObjectModel.Configuration.init(rawValue:))
+        let configurations = persistentContainer.managedObjectModel.configurations.compactMap(NSManagedObjectModel.Configuration.init(rawValue:))
         precondition(configurations.contains(.harmony) && configurations.contains(.external), "NSPersistentContainer's model must be a merged Harmony model.")
         
         super.init(name: "Harmony", managedObjectModel: persistentContainer.managedObjectModel)
@@ -145,7 +145,7 @@ private extension RecordController
 {
     func createRecords<T: Collection>(for managedObjects: T, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
     {
-        let records = managedObjects.flatMap { (managedObject) -> LocalRecord? in
+        let records = managedObjects.compactMap { (managedObject) -> LocalRecord? in
             let uri = managedObject.objectID.uriRepresentation()
             guard let objectID = self.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri) else { return nil }
 
@@ -185,7 +185,7 @@ private extension RecordController
     
     func updateRecords<T: Collection>(for recordedObjects: T, with status: ManagedRecord.Status, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
     {
-        let uris = recordedObjects.flatMap { (recordedObject) in
+        let uris = recordedObjects.compactMap { (recordedObject) -> String? in
             guard recordedObject is SyncableManagedObject else { return nil }
             
             let uri = recordedObject.objectID.uriRepresentation().absoluteString

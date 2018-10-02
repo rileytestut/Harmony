@@ -25,7 +25,7 @@ public extension NSManagedObjectModel
         guard let mergedModel = NSManagedObjectModel(byMerging: models) else { return nil }
         
         // Retrieve entity names from provided managed object models, and then retrieve matching entities from merged model.
-        let externalEntityNames = Set(managedObjectModels.flatMap { $0.entities.flatMap { $0.name } })
+        let externalEntityNames = Set(managedObjectModels.flatMap { $0.entities.compactMap { $0.name } })
         let externalEntities = mergedModel.entities.filter { externalEntityNames.contains($0.name!) }
         
         mergedModel.setEntities(externalEntities, forConfigurationName: Configuration.external.rawValue)
