@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13772" systemVersion="17B1003" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14315.18" systemVersion="18A391" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="LocalRecord" representedClassName="LocalRecord" syncable="YES">
         <attribute name="isConflicted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="isSyncingEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectURI" attributeType="String" syncable="YES"/>
@@ -50,7 +51,7 @@
         <memberEntity name="RemoteRecord"/>
     </configuration>
     <elements>
-        <element name="LocalRecord" positionX="160" positionY="192" width="128" height="163"/>
+        <element name="LocalRecord" positionX="160" positionY="192" width="128" height="180"/>
         <element name="RemoteRecord" positionX="378" positionY="198" width="128" height="150"/>
     </elements>
 </model>

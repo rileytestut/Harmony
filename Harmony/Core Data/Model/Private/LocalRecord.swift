@@ -28,7 +28,28 @@ extension LocalRecord
 class LocalRecord: ManagedRecord
 {
     /* Properties */
-    @NSManaged var isConflicted: Bool
+    @objc var isConflicted: Bool {
+        get {
+            self.willAccessValue(forKey: #keyPath(LocalRecord.isConflicted))
+            defer { self.didAccessValue(forKey: #keyPath(LocalRecord.isConflicted)) }
+            
+            let isConflicted = self.primitiveValue(forKey: #keyPath(LocalRecord.isConflicted)) as? Bool ?? false
+            return isConflicted
+        }
+        set {
+            self.willChangeValue(for: \.isConflicted)
+            defer { self.didChangeValue(for: \.isConflicted) }
+            
+            self.setPrimitiveValue(newValue, forKey: #keyPath(LocalRecord.isConflicted))
+            
+            if newValue
+            {
+                self.isSyncingEnabled = false
+            }
+        }
+    }
+    
+    @NSManaged var isSyncingEnabled: Bool
 
     @NSManaged private(set) var recordedObjectURI: String
     
