@@ -24,6 +24,55 @@ struct MockService
 
 extension MockService: Service
 {
+    func fetchAllRemoteRecords(context: NSManagedObjectContext, completionHandler: @escaping (Result<(Set<RemoteRecord>, Data)>) -> Void) -> Progress {
+        let progress = Progress(totalUnitCount: 0)
+        
+        context.perform {
+            let result = Result.success((self.records, Data()))
+            
+            progress.totalUnitCount = Int64(self.changes.count)
+            progress.completedUnitCount = Int64(self.changes.count)
+            
+            completionHandler(result)
+        }
+        
+        return progress
+    }
+    
+    func fetchChangedRemoteRecords(changeToken: Data, context: NSManagedObjectContext, completionHandler: @escaping (Result<(Set<RemoteRecord>, Set<String>, Data)>) -> Void) -> Progress
+    {
+        let progress = Progress(totalUnitCount: 0)
+        
+        context.perform {
+            
+            let result: Result<(Set<RemoteRecord>, Set<String>, Data)>
+            
+            if changeToken == self.latestChangeToken
+            {
+                result = .success((self.changes, [], Data()))
+                
+                progress.totalUnitCount = Int64(self.changes.count)
+                progress.completedUnitCount = Int64(self.changes.count)
+            }
+            else
+            {
+                result = .failure(FetchRecordsError.invalidChangeToken(changeToken))
+            }
+            
+            completionHandler(result)
+        }
+        
+        return progress
+    }
+    
+    func upload(_ record: LocalRecord, completionHandler: @escaping (Result<RemoteRecord>) -> Void) -> Progress {
+        fatalError()
+    }
+    
+    func download(_ record: RemoteRecord, completionHandler: @escaping (Result<LocalRecord>) -> Void) -> Progress {
+        fatalError()
+    }
+    
     func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Void>) -> Void)
     {
     }
@@ -34,41 +83,5 @@ extension MockService: Service
     
     func deauthenticate(completionHandler: @escaping (Result<Void>) -> Void)
     {
-    }
-    
-    func fetchRemoteRecords(sinceChangeToken changeToken: Data?, context: NSManagedObjectContext, completionHandler: @escaping (Result<Set<RemoteRecord>>) -> Void) -> Progress
-    {
-        let progress = Progress(totalUnitCount: 0)
-        
-        context.perform {
-            
-            let result: Result<Set<RemoteRecord>>
-            
-            if let changeToken = changeToken
-            {
-                if changeToken == self.latestChangeToken
-                {
-                    result = .success(self.changes)
-                    
-                    progress.totalUnitCount = Int64(self.changes.count)
-                    progress.completedUnitCount = Int64(self.changes.count)
-                }
-                else
-                {
-                    result = .failure(ServiceError.invalidChangeToken(changeToken))
-                }
-            }
-            else
-            {
-                result = .success(self.records)
-                
-                progress.totalUnitCount = Int64(self.changes.count)
-                progress.completedUnitCount = Int64(self.changes.count)
-            }
-            
-            completionHandler(result)
-        }
-        
-        return progress
     }
 }

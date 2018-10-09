@@ -273,14 +273,19 @@ private extension RecordController
                     changes[NSUpdatedObjectsKey]?.append(contentsOf: updatedObjectIDs)
                 }
                 
-                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [processingContext, self.viewContext])
+                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [processingContext])
+                
+                // Dispatch async to allow tests to continue without blocking.
+                DispatchQueue.main.async {
+                    NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.viewContext])
+                }
+                
+                NotificationCenter.default.post(name: .recordControllerDidProcessUpdates, object: self)
             }
             else
             {
                 NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.persistentContainer.viewContext])
             }
-                        
-            NotificationCenter.default.post(name: .recordControllerDidProcessUpdates, object: self)
         }
     }
 }

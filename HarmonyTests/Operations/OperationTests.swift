@@ -19,7 +19,7 @@ class OperationTests: HarmonyTestCase
     
     var operationExpectation: XCTestExpectation!
     
-    var operation: Harmony.Operation!
+    var operation: Harmony.Operation<Any>!
     
     override func setUp()
     {
@@ -41,11 +41,11 @@ class OperationTests: HarmonyTestCase
 
 extension OperationTests
 {
-    func prepareTestOperation() -> Harmony.Operation
+    func prepareTestOperation() -> (Foundation.Operation & ProgressReporting)
     {
         guard type(of: self) == OperationTests.self else { fatalError("OperationTests subclasses must override prepareTestOperation.") }
         
-        let operation = Harmony.Operation(service: self.service, managedObjectContext: self.recordController.viewContext)
+        let operation = Harmony.Operation<Any>(service: self.service, managedObjectContext: self.recordController.viewContext)
         return operation
     }
 }
@@ -56,7 +56,7 @@ extension OperationTests
     {
         let operation = self.prepareTestOperation()
         
-        let expectation = XCTKVOExpectation(keyPath: #keyPath(Harmony.Operation.isCancelled), object: operation)
+        let expectation = XCTKVOExpectation(keyPath: #keyPath(Foundation.Operation.isCancelled), object: operation)
         operation.cancel()
         self.wait(for: [expectation], timeout: 1.0)
         
@@ -70,7 +70,7 @@ extension OperationTests
     {
         let operation = self.prepareTestOperation()
         
-        let expectation = XCTKVOExpectation(keyPath: #keyPath(Harmony.Operation.isCancelled), object: operation)
+        let expectation = XCTKVOExpectation(keyPath: #keyPath(Foundation.Operation.isCancelled), object: operation)
         operation.progress.cancel()
         self.wait(for: [expectation], timeout: 1.0)
         

@@ -32,7 +32,7 @@ class FetchRemoteRecordsOperationTests: OperationTests
 
 extension FetchRemoteRecordsOperationTests
 {
-    override func prepareTestOperation() -> Harmony.Operation
+    override func prepareTestOperation() -> (Foundation.Operation & ProgressReporting)
     {
         let operation = FetchRemoteRecordsOperation(service: self.service, changeToken: self.service.latestChangeToken, managedObjectContext: self.recordController.viewContext)
         return operation
@@ -77,7 +77,7 @@ extension FetchRemoteRecordsOperationTests
             {
                 let records = try result.value()
 
-                XCTAssertEqual(records, [self.professorRemoteRecord])
+                XCTAssertEqual(records.0, [self.professorRemoteRecord])
                 self.operationExpectation.fulfill()
             }
             catch
@@ -98,7 +98,7 @@ extension FetchRemoteRecordsOperationTests
             {
                 let records = try result.value()
 
-                XCTAssertEqual(records, [self.professorRemoteRecord, self.courseRemoteRecord, self.homeworkRemoteRecord])
+                XCTAssertEqual(records.0, [self.professorRemoteRecord, self.courseRemoteRecord, self.homeworkRemoteRecord])
 
                 self.operationExpectation.fulfill()
             }
@@ -120,7 +120,7 @@ extension FetchRemoteRecordsOperationTests
             {
                 _ = try result.value()
             }
-            catch ServiceError.invalidChangeToken
+            catch FetchRecordsError.invalidChangeToken
             {
                 self.operationExpectation.fulfill()
             }
@@ -187,7 +187,7 @@ extension FetchRemoteRecordsOperationTests
             do
             {
                 let records = try result.value()
-                let remoteRecord = records.first
+                let remoteRecord = records.0.first
                 
                 XCTAssertEqual(remoteRecord?.status, .updated)
                 XCTAssertEqual(remoteRecord?.recordedObjectType, professor.syncableType)

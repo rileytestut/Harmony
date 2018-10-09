@@ -33,7 +33,7 @@ extension LocalRecordTests
         XCTAssertEqual(record.recordedObjectIdentifier, professor.syncableIdentifier)
 
         let recordedProfessor = self.recordController.viewContext.object(with: professor.objectID) as! Professor
-        XCTAssertEqual(record.recordedObject, recordedProfessor)
+        XCTAssertEqual(record.recordedObject!, recordedProfessor)
         XCTAssertEqual(record.recordedObjectID?.uriRepresentation(), professor.objectID.uriRepresentation())
     }
     
@@ -58,7 +58,7 @@ extension LocalRecordTests
         
         // Check recorded object is not nil after saving.
         let recordedProfessor = self.recordController.viewContext.object(with: professor.objectID) as! Professor
-        XCTAssertEqual(record.recordedObject, recordedProfessor)
+        XCTAssertEqual(record.recordedObject!, recordedProfessor)
         XCTAssertEqual(record.recordedObjectID?.uriRepresentation(), professor.objectID.uriRepresentation())
         
         
@@ -66,7 +66,7 @@ extension LocalRecordTests
         try! record.managedObjectContext?.save()
         
         // Check relationship is valid after saving.
-        XCTAssertEqual(record.recordedObject, recordedProfessor)
+        XCTAssertEqual(record.recordedObject!, recordedProfessor)
         XCTAssertEqual(record.recordedObjectID?.uriRepresentation(), professor.objectID.uriRepresentation())
     }
     
@@ -165,7 +165,7 @@ extension LocalRecordTests
         let record = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
         
         let recordedProfessor = self.recordController.viewContext.object(with: professor.objectID) as! Professor
-        XCTAssertEqual(record.recordedObject, recordedProfessor)
+        XCTAssertEqual(record.recordedObject!, recordedProfessor)
     }
     
     func testRecordedObjectInvalid()

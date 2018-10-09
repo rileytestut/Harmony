@@ -103,8 +103,7 @@ extension RecordControllerTests
     func testNewBackgroundContext()
     {
         let managedObjectContext = self.recordController.newBackgroundContext()
-        
-        XCTAssertEqual(managedObjectContext.mergePolicy as! NSObject, NSMergeByPropertyObjectTrumpMergePolicy as! NSObject)
+        XCTAssert(managedObjectContext.mergePolicy is RSTRelationshipPreservingMergePolicy)
     }
 }
 

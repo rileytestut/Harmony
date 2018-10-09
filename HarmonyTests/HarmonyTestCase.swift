@@ -50,6 +50,8 @@ class HarmonyTestCase: XCTestCase
             XCTAssertNoThrow(try self.recordController.viewContext.save())
         }
         
+        self.recordController.viewContext.automaticallyMergesChangesFromParent = false
+        
         self.deletePersistentStores(for: self.persistentContainer.persistentStoreCoordinator)
         self.deletePersistentStores(for: self.recordController.persistentStoreCoordinator)
         
