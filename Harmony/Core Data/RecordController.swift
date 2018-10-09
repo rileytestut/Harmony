@@ -55,7 +55,7 @@ public final class RecordController: RSTPersistentContainer
     
     public override class func defaultDirectoryURL() -> URL
     {
-        let harmonyDirectory = FileManager.default.applicationSupportDirectory.appendingPathComponent("com.rileytestut.Harmony")
+        let harmonyDirectory = FileManager.default.applicationSupportDirectory.appendingPathComponent("com.rileytestut.Harmony", isDirectory: true)
         return harmonyDirectory
     }
 }
@@ -64,6 +64,15 @@ public extension RecordController
 {
     func start(withCompletionHandler completionHandler: @escaping ([NSPersistentStoreDescription: Error]) -> Void)
     {
+        do
+        {
+            try FileManager.default.createDirectory(at: RecordController.defaultDirectoryURL(), withIntermediateDirectories: true, attributes: nil)
+        }
+        catch
+        {
+            print(error)
+        }
+        
         var errors = [NSPersistentStoreDescription: Error]()
         
         let dispatchGroup = DispatchGroup()
