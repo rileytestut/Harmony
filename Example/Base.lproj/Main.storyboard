@@ -1,77 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Sea-wa-6Rd">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
-        <scene sceneID="tne-QT-ifu">
+        <!--Harmony-->
+        <scene sceneID="AEZ-pI-Qrs">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                <tableViewController id="sLv-9a-hi5" customClass="ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="ihi-UD-iJS">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Efz-Qd-pTM">
-                                <rect key="frame" x="135" y="261.5" width="105" height="144"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yNL-lf-Dt1">
-                                        <rect key="frame" x="0.0" y="0.0" width="105" height="30"/>
-                                        <state key="normal" title="Authenticate"/>
-                                        <connections>
-                                            <action selector="authenticateWith:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ipR-dr-bpN"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WuD-NZ-13U">
-                                        <rect key="frame" x="0.0" y="38" width="105" height="30"/>
-                                        <state key="normal" title="Deauthenticate"/>
-                                        <connections>
-                                            <action selector="deauthenticateWith:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qey-8O-VZu"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EnL-U5-vzz">
-                                        <rect key="frame" x="0.0" y="76" width="105" height="30"/>
-                                        <state key="normal" title="Insert Record"/>
-                                        <connections>
-                                            <action selector="insertManagedObject:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eBJ-C6-TAW"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wPf-WH-baA">
-                                        <rect key="frame" x="0.0" y="114" width="105" height="30"/>
-                                        <state key="normal" title="Update Record"/>
-                                        <connections>
-                                            <action selector="updateManagedObject:" destination="BYZ-38-t0r" eventType="touchUpInside" id="7Ce-my-BMM"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ATj-4P-ZT0">
-                                <rect key="frame" x="170.5" y="629" width="34" height="30"/>
-                                <state key="normal" title="Sync"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="Cell" textLabel="7Fd-GG-jT4" detailTextLabel="dqd-t1-JBv" style="IBUITableViewCellStyleSubtitle" id="7bX-Vs-6V6">
+                                <rect key="frame" x="0.0" y="28" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="7bX-Vs-6V6" id="fT6-Aj-nIm">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="7Fd-GG-jT4">
+                                            <rect key="frame" x="16" y="5" width="33.5" height="20.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="dqd-t1-JBv">
+                                            <rect key="frame" x="16" y="25.5" width="44" height="14.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="sLv-9a-hi5" id="UcH-dn-GWQ"/>
+                            <outlet property="delegate" destination="sLv-9a-hi5" id="dc1-GT-OY5"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Harmony" id="kSQ-Gy-apc">
+                        <barButtonItem key="leftBarButtonItem" title="Authenticate" id="gXN-yM-hpQ">
+                            <connections>
+                                <action selector="authenticate:" destination="sLv-9a-hi5" id="5l3-2T-4yT"/>
+                            </connections>
+                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem systemItem="add" id="Ukt-IT-RKE">
                                 <connections>
-                                    <action selector="sync:" destination="BYZ-38-t0r" eventType="touchUpInside" id="XhN-pn-baN"/>
+                                    <action selector="addPerson:" destination="sLv-9a-hi5" id="Hwu-os-HnL"/>
                                 </connections>
-                            </button>
-                        </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <constraints>
-                            <constraint firstItem="Efz-Qd-pTM" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="EjA-u2-ZdL"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="ATj-4P-ZT0" secondAttribute="bottom" constant="8" id="WUY-vD-A5c"/>
-                            <constraint firstItem="ATj-4P-ZT0" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="hjy-c7-NQb"/>
-                            <constraint firstItem="Efz-Qd-pTM" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="pgV-Qk-AOe"/>
-                        </constraints>
-                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
-                    </view>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                            </barButtonItem>
+                            <barButtonItem title="Sync" id="uaN-0Z-VAn">
+                                <connections>
+                                    <action selector="sync:" destination="sLv-9a-hi5" id="R5d-sM-Cez"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
+                    </navigationItem>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ld6-o4-E1B" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="1849" y="133"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="c4P-zc-n9f">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Sea-wa-6Rd" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="pKI-bp-ndO">
+                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="sLv-9a-hi5" kind="relationship" relationship="rootViewController" id="nMx-2l-TbU"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1L0-nx-kQC" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1053.5999999999999" y="132.68365817091455"/>
         </scene>
     </scenes>
 </document>

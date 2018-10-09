@@ -38,12 +38,16 @@
 		BF91BA57201FB057004498F3 /* HarmonyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA56201FB057004498F3 /* HarmonyError.swift */; };
 		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
 		BF91BA6A201FB8FC004498F3 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA69201FB8FC004498F3 /* Errors.swift */; };
+		BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */; };
+		BF95137021654C2E007EF10C /* NSManagedObject+LocalRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95136F21654C2E007EF10C /* NSManagedObject+LocalRecord.swift */; };
+		BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */; };
+		BF95137621657437007EF10C /* DownloadRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95137521657437007EF10C /* DownloadRecordOperation.swift */; };
+		BF95137821657632007EF10C /* BatchRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95137721657632007EF10C /* BatchRecordOperation.swift */; };
 		BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */; };
 		BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */; };
 		BF9A3672216303E700F8EE91 /* AnyCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A366F216303E600F8EE91 /* AnyCodable.swift */; };
 		BF9A3673216303E700F8EE91 /* AnyDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A3670216303E600F8EE91 /* AnyDecodable.swift */; };
 		BF9A3674216303E700F8EE91 /* AnyEncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A3671216303E700F8EE91 /* AnyEncodable.swift */; };
-		BF9A36762163081600F8EE91 /* UploadRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36752163081600F8EE91 /* UploadRecordsOperation.swift */; };
 		BF9A367C21630F5000F8EE91 /* UploadRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */; };
 		BF9A367F2163FF5900F8EE91 /* HarmonyTests.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF01F9BF441001B3F37 /* HarmonyTests.xcdatamodeld */; };
 		BF9A36802163FF5C00F8EE91 /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF41F9BF7CC001B3F37 /* Course.swift */; };
@@ -77,7 +81,6 @@
 		BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B17200ED72E00A8F673 /* Operation.swift */; };
 		BFFB9B1B200ED7EA00A8F673 /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B1A200ED7EA00A8F673 /* Service.swift */; };
 		BFFB9B1E200ED96700A8F673 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B1D200ED96700A8F673 /* Result.swift */; };
-		BFFB9B21200EDED900A8F673 /* FetchRemoteRecordsOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B20200EDED900A8F673 /* FetchRemoteRecordsOperationTests.swift */; };
 		BFFB9B24200EDF2200A8F673 /* MockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B23200EDF2200A8F673 /* MockService.swift */; };
 /* End PBXBuildFile section */
 
@@ -166,6 +169,20 @@
 			remoteGlobalIDString = 96ACCC481C6E8A7C00FE0B1B;
 			remoteInfo = CwlPreconditionTesting_tvOSTests;
 		};
+		BF7A75AB2166DD2500797D91 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = C978CA1C211EEA9F005F8866;
+			remoteInfo = CwlCatchException_iOSTests;
+		};
+		BF7A75AD2166DD2500797D91 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = C978CA46211EEC3E005F8866;
+			remoteInfo = CwlCatchException_macOSTests;
+		};
 		BFA1C8DF1ECD01C100DEA99D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BFA1C8CB1ECD01C100DEA99D /* Project object */;
@@ -246,12 +263,16 @@
 		BF91BA56201FB057004498F3 /* HarmonyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyError.swift; sourceTree = "<group>"; };
 		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
 		BF91BA69201FB8FC004498F3 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+ManagedObjectContext.swift"; sourceTree = "<group>"; };
+		BF95136F21654C2E007EF10C /* NSManagedObject+LocalRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+LocalRecord.swift"; sourceTree = "<group>"; };
+		BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagedRecord+Predicates.swift"; sourceTree = "<group>"; };
+		BF95137521657437007EF10C /* DownloadRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadRecordOperation.swift; sourceTree = "<group>"; };
+		BF95137721657632007EF10C /* BatchRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchRecordOperation.swift; sourceTree = "<group>"; };
 		BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncCoordinator.swift; sourceTree = "<group>"; };
 		BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncRecordsOperation.swift; sourceTree = "<group>"; };
 		BF9A366F216303E600F8EE91 /* AnyCodable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyCodable.swift; sourceTree = "<group>"; };
 		BF9A3670216303E600F8EE91 /* AnyDecodable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyDecodable.swift; sourceTree = "<group>"; };
 		BF9A3671216303E700F8EE91 /* AnyEncodable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyEncodable.swift; sourceTree = "<group>"; };
-		BF9A36752163081600F8EE91 /* UploadRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadRecordsOperation.swift; sourceTree = "<group>"; };
 		BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadRecordOperation.swift; sourceTree = "<group>"; };
 		BF9E9DB1202110A900F09B98 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		BF9E9DB3202110B800F09B98 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
@@ -446,6 +467,9 @@
 				BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */,
 				BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */,
 				BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */,
+				BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */,
+				BF95136F21654C2E007EF10C /* NSManagedObject+LocalRecord.swift */,
+				BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -461,12 +485,14 @@
 		BF7A1FEF1F9D667A0061B187 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BF7A1FFD1F9D667B0061B187 /* CwlCatchException.framework */,
-				BF7A1FFF1F9D667B0061B187 /* CwlPreconditionTesting.framework */,
-				BF7A20011F9D667B0061B187 /* CwlPreconditionTesting_macOSTests.xctest */,
 				BF7A20031F9D667B0061B187 /* CwlCatchException.framework */,
+				BF7A75AC2166DD2500797D91 /* CwlCatchException_iOSTests.xctest */,
+				BF7A1FFD1F9D667B0061B187 /* CwlCatchException.framework */,
+				BF7A75AE2166DD2500797D91 /* CwlCatchException_macOSTests.xctest */,
 				BF7A20051F9D667B0061B187 /* CwlPreconditionTesting.framework */,
 				BF7A20071F9D667B0061B187 /* CwlPreconditionTesting_iOSTests.xctest */,
+				BF7A1FFF1F9D667B0061B187 /* CwlPreconditionTesting.framework */,
+				BF7A20011F9D667B0061B187 /* CwlPreconditionTesting_macOSTests.xctest */,
 				BF7A20091F9D667B0061B187 /* CwlPreconditionTesting_POSIX.framework */,
 				BF7A200B1F9D667B0061B187 /* CwlPreconditionTesting_POSIXTests.xctest */,
 				BF7A200D1F9D667B0061B187 /* CwlPreconditionTesting.framework */,
@@ -496,7 +522,7 @@
 		BF9A367921630F2B00F8EE91 /* Batch Operations */ = {
 			isa = PBXGroup;
 			children = (
-				BF9A36752163081600F8EE91 /* UploadRecordsOperation.swift */,
+				BF95137721657632007EF10C /* BatchRecordOperation.swift */,
 			);
 			path = "Batch Operations";
 			sourceTree = "<group>";
@@ -505,6 +531,7 @@
 			isa = PBXGroup;
 			children = (
 				BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */,
+				BF95137521657437007EF10C /* DownloadRecordOperation.swift */,
 			);
 			path = "Transfer Operations";
 			sourceTree = "<group>";
@@ -882,6 +909,20 @@
 			remoteRef = BF7A200E1F9D667B0061B187 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		BF7A75AC2166DD2500797D91 /* CwlCatchException_iOSTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = CwlCatchException_iOSTests.xctest;
+			remoteRef = BF7A75AB2166DD2500797D91 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BF7A75AE2166DD2500797D91 /* CwlCatchException_macOSTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = CwlCatchException_macOSTests.xctest;
+			remoteRef = BF7A75AD2166DD2500797D91 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		BFAC53962017F963006E0D36 /* Harmony_Drive.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -943,8 +984,10 @@
 				BFFB9B1E200ED96700A8F673 /* Result.swift in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BFB3396C1FD3A4DF006FACAD /* File.swift in Sources */,
+				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,
 				BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */,
-				BF9A36762163081600F8EE91 /* UploadRecordsOperation.swift in Sources */,
+				BF95137821657632007EF10C /* BatchRecordOperation.swift in Sources */,
+				BF95137021654C2E007EF10C /* NSManagedObject+LocalRecord.swift in Sources */,
 				BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */,
 				BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
@@ -952,6 +995,8 @@
 				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
 				BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */,
 				BF9A3674216303E700F8EE91 /* AnyEncodable.swift in Sources */,
+				BF95137621657437007EF10C /* DownloadRecordOperation.swift in Sources */,
+				BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */,
 				BF9A3672216303E700F8EE91 /* AnyCodable.swift in Sources */,
 				BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */,
 				BF34EE551FD37D41004304AC /* Record.swift in Sources */,
@@ -977,7 +1022,6 @@
 				BF6C9EF51F9BF7CC001B3F37 /* Course.swift in Sources */,
 				BF6C9EF91F9BFA05001B3F37 /* Professor.swift in Sources */,
 				BF81658F20164A280025CA9F /* OperationTests.swift in Sources */,
-				BFFB9B21200EDED900A8F673 /* FetchRemoteRecordsOperationTests.swift in Sources */,
 				BFE029292006AE54004F70DC /* SyncableTests.swift in Sources */,
 				BFE4EAC31FDB945900855951 /* RecordTests.swift in Sources */,
 				BF6C9EF71F9BF7D9001B3F37 /* Homework.swift in Sources */,

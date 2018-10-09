@@ -74,7 +74,6 @@ public extension SyncCoordinator
                 completionHandler(.failure(error))
             }
         }
-        syncRecordsOperation.dependencies.forEach(self.operationQueue.addOperation(_:))
         self.operationQueue.addOperation(syncRecordsOperation)
         
         return syncRecordsOperation

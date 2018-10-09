@@ -36,11 +36,17 @@ public extension Syncable where Self: NSManagedObject
 
 public extension Syncable where Self: NSManagedObject
 {
-    var syncableIdentifier: String? {
-        guard let keyPath = self.syncablePrimaryKey.stringValue else { fatalError("Syncable.syncablePrimaryKey must reference an @objc String property.") }
-        guard let value = self.value(forKeyPath: keyPath) else { return nil } // Valid to have nil value (for example, if property itself is nil, or self has been deleted).
-        guard let identifier = value as? String else { fatalError("Syncable.syncablePrimaryKey must reference an @objc String property.") }
-        
-        return identifier
+    internal(set) var syncableIdentifier: String? {
+        get {
+            guard let keyPath = self.syncablePrimaryKey.stringValue else { fatalError("Syncable.syncablePrimaryKey must reference an @objc String property.") }
+            guard let value = self.value(forKeyPath: keyPath) else { return nil } // Valid to have nil value (for example, if property itself is nil, or self has been deleted).
+            guard let identifier = value as? String else { fatalError("Syncable.syncablePrimaryKey must reference an @objc String property.") }
+            
+            return identifier
+        }
+        set {
+            guard let keyPath = self.syncablePrimaryKey.stringValue else { fatalError("Syncable.syncablePrimaryKey must reference an @objc String property.") }
+            self.setValue(newValue, forKeyPath: keyPath)
+        }
     }
 }

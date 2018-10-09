@@ -69,10 +69,54 @@ public enum UploadRecordError: HarmonyError
         switch self
         {
         case .cancelled: return NSLocalizedString("The upload was cancelled.", comment: "")
-        case .invalidResponse: return NSLocalizedString("The response from the server is invalid.", comment: "")
+        case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
         case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
         case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
         case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
+        }
+    }
+}
+
+public enum DownloadRecordError: HarmonyError
+{
+    case cancelled
+    case invalidResponse
+    case nilManagedObjectContext
+    case conflicted
+    case service(NSError)
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to download record.", comment: "")
+    }
+    
+    public var failureReason: String? {
+        switch self
+        {
+        case .cancelled: return NSLocalizedString("The download was cancelled.", comment: "")
+        case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
+        case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
+        case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
+        case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
+        }
+    }
+}
+
+public enum ParseError: HarmonyError
+{
+    case nilManagedObjectContext
+    case unknownRecordType(String)
+    case nonSyncableRecordType(String)
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Unable to parse record.", comment: "")
+    }
+    
+    public var failureReason: String? {
+        switch self
+        {
+        case .nilManagedObjectContext: return NSLocalizedString("The parser's managed object context is nil.", comment: "")
+        case .unknownRecordType(let type): return String.localizedStringWithFormat("Unknown record type '%@'.", type)
+        case .nonSyncableRecordType(let type): return String.localizedStringWithFormat("Record type '%@' does not support syncing.", type)
         }
     }
 }

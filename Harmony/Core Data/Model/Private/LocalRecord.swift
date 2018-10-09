@@ -24,10 +24,33 @@ extension LocalRecord
             }
         }
     }
+    
+    private enum CodingKeys: String, CodingKey, Codable
+    {
+        case type
+        case identifier
+        case record
+    }
+    
+    private struct RecordKey: CodingKey
+    {
+        var stringValue: String
+        var intValue: Int?
+        
+        init(stringValue: String)
+        {
+            self.stringValue = stringValue
+        }
+        
+        init?(intValue: Int)
+        {
+            return nil
+        }
+    }
 }
 
 @objc(LocalRecord)
-public class LocalRecord: ManagedRecord, Encodable
+public class LocalRecord: ManagedRecord, Codable
 {
     /* Properties */
     @objc var isConflicted: Bool {
@@ -72,26 +95,12 @@ public class LocalRecord: ManagedRecord, Encodable
         super.init(entity: LocalRecord.entity(), insertInto: nil)
 
         // Must be after super.init() or else Swift compiler will crash (as of Swift 4.0)
-        guard let recordedObjectIdentifier = managedObject.syncableIdentifier else { throw Error.invalidSyncableIdentifier }
-        
-        if managedObject.objectID.isTemporaryID
-        {
-            guard let context = managedObject.managedObjectContext else {
-                preconditionFailure("NSManagedObject passed to LocalRecord initializer must have non-nil NSManagedObjectContext if it has a temporary NSManagedObjectID.")
-            }
-
-            try context.obtainPermanentIDs(for: [managedObject])
-        }
-        
-        self.recordedObjectType = managedObject.syncableType
-        self.recordedObjectIdentifier = recordedObjectIdentifier
+        try self.configure(with: managedObject, in: managedObjectContext)
         
         self.versionIdentifier = UUID().uuidString
         self.versionDate = Date()
         
         self.status = .normal
-
-        self.recordedObjectURI = managedObject.objectID.uriRepresentation().absoluteString
 
         // We know initialization didn't fail, so insert self into managed object context.
         managedObjectContext.insert(self)
@@ -102,11 +111,45 @@ public class LocalRecord: ManagedRecord, Encodable
         super.init(entity: entity, insertInto: context)
     }
     
-    private enum CodingKeys: String, CodingKey, Codable
+    public required init(from decoder: Decoder) throws
     {
-        case type
-        case identifier
-        case record
+        guard let context = decoder.managedObjectContext else { throw ParseError.nilManagedObjectContext }
+        
+        super.init(entity: LocalRecord.entity(), insertInto: nil)
+        
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let recordType = try container.decode(String.self, forKey: .type)
+        
+        guard let entity = NSEntityDescription.entity(forEntityName: recordType, in: context) else { throw ParseError.unknownRecordType(self.recordedObjectType) }
+        guard let recordedObject = NSManagedObject(entity: entity, insertInto: nil) as? SyncableManagedObject else { throw ParseError.nonSyncableRecordType(recordType) }
+        
+        recordedObject.syncableIdentifier = try container.decode(String.self, forKey: .identifier)
+        
+        let recordContainer = try container.nestedContainer(keyedBy: RecordKey.self, forKey: .record)
+        for key in recordedObject.syncableKeys
+        {
+            guard let stringValue = key.stringValue else { continue }
+            
+            let value = try recordContainer.decode(AnyDecodable.self, forKey: RecordKey(stringValue: stringValue))
+            recordedObject.setValue(value.value, forKey: stringValue)
+        }
+        
+        do
+        {
+            context.insert(recordedObject)
+            
+            try self.configure(with: recordedObject, in: context)
+        }
+        catch
+        {
+            context.delete(recordedObject)
+            
+            throw error
+        }
+        
+        // We know initialization didn't fail, so insert self and recordedObject into managed object context.
+        context.insert(self)
     }
     
     public func encode(to encoder: Encoder) throws
@@ -118,22 +161,6 @@ public class LocalRecord: ManagedRecord, Encodable
         
         guard let recordedObject = self.recordedObject else { throw Error.nilRecordedObject }
         
-        struct RecordKey: CodingKey
-        {
-            var stringValue: String
-            var intValue: Int?
-            
-            init(stringValue: String)
-            {
-                self.stringValue = stringValue
-            }
-            
-            init?(intValue: Int)
-            {
-                return nil
-            }
-        }
-        
         var recordContainer = container.nestedContainer(keyedBy: RecordKey.self, forKey: .record)
         for key in recordedObject.syncableKeys
         {
@@ -141,7 +168,7 @@ public class LocalRecord: ManagedRecord, Encodable
             guard let value = recordedObject.value(forKeyPath: stringValue) else { continue }
             
             // Because `value` is statically typed as Any, there is no bridging conversion from Objective-C types such as NSString to their Swift equivalent.
-            // Since these Objective-C types don't conform to Codable, the below check always fails.
+            // Since these Objective-C types don't conform to Codable, the below check always fails:
             // guard let codableValue = value as? Codable else { continue }
             
             // As a workaround, we attempt to encode all syncableKey values, and just ignore the ones that fail.
@@ -151,7 +178,7 @@ public class LocalRecord: ManagedRecord, Encodable
             }
             catch EncodingError.invalidValue
             {
-                // Ignore, this value doesn't conform to Codable
+                // Ignore, this value doesn't conform to Codable.
             }
             catch
             {
@@ -174,6 +201,29 @@ extension LocalRecord
         fetchRequest.predicate = ManagedRecord.predicate(for: remoteRecord)
         
         return fetchRequest
+    }
+}
+
+extension LocalRecord
+{
+    func configure(with recordedObject: SyncableManagedObject, in context: NSManagedObjectContext) throws
+    {
+        guard let recordedObjectIdentifier = recordedObject.syncableIdentifier else { throw Error.invalidSyncableIdentifier }
+        
+        if recordedObject.objectID.isTemporaryID
+        {
+            guard let context = recordedObject.managedObjectContext else {
+                preconditionFailure("NSManagedObject passed to LocalRecord.configure(with:in:) must have non-nil NSManagedObjectContext if it has a temporary NSManagedObjectID.")
+            }
+            
+            try context.obtainPermanentIDs(for: [recordedObject])
+        }
+        
+        self.recordedObjectType = recordedObject.syncableType
+        self.recordedObjectIdentifier = recordedObjectIdentifier
+        self.recordedObjectURI = recordedObject.objectID.uriRepresentation().absoluteString
+        
+        recordedObject._localRecord = self
     }
 }
 

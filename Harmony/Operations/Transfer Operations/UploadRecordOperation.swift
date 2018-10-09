@@ -8,7 +8,7 @@
 
 import CoreData
 
-class UploadRecordOperation: Operation<RemoteRecord>
+class UploadRecordOperation: Operation<RemoteRecord>, RecordOperation
 {
     let record: LocalRecord
     
@@ -16,7 +16,7 @@ class UploadRecordOperation: Operation<RemoteRecord>
         return true
     }
     
-    init(record: LocalRecord, service: Service, managedObjectContext: NSManagedObjectContext)
+    required init(record: LocalRecord, service: Service, managedObjectContext: NSManagedObjectContext)
     {
         self.record = record
         

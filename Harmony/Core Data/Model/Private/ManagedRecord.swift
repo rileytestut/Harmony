@@ -11,7 +11,7 @@ import CoreData
 
 extension ManagedRecord
 {
-    @objc public enum Status: Int16
+    @objc public enum Status: Int16, CaseIterable
     {
         case normal
         case updated
@@ -57,5 +57,24 @@ extension ManagedRecord
                                     #keyPath(ManagedRecord.recordedObjectType), record.recordedObjectType,
                                     #keyPath(ManagedRecord.recordedObjectIdentifier), record.recordedObjectIdentifier)
         return predicate
+    }
+    
+    class func sanitize<RootType: ManagedRecord>(_ keyPath: PartialKeyPath<RootType>) -> String
+    {
+        // This method originally used more Swift.KeyPath logic, but all attempts resulted in crashing at runtime with Swift 4.2.
+        guard let stringValue = keyPath.stringValue else { fatalError("Key path provided to ManagedRecord.sanitizedKeyPath(_:) is not a valid @objc key path.") }
+        
+        let keyPathComponents: [String]
+        
+        switch (self, RootType.self)
+        {
+        case is (LocalRecord.Type, LocalRecord.Type), is (RemoteRecord.Type, RemoteRecord.Type): keyPathComponents = [stringValue]
+        case is (LocalRecord.Type, RemoteRecord.Type): keyPathComponents = [#keyPath(LocalRecord.remoteRecord), stringValue]
+        case is (RemoteRecord.Type, LocalRecord.Type): keyPathComponents = [#keyPath(RemoteRecord.localRecord), stringValue]
+        default: fatalError()
+        }
+
+        let keyPath = keyPathComponents.joined(separator: ".")
+        return keyPath
     }
 }

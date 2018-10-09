@@ -18,6 +18,8 @@ extension Notification.Name
 
 public final class RecordController: RSTPersistentContainer
 {
+    let persistentContainer: NSPersistentContainer
+    
     var automaticallyRecordsManagedObjects = true
     
     private var processingContext: NSManagedObjectContext?
@@ -26,6 +28,8 @@ public final class RecordController: RSTPersistentContainer
     {
         let configurations = persistentContainer.managedObjectModel.configurations.compactMap(NSManagedObjectModel.Configuration.init(rawValue:))
         precondition(configurations.contains(.harmony) && configurations.contains(.external), "NSPersistentContainer's model must be a merged Harmony model.")
+        
+        self.persistentContainer = persistentContainer
         
         super.init(name: "Harmony", managedObjectModel: persistentContainer.managedObjectModel)
         
@@ -225,7 +229,6 @@ private extension RecordController
         
         guard
             let managedObjectContext = notification.object as? NSManagedObjectContext,
-            managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator,
             managedObjectContext.parent == nil,
             !self.persistentStoreCoordinator.persistentStores.isEmpty
         else { return }
@@ -241,25 +244,32 @@ private extension RecordController
                            NSUpdatedObjectsKey: updatedObjects.map { $0.objectID},
                            NSDeletedObjectsKey: deletedObjects.map { $0.objectID}]
             
-            if !insertedObjects.isEmpty
+            if managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator
             {
-                let insertedObjectIDs = self.createRecords(for: insertedObjects, in: processingContext)
-                changes[NSInsertedObjectsKey]?.append(contentsOf: insertedObjectIDs)
+                if !insertedObjects.isEmpty
+                {
+                    let insertedObjectIDs = self.createRecords(for: insertedObjects, in: processingContext)
+                    changes[NSInsertedObjectsKey]?.append(contentsOf: insertedObjectIDs)
+                }
+                
+                if !updatedObjects.isEmpty
+                {
+                    let updatedObjectIDs = self.updateRecords(for: updatedObjects, with: .updated, in: processingContext)
+                    changes[NSUpdatedObjectsKey]?.append(contentsOf: updatedObjectIDs)
+                }
+                
+                if !deletedObjects.isEmpty
+                {
+                    let updatedObjectIDs = self.updateRecords(for: deletedObjects, with: .deleted, in: processingContext)
+                    changes[NSUpdatedObjectsKey]?.append(contentsOf: updatedObjectIDs)
+                }
+                
+                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [processingContext, self.viewContext])
             }
-            
-            if !updatedObjects.isEmpty
+            else
             {
-                let updatedObjectIDs = self.updateRecords(for: updatedObjects, with: .updated, in: processingContext)
-                changes[NSUpdatedObjectsKey]?.append(contentsOf: updatedObjectIDs)
+                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.persistentContainer.viewContext])
             }
-            
-            if !deletedObjects.isEmpty
-            {
-                let updatedObjectIDs = self.updateRecords(for: deletedObjects, with: .deleted, in: processingContext)
-                changes[NSUpdatedObjectsKey]?.append(contentsOf: updatedObjectIDs)
-            }
-            
-            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [processingContext, self.viewContext])
                         
             NotificationCenter.default.post(name: .recordControllerDidProcessUpdates, object: self)
         }

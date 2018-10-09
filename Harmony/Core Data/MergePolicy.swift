@@ -9,16 +9,10 @@
 import CoreData
 import Roxas
 
-private extension NSConstraintConflict
+private extension NSManagedObject
 {
-    var persistedObject: NSManagedObject? {
-        let persistedObject = self.databaseObject ?? self.conflictingObjects.first { !$0.objectID.isTemporaryID }
-        return persistedObject
-    }
-    
-    var temporaryObject: NSManagedObject? {
-        let temporaryObject = self.conflictingObjects.first { $0 != self.persistedObject }
-        return temporaryObject
+    var isPersisting: Bool {
+        return self.managedObjectContext != nil && !self.isDeleted
     }
 }
 
@@ -26,36 +20,45 @@ class MergePolicy: RSTRelationshipPreservingMergePolicy
 {
     override func resolve(constraintConflicts conflicts: [NSConstraintConflict]) throws
     {
-        var relationships = [NSManagedObjectID: LocalRecord]()
-        
-        for conflict in conflicts
-        {
-            guard
-                let temporaryObject = conflict.temporaryObject as? RemoteRecord,
-                let persistedObject = conflict.persistedObject as? RemoteRecord
-            else { continue }
-            
-            // If existing remote record has state normal, and both existing a new remote records have same version identifier, then new remote record should also has state normal.
-            if persistedObject.status == .normal && persistedObject.versionIdentifier == temporaryObject.versionIdentifier
-            {
-                temporaryObject.status = .normal
-            }
-            
-            // Relationship may be lost when merging since temporaryObject may be deleted due to uniqueness constraints, thus breaking the relationship.
-            // To prevent this, we store the local record, call super, then restore the relationship.
-            relationships[persistedObject.objectID] = temporaryObject.localRecord
-        }
-        
         try super.resolve(constraintConflicts: conflicts)
         
         for conflict in conflicts
         {
-            guard let remoteRecord = conflict.persistedObject as? RemoteRecord else { continue }
+            guard let persistingObject = conflict.persistingObject as? LocalRecord else { continue }
             
-            if let localRecord = relationships[remoteRecord.objectID]
+            if let recordedObject = persistingObject.recordedObject, let context = recordedObject.managedObjectContext
             {
-                remoteRecord.localRecord = localRecord
-                localRecord.remoteRecord = remoteRecord
+                // Must update references before doing anything else.
+                try persistingObject.configure(with: recordedObject, in: context)
+            }
+        }
+        
+        for conflict in conflicts
+        {
+            switch (conflict.persistingObject)
+            {
+            case let persistingObject as RemoteRecord:
+                guard
+                    let previousStatusValue = conflict.persistedObjectSnapshot?[#keyPath(RemoteRecord.status)] as? Int16,
+                    let previousStatus = ManagedRecord.Status(rawValue: previousStatusValue),
+                    let previousVersionIdentifier = conflict.persistedObjectSnapshot?[#keyPath(RemoteRecord.versionIdentifier)] as? String
+                else { continue }
+                
+                // If existing remote record has state normal, and both existing a new remote records have same version identifier, then new remote record should also has state normal.
+                if previousStatus == .normal, previousVersionIdentifier == persistingObject.versionIdentifier
+                {
+                    persistingObject.status = .normal
+                }
+                
+            case let persistingObject as SyncableManagedObject:
+                // Retrieve the LocalRecord that will be persisted to disk.
+                guard let localRecord = conflict.conflictingObjects.compactMap({ ($0 as? SyncableManagedObject)?._localRecord }).filter({ $0.isPersisting }).first else { continue }
+                
+                // Make sure the LocalRecord points to the persisting object, not the temporary one that may be deleted.
+                guard let context = persistingObject.managedObjectContext else { continue }
+                try localRecord.configure(with: persistingObject, in: context)
+                
+            default: break
             }
         }
     }
