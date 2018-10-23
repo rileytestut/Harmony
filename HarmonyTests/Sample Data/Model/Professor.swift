@@ -18,7 +18,7 @@ public class Professor: NSManagedObject
 
 extension Professor: Syncable
 {
-    public var syncablePrimaryKey: AnyKeyPath {
+    public class var syncablePrimaryKey: AnyKeyPath {
         return \Professor.identifier
     }
     

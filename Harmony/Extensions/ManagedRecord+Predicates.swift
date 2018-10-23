@@ -18,7 +18,7 @@ extension ManagedRecord
         case delete
         case conflict
         
-        init(localStatus: ManagedRecord.Status?, remoteStatus: ManagedRecord.Status?)
+        init(localStatus: RecordRepresentation.Status?, remoteStatus: RecordRepresentation.Status?)
         {
             switch (localStatus, remoteStatus)
             {
@@ -34,13 +34,13 @@ extension ManagedRecord
                 
             case (.deleted?, .normal?): self = .delete
             case (.deleted?, .updated?): self = .download
-            case (.deleted?, .deleted?): self = .none
+            case (.deleted?, .deleted?): self = .delete
             case (.deleted?, nil): self = .delete
                 
             case (nil, .normal?): self = .download
             case (nil, .updated?): self = .download
             case (nil, .deleted?): self = .delete
-            case (nil, nil): self = .none
+            case (nil, nil): self = .delete
             }
         }
     }
@@ -49,7 +49,7 @@ extension ManagedRecord
 extension ManagedRecord
 {
     class var syncableRecordsPredicate: NSPredicate {
-        let predicate = NSPredicate(format: "%K == NO AND %K == YES", self.sanitize(\LocalRecord.isConflicted), self.sanitize(\LocalRecord.isSyncingEnabled))
+        let predicate = NSPredicate(format: "%K == NO AND %K == YES", #keyPath(ManagedRecord.isConflicted), #keyPath(ManagedRecord.isSyncingEnabled))
         return predicate
     }
     
@@ -78,11 +78,11 @@ private extension ManagedRecord
         return predicate
     }
     
-    class func statuses(for syncAction: SyncAction) -> [(ManagedRecord.Status?, ManagedRecord.Status?)]
+    class func statuses(for syncAction: SyncAction) -> [(RecordRepresentation.Status?, RecordRepresentation.Status?)]
     {
         // "Hack" to allow compiler to tell us if we miss any potential cases.
         // We make an array of all possible combinations of statues, then filter out all combinations that don't result in the sync action we want.
-        let allCases: [ManagedRecord.Status?] = ManagedRecord.Status.allCases + [nil]
+        let allCases: [RecordRepresentation.Status?] = RecordRepresentation.Status.allCases + [nil]
         let statuses = allCases.flatMap { (localStatus) in allCases.map { (localStatus, $0) } }
         
         let filteredStatuses = statuses.filter { (localStatus, remoteStatus) in
@@ -93,7 +93,7 @@ private extension ManagedRecord
         return filteredStatuses
     }
     
-    class func predicate(statuses: [(localStatus: ManagedRecord.Status?, remoteStatus: ManagedRecord.Status?)]) -> NSPredicate
+    class func predicate(statuses: [(localStatus: RecordRepresentation.Status?, remoteStatus: RecordRepresentation.Status?)]) -> NSPredicate
     {
         let predicates = statuses.map { (localStatus, remoteStatus) -> NSPredicate in
             let predicate: NSPredicate
@@ -101,17 +101,13 @@ private extension ManagedRecord
             switch (localStatus, remoteStatus)
             {
             case let (localStatus?, remoteStatus?):
-                predicate = NSPredicate(format: "(%K == %d) AND (%K == %d)", self.sanitize(\LocalRecord.status), localStatus.rawValue, self.sanitize(\RemoteRecord.status), remoteStatus.rawValue)
+                predicate = NSPredicate(format: "(%K == %d) AND (%K == %d)", #keyPath(ManagedRecord.localRecord.status), localStatus.rawValue, #keyPath(ManagedRecord.remoteRecord.status), remoteStatus.rawValue)
                 
             case let (localStatus?, nil):
-                precondition(self is LocalRecord.Type, "RemoteRecord predicate with nil remoteStatus is not supported.")
-                
-                predicate = NSPredicate(format: "(%K == %d) AND (%K == nil)", self.sanitize(\LocalRecord.status), localStatus.rawValue, #keyPath(LocalRecord.remoteRecord))
+                predicate = NSPredicate(format: "(%K == %d) AND (%K == nil)", #keyPath(ManagedRecord.localRecord.status), localStatus.rawValue, #keyPath(ManagedRecord.remoteRecord))
                 
             case let (nil, remoteStatus?):
-                precondition(self is RemoteRecord.Type, "LocalRecord predicate with nil localStatus is not supported.")
-                
-                predicate = NSPredicate(format: "(%K == nil) AND (%K == %d)", #keyPath(RemoteRecord.localRecord), self.sanitize(\RemoteRecord.status), remoteStatus.rawValue)
+                predicate = NSPredicate(format: "(%K == nil) AND (%K == %d)", #keyPath(ManagedRecord.localRecord), #keyPath(ManagedRecord.remoteRecord.status), remoteStatus.rawValue)
                 
             default: fatalError("ManagedRecord predicate with nil statuses is not supproted")
             }

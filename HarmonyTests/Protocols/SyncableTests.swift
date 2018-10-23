@@ -32,7 +32,7 @@ extension SyncableTests
         {
             @objc var identifier = "SyncableTypeInvalid"
             
-            var syncablePrimaryKey: AnyKeyPath { return \TestManagedObject.identifier }
+            class var syncablePrimaryKey: AnyKeyPath { return \TestManagedObject.identifier }
             var syncableKeys: Set<AnyKeyPath> { return [] }
         }
         
@@ -47,7 +47,7 @@ extension SyncableTests
         {
             @objc var identifier = "SyncableFiles"
             
-            var syncablePrimaryKey: AnyKeyPath { return \TestManagedObject.identifier }
+            class var syncablePrimaryKey: AnyKeyPath { return \TestManagedObject.identifier }
             var syncableKeys: Set<AnyKeyPath> { return [] }
         }
         
@@ -65,7 +65,7 @@ extension SyncableTests
         {
             @objc var identifier = "SyncableIdentifier"
             
-            var syncablePrimaryKey: AnyKeyPath { return \TestManagedObject.identifier }
+            class var syncablePrimaryKey: AnyKeyPath { return \TestManagedObject.identifier }
             var syncableKeys: Set<AnyKeyPath> { return [] }
         }
         
@@ -82,7 +82,7 @@ extension SyncableTests
         {
             @objc var identifier: String? = nil
             
-            var syncablePrimaryKey: AnyKeyPath { return \TestManagedObject.identifier }
+            class var syncablePrimaryKey: AnyKeyPath { return \TestManagedObject.identifier }
             var syncableKeys: Set<AnyKeyPath> { return [] }
         }
         
@@ -106,7 +106,7 @@ extension SyncableTests
         {
             @objc var identifier = 22
             
-            var syncablePrimaryKey: AnyKeyPath { return \IntIdentifierManagedObject.identifier }
+            class var syncablePrimaryKey: AnyKeyPath { return \IntIdentifierManagedObject.identifier }
             var syncableKeys: Set<AnyKeyPath> { return [] }
         }
         
@@ -121,7 +121,7 @@ extension SyncableTests
         {
             var identifier = "SyncableIdentifier"
             
-            var syncablePrimaryKey: AnyKeyPath { return \NonObjcIdentifierManagedObject.identifier }
+            class var syncablePrimaryKey: AnyKeyPath { return \NonObjcIdentifierManagedObject.identifier }
             var syncableKeys: Set<AnyKeyPath> { return [] }
         }
         
@@ -136,7 +136,7 @@ extension SyncableTests
         {
             var identifier = 21
             
-            var syncablePrimaryKey: AnyKeyPath { return \NonObjcIntIdentifierManagedObject.identifier }
+            class var syncablePrimaryKey: AnyKeyPath { return \NonObjcIntIdentifierManagedObject.identifier }
             var syncableKeys: Set<AnyKeyPath> { return [] }
         }
         

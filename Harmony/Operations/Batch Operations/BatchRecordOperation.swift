@@ -11,52 +11,53 @@ import CoreData
 
 protocol RecordOperation
 {
-    associatedtype ManagedRecordType: ManagedRecord
+    var record: ManagedRecord { get }
+    var managedObjectContext: NSManagedObjectContext { get }
     
-    var record: ManagedRecordType { get }
-    
-    init(record: ManagedRecordType, service: Service, managedObjectContext: NSManagedObjectContext)
+    init(record: ManagedRecord, service: Service, context: NSManagedObjectContext)
 }
 
-class BatchRecordOperation<ManagedRecordType, ResultType, OperationType: Operation<ResultType> & RecordOperation>: Operation<[ManagedRecordType: Result<ResultType>]>
-    where OperationType.ManagedRecordType == ManagedRecordType
+class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & RecordOperation>: Operation<[ManagedRecord: Result<ResultType>]>
 {
     let predicate: NSPredicate
+    let recordController: RecordController
     
     override var isAsynchronous: Bool {
         return true
     }
     
-    init(predicate: NSPredicate, service: Service, managedObjectContext: NSManagedObjectContext)
+    init(predicate: NSPredicate, service: Service, recordController: RecordController)
     {
         self.predicate = predicate
+        self.recordController = recordController
         
-        super.init(service: service, managedObjectContext: managedObjectContext)
+        super.init(service: service)
     }
     
     override func main()
     {
         super.main()
         
-        let fetchRequest = ManagedRecordType.fetchRequest() as! NSFetchRequest<ManagedRecordType>
+        let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
         fetchRequest.predicate = self.predicate
         fetchRequest.returnsObjectsAsFaults = false
         
         let dispatchGroup = DispatchGroup()
         
-        var results = [ManagedRecordType: Result<ResultType>]()
+        var results = [ManagedRecord: Result<ResultType>]()
         
-        self.managedObjectContext.perform {
+        self.recordController.performBackgroundTask { (fetchContext) in
             do
             {
-                let records = try self.managedObjectContext.fetch(fetchRequest)
+                let records = try fetchContext.fetch(fetchRequest)
+                
+                let saveContext = self.recordController.newBackgroundContext()
                 
                 let operations = records.map { (record) -> OperationType in
-                    let operation = OperationType(record: record, service: self.service, managedObjectContext: self.managedObjectContext)
+                    let operation = OperationType(record: record, service: self.service, context: saveContext)
                     operation.resultHandler = { (result) in
                         results[operation.record] = result
-                    }
-                    operation.completionBlock = {
+                        
                         dispatchGroup.leave()
                     }
                     
@@ -71,10 +72,10 @@ class BatchRecordOperation<ManagedRecordType, ResultType, OperationType: Operati
                 self.operationQueue.addOperations(operations, waitUntilFinished: false)
                 
                 dispatchGroup.notify(queue: .global()) {
-                    self.managedObjectContext.perform {
+                    saveContext.perform {
                         do
                         {
-                            try self.managedObjectContext.save()
+                            try saveContext.save()
                             
                             self.result = .success(results)
                         }
@@ -95,20 +96,27 @@ class BatchRecordOperation<ManagedRecordType, ResultType, OperationType: Operati
             }
         }
     }
-}
-
-class UploadRecordsOperation: BatchRecordOperation<LocalRecord, RemoteRecord, UploadRecordOperation>
-{
-    init(service: Service, managedObjectContext: NSManagedObjectContext)
+    
+    override func finish()
     {
-        super.init(predicate: LocalRecord.uploadRecordsPredicate, service: service, managedObjectContext: managedObjectContext)
+        self.recordController.processPendingUpdates()
+        
+        super.finish()
     }
 }
 
-class DownloadRecordsOperation: BatchRecordOperation<RemoteRecord, LocalRecord, DownloadRecordOperation>
+class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation>
 {
-    init(service: Service, managedObjectContext: NSManagedObjectContext)
+    init(service: Service, recordController: RecordController)
     {
-        super.init(predicate: RemoteRecord.downloadRecordsPredicate, service: service, managedObjectContext: managedObjectContext)
+        super.init(predicate: ManagedRecord.uploadRecordsPredicate, service: service, recordController: recordController)
+    }
+}
+
+class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecordOperation>
+{
+    init(service: Service, recordController: RecordController)
+    {
+        super.init(predicate: ManagedRecord.downloadRecordsPredicate, service: service, recordController: recordController)
     }
 }

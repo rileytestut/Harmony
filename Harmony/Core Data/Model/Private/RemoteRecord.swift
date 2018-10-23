@@ -9,25 +9,26 @@
 import CoreData
 
 @objc(RemoteRecord)
-public class RemoteRecord: ManagedRecord
+public class RemoteRecord: RecordRepresentation
 {
-    @NSManaged public var identifier: String
-        
-    @NSManaged public var localRecord: LocalRecord?
+    /* Properties */
+    @NSManaged public var identifier: String    
     
-    public init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: Status, managedObjectContext: NSManagedObjectContext)
+    /* Relationships */
+    @NSManaged var version: ManagedVersion
+    
+    public init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: RecordRepresentation.Status, context: NSManagedObjectContext)
     {
-        super.init(entity: RemoteRecord.entity(), insertInto: managedObjectContext)
+        super.init(entity: RemoteRecord.entity(), insertInto: context)
         
         self.identifier = identifier
-        
-        self.versionIdentifier = versionIdentifier
-        self.versionDate = versionDate
         
         self.recordedObjectType = recordedObjectType
         self.recordedObjectIdentifier = recordedObjectIdentifier
         
         self.status = status
+        
+        self.version = ManagedVersion(identifier: versionIdentifier, date: versionDate, context: context)
     }
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
@@ -41,13 +42,5 @@ extension RemoteRecord
     @nonobjc class func fetchRequest() -> NSFetchRequest<RemoteRecord>
     {
         return NSFetchRequest<RemoteRecord>(entityName: "RemoteRecord")
-    }
-    
-    class func fetchRequest(for localRecord: LocalRecord) -> NSFetchRequest<RemoteRecord>
-    {
-        let fetchRequest: NSFetchRequest<RemoteRecord> = self.fetchRequest()
-        fetchRequest.predicate = ManagedRecord.predicate(for: localRecord)
-        
-        return fetchRequest
     }
 }

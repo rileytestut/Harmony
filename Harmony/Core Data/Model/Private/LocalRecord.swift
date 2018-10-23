@@ -15,12 +15,14 @@ extension LocalRecord
     {
         case invalidSyncableIdentifier
         case nilRecordedObject
+        case nilRecordedObjectContext
         
         var localizedDescription: String {
             switch self
             {
             case .invalidSyncableIdentifier: return NSLocalizedString("The managed object to be recorded has an invalid syncable identifier.", comment: "")
             case .nilRecordedObject: return NSLocalizedString("The recorded object could not be found.", comment: "")
+            case .nilRecordedObjectContext: return NSLocalizedString("The recorded object's managed object context is nil", comment: "")
             }
         }
     }
@@ -50,33 +52,13 @@ extension LocalRecord
 }
 
 @objc(LocalRecord)
-public class LocalRecord: ManagedRecord, Codable
+public class LocalRecord: RecordRepresentation, Codable
 {
     /* Properties */
-    @objc var isConflicted: Bool {
-        get {
-            self.willAccessValue(forKey: #keyPath(LocalRecord.isConflicted))
-            defer { self.didAccessValue(forKey: #keyPath(LocalRecord.isConflicted)) }
-            
-            let isConflicted = self.primitiveValue(forKey: #keyPath(LocalRecord.isConflicted)) as? Bool ?? false
-            return isConflicted
-        }
-        set {
-            self.willChangeValue(for: \.isConflicted)
-            defer { self.didChangeValue(for: \.isConflicted) }
-            
-            self.setPrimitiveValue(newValue, forKey: #keyPath(LocalRecord.isConflicted))
-            
-            if newValue
-            {
-                self.isSyncingEnabled = false
-            }
-        }
-    }
+    @NSManaged var recordedObjectURI: URL
     
-    @NSManaged var isSyncingEnabled: Bool
-
-    @NSManaged private(set) var recordedObjectURI: String
+    /* Relationships */
+    @NSManaged var version: ManagedVersion?
     
     var recordedObject: SyncableManagedObject? {
         return self.resolveRecordedObject()
@@ -86,29 +68,20 @@ public class LocalRecord: ManagedRecord, Codable
         return self.resolveRecordedObjectID()
     }
     
-    /* Relationships */
-    @NSManaged public var remoteRecord: RemoteRecord?
-    
-    init(managedObject: SyncableManagedObject, managedObjectContext: NSManagedObjectContext) throws
-    {
-        // Don't insert into managedObjectContext yet, since the initializer may fail.
-        super.init(entity: LocalRecord.entity(), insertInto: nil)
-
-        // Must be after super.init() or else Swift compiler will crash (as of Swift 4.0)
-        try self.configure(with: managedObject, in: managedObjectContext)
-        
-        self.versionIdentifier = UUID().uuidString
-        self.versionDate = Date()
-        
-        self.status = .normal
-
-        // We know initialization didn't fail, so insert self into managed object context.
-        managedObjectContext.insert(self)
-    }
-    
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
         super.init(entity: entity, insertInto: context)
+    }
+    
+    init(recordedObject: SyncableManagedObject, context: NSManagedObjectContext) throws
+    {
+        super.init(entity: LocalRecord.entity(), insertInto: nil)
+        
+        // Must be after super.init() or else Swift compiler will crash (as of Swift 4.0)
+        try self.configure(with: recordedObject)
+        
+        // We know initialization didn't fail, so insert self into managed object context.
+        context.insert(self)
     }
     
     public required init(from decoder: Decoder) throws
@@ -121,10 +94,31 @@ public class LocalRecord: ManagedRecord, Codable
         
         let recordType = try container.decode(String.self, forKey: .type)
         
-        guard let entity = NSEntityDescription.entity(forEntityName: recordType, in: context) else { throw ParseError.unknownRecordType(self.recordedObjectType) }
-        guard let recordedObject = NSManagedObject(entity: entity, insertInto: nil) as? SyncableManagedObject else { throw ParseError.nonSyncableRecordType(recordType) }
+        guard
+            let entity = NSEntityDescription.entity(forEntityName: recordType, in: context),
+            let managedObjectClass = NSClassFromString(entity.managedObjectClassName) as? Syncable.Type,
+            let primaryKeyPath = managedObjectClass.syncablePrimaryKey.stringValue
+        else { throw ParseError.unknownRecordType(self.recordedObjectType) }
         
-        recordedObject.syncableIdentifier = try container.decode(String.self, forKey: .identifier)
+        let identifier = try container.decode(String.self, forKey: .identifier)
+        
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: recordType)
+        fetchRequest.predicate = NSPredicate(format: "%K == %@", primaryKeyPath, identifier)
+        
+        let recordedObject: SyncableManagedObject
+        
+        if let managedObject = try context.fetch(fetchRequest).first as? SyncableManagedObject
+        {
+            recordedObject = managedObject
+        }
+        else
+        {
+            guard let managedObject = NSManagedObject(entity: entity, insertInto: context) as? SyncableManagedObject else { throw ParseError.nonSyncableRecordType(recordType) }
+            
+            recordedObject = managedObject
+        }
+        
+        recordedObject.syncableIdentifier = identifier
         
         let recordContainer = try container.nestedContainer(keyedBy: RecordKey.self, forKey: .record)
         for key in recordedObject.syncableKeys
@@ -137,13 +131,14 @@ public class LocalRecord: ManagedRecord, Codable
         
         do
         {
-            context.insert(recordedObject)
-            
-            try self.configure(with: recordedObject, in: context)
+            try self.configure(with: recordedObject)
         }
         catch
         {
-            context.delete(recordedObject)
+            if recordedObject.isInserted
+            {
+                context.delete(recordedObject)
+            }
             
             throw error
         }
@@ -195,35 +190,19 @@ extension LocalRecord
         return NSFetchRequest<LocalRecord>(entityName: "LocalRecord")
     }
     
-    class func fetchRequest(for remoteRecord: RemoteRecord) -> NSFetchRequest<LocalRecord>
-    {
-        let fetchRequest: NSFetchRequest<LocalRecord> = self.fetchRequest()
-        fetchRequest.predicate = ManagedRecord.predicate(for: remoteRecord)
-        
-        return fetchRequest
-    }
-}
-
-extension LocalRecord
-{
-    func configure(with recordedObject: SyncableManagedObject, in context: NSManagedObjectContext) throws
+    func configure(with recordedObject: SyncableManagedObject) throws
     {
         guard let recordedObjectIdentifier = recordedObject.syncableIdentifier else { throw Error.invalidSyncableIdentifier }
         
         if recordedObject.objectID.isTemporaryID
         {
-            guard let context = recordedObject.managedObjectContext else {
-                preconditionFailure("NSManagedObject passed to LocalRecord.configure(with:in:) must have non-nil NSManagedObjectContext if it has a temporary NSManagedObjectID.")
-            }
-            
+            guard let context = recordedObject.managedObjectContext else { throw Error.nilRecordedObjectContext }
             try context.obtainPermanentIDs(for: [recordedObject])
         }
         
         self.recordedObjectType = recordedObject.syncableType
         self.recordedObjectIdentifier = recordedObjectIdentifier
-        self.recordedObjectURI = recordedObject.objectID.uriRepresentation().absoluteString
-        
-        recordedObject._localRecord = self
+        self.recordedObjectURI = recordedObject.objectID.uriRepresentation()
     }
 }
 
@@ -235,10 +214,8 @@ private extension LocalRecord
             fatalError("LocalRecord's associated NSPersistentStoreCoordinator must not be nil to retrieve external NSManagedObjectID.")
         }
         
-        guard let objectURI = URL(string: self.recordedObjectURI) else { fatalError("LocalRecord's external entity URI is invalid.") }
-        
         // Nil objectID = persistent store does not exist.
-        let objectID = persistentStoreCoordinator.managedObjectID(forURIRepresentation: objectURI)
+        let objectID = persistentStoreCoordinator.managedObjectID(forURIRepresentation: self.recordedObjectURI)
         return objectID
     }
     

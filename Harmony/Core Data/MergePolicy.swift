@@ -9,13 +9,6 @@
 import CoreData
 import Roxas
 
-private extension NSManagedObject
-{
-    var isPersisting: Bool {
-        return self.managedObjectContext != nil && !self.isDeleted
-    }
-}
-
 class MergePolicy: RSTRelationshipPreservingMergePolicy
 {
     override func resolve(constraintConflicts conflicts: [NSConstraintConflict]) throws
@@ -24,39 +17,23 @@ class MergePolicy: RSTRelationshipPreservingMergePolicy
         
         for conflict in conflicts
         {
-            guard let persistingObject = conflict.persistingObject as? LocalRecord else { continue }
+            assert(conflict.databaseObject != nil, "MergePolicy is only intended to work with database-level conflicts.")
             
-            if let recordedObject = persistingObject.recordedObject, let context = recordedObject.managedObjectContext
+            switch conflict.databaseObject
             {
-                // Must update references before doing anything else.
-                try persistingObject.configure(with: recordedObject, in: context)
-            }
-        }
-        
-        for conflict in conflicts
-        {
-            switch (conflict.persistingObject)
-            {
-            case let persistingObject as RemoteRecord:
+            case let databaseObject as RemoteRecord:
                 guard
-                    let previousStatusValue = conflict.persistedObjectSnapshot?[#keyPath(RemoteRecord.status)] as? Int16,
-                    let previousStatus = ManagedRecord.Status(rawValue: previousStatusValue),
-                    let previousVersionIdentifier = conflict.persistedObjectSnapshot?[#keyPath(RemoteRecord.versionIdentifier)] as? String
+                    let snapshot = conflict.snapshots.object(forKey: conflict.databaseObject),
+                    let previousStatusValue = snapshot[#keyPath(RemoteRecord.status)] as? Int16,
+                    let previousStatus = RecordRepresentation.Status(rawValue: previousStatusValue),
+                    let previousVersion = snapshot[#keyPath(RemoteRecord.version)] as? ManagedVersion
                 else { continue }
                 
-                // If existing remote record has state normal, and both existing a new remote records have same version identifier, then new remote record should also has state normal.
-                if previousStatus == .normal, previousVersionIdentifier == persistingObject.versionIdentifier
+                // If previous status was normal, and the previous version identifier matches current version identifier, then status should still be normal.
+                if previousStatus == .normal, previousVersion.identifier == databaseObject.version.identifier
                 {
-                    persistingObject.status = .normal
+                    databaseObject.status = .normal
                 }
-                
-            case let persistingObject as SyncableManagedObject:
-                // Retrieve the LocalRecord that will be persisted to disk.
-                guard let localRecord = conflict.conflictingObjects.compactMap({ ($0 as? SyncableManagedObject)?._localRecord }).filter({ $0.isPersisting }).first else { continue }
-                
-                // Make sure the LocalRecord points to the persisting object, not the temporary one that may be deleted.
-                guard let context = persistingObject.managedObjectContext else { continue }
-                try localRecord.configure(with: persistingObject, in: context)
                 
             default: break
             }

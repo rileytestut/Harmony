@@ -45,7 +45,7 @@ extension OperationTests
     {
         guard type(of: self) == OperationTests.self else { fatalError("OperationTests subclasses must override prepareTestOperation.") }
         
-        let operation = Harmony.Operation<Any>(service: self.service, managedObjectContext: self.recordController.viewContext)
+        let operation = Harmony.Operation<Any>(service: self.service)
         return operation
     }
 }

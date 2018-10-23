@@ -176,7 +176,7 @@ extension FetchRemoteRecordsOperationTests
         
         let professor = Professor.make(identifier: self.professorRemoteRecord.recordedObjectIdentifier)
         
-        let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
+        let localRecord = try! LocalRecord(recordedObject: professor, managedObjectContext: self.recordController.viewContext)
         try! localRecord.managedObjectContext?.save()
 
         let operation = FetchRemoteRecordsOperation(service: self.service, changeToken: self.service.latestChangeToken, managedObjectContext: self.recordController.viewContext)

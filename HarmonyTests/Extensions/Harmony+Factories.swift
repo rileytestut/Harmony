@@ -26,7 +26,7 @@ extension RemoteRecord
                                   recordedObjectType: recordedObjectType,
                                   recordedObjectIdentifier: recordedObjectIdentifier,
                                   status: status,
-                                  managedObjectContext: context)
+                                  context: context)
         return record
     }
 }

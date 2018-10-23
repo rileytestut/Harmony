@@ -10,47 +10,57 @@ import CoreData
 
 class DownloadRecordOperation: Operation<LocalRecord>, RecordOperation
 {
-    let record: RemoteRecord
+    let record: ManagedRecord
+    let managedObjectContext: NSManagedObjectContext
     
-    override var isAsynchronous: Bool {
-        return true
-    }
+    // Keep strong reference to recordContext.
+    private let recordContext: NSManagedObjectContext?
     
-    required init(record: RemoteRecord, service: Service, managedObjectContext: NSManagedObjectContext)
+    required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext)
     {
         self.record = record
+        self.recordContext = self.record.managedObjectContext
         
-        super.init(service: service, managedObjectContext: managedObjectContext)
+        self.managedObjectContext = context
+        
+        super.init(service: service)
     }
     
     override func main()
     {
         super.main()
         
-        self.managedObjectContext.perform {
-            
-            let progress = self.service.download(self.record) { (result) in
-                do
-                {
-                    let localRecord = try result.value()
-                    localRecord.versionDate = self.record.versionDate
-                    localRecord.versionIdentifier = self.record.versionIdentifier
-                    localRecord.status = .normal
+        self.recordContext?.perform {
+            if let remoteRecord = self.record.remoteRecord
+            {
+                let progress = self.service.download(remoteRecord, context: self.managedObjectContext) { (result) in
+                    do
+                    {
+                        let localRecord = try result.value()
+                        localRecord.status = .normal
+                        
+                        let remoteRecord = self.managedObjectContext.object(with: remoteRecord.objectID) as! RemoteRecord
+                        remoteRecord.status = .normal
+                        
+                        localRecord.version = remoteRecord.version
+
+                        self.result = .success(localRecord)
+                    }
+                    catch
+                    {
+                        self.result = .failure(error)
+                    }
                     
-                    self.record.localRecord = localRecord
-                    self.record.status = .normal
-                    
-                    self.result = .success(localRecord)
-                }
-                catch
-                {
-                    self.result = .failure(error)
+                    self.finish()
                 }
                 
+                self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
+            }
+            else
+            {
+                self.result = .failure(DownloadRecordError.nilRemoteRecord)
                 self.finish()
             }
-            
-            self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
         }
     }
 }

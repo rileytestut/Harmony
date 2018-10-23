@@ -11,6 +11,15 @@ import CoreData
 
 import Roxas
 
+extension ManagedRecord
+{
+    fileprivate struct RecordedObjectID: Hashable
+    {
+        var type: String
+        var identifier: String
+    }
+}
+
 extension Notification.Name
 {
     static let recordControllerDidProcessUpdates = Notification.Name("recordControllerDidProcessUpdates")
@@ -23,6 +32,7 @@ public final class RecordController: RSTPersistentContainer
     var automaticallyRecordsManagedObjects = true
     
     private var processingContext: NSManagedObjectContext?
+    private let processingDispatchGroup = DispatchGroup()
     
     init(persistentContainer: NSPersistentContainer)
     {
@@ -88,7 +98,7 @@ public extension RecordController
         {
             self.processingContext = self.newBackgroundContext()
             
-            NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(with:)), name: .NSManagedObjectContextDidSave, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(_:)), name: .NSManagedObjectContextDidSave, object: nil)
             
             completionHandler(errors)
         }
@@ -110,127 +120,211 @@ public extension RecordController
 
 extension RecordController
 {
-    private class func updateRelationships<RecordType: ManagedRecord, RelationshipType: ManagedRecord, CollectionType: Collection> (for records: CollectionType, relationshipKeyPath: ReferenceWritableKeyPath<RecordType, RelationshipType?>, in context: NSManagedObjectContext) throws -> Set<NSManagedObjectID> where CollectionType.Element == RecordType
+    func processPendingUpdates()
     {
-        func key(for record: ManagedRecord) -> String
+        self.processingDispatchGroup.wait()
+        
+        if Thread.isMainThread
         {
-            let key = record.recordedObjectType + "-" + record.recordedObjectIdentifier
-            return key
+            // Refresh objects (only necessary for testing).
+            self.viewContext.refreshAllObjects()
         }
-        
-        let recordsDictionary = Dictionary(uniqueKeysWithValues: records.map { (key(for: $0), $0) })
-        
-        let subpredicates = records.map { ManagedRecord.predicate(for: $0) }
-        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: subpredicates)
-        
-        let fetchRequest: NSFetchRequest<RelationshipType> = NSFetchRequest<RelationshipType>(entityName: RelationshipType.entity().name!)
-        fetchRequest.predicate = predicate
-        
-        var objectIDs = Set<NSManagedObjectID>()
-        
-        let fetchedRecords = try context.fetch(fetchRequest)
-        for fetchedRecord in fetchedRecords
-        {
-            let recordKey = key(for: fetchedRecord)
-            guard let record = recordsDictionary[recordKey] else { continue }
-            
-            record[keyPath: relationshipKeyPath] = fetchedRecord
-            
-            objectIDs.insert(record.objectID)
-            objectIDs.insert(fetchedRecord.objectID)
-        }
-        
-        return objectIDs
     }
     
-    @discardableResult class func updateRelationships<T: Collection>(for records: T, in context: NSManagedObjectContext) throws -> Set<NSManagedObjectID> where T.Element == LocalRecord
+    func printRecords()
     {
-        return try self.updateRelationships(for: records, relationshipKeyPath: \LocalRecord.remoteRecord, in: context)
-    }
-    
-    @discardableResult class func updateRelationships<T: Collection>(for records: T, in context: NSManagedObjectContext) throws -> Set<NSManagedObjectID> where T.Element == RemoteRecord
-    {
-        return try self.updateRelationships(for: records, relationshipKeyPath: \RemoteRecord.localRecord, in: context)
-    }
-}
-
-private extension RecordController
-{
-    func createRecords<T: Collection>(for managedObjects: T, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
-    {
-        let records = managedObjects.compactMap { (managedObject) -> LocalRecord? in
-            let uri = managedObject.objectID.uriRepresentation()
-            guard let objectID = self.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri) else { return nil }
-
-            do
+        self.performBackgroundTask { (context) in
+            let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
+            
+            let records = try! context.fetch(fetchRequest)
+            
+            for record in records
             {
-                guard let syncableManagedObject = try context.existingObject(with: objectID) as? SyncableManagedObject else { return nil }
+                var string = "Record: \(record.objectID)"
                 
-                let record = try LocalRecord(managedObject: syncableManagedObject, managedObjectContext: context)
-                return record
+                if let localRecord = record.localRecord
+                {
+                    string += " LR: \(localRecord.status.rawValue)"
+                    
+                    if let version = localRecord.version
+                    {
+                        string += " (\(version.identifier))"
+                    }
+                    
+                    string += " (\(localRecord.managedRecord?.objectID.uriRepresentation().lastPathComponent ?? "none"))"
+                }
+                else
+                {
+                    string += " LR: nil"
+                }
+                
+                if let remoteRecord = record.remoteRecord
+                {
+                    string += " RR: \(remoteRecord.status.rawValue) (\(remoteRecord.version.identifier)) (\(remoteRecord.managedRecord?.objectID.uriRepresentation().lastPathComponent ?? "none"))"
+                }
+                else
+                {
+                    string += " RR: nil"
+                }
+                
+                print(string)
             }
-            catch
-            {
-                print(error)
-            }
-
-            return nil
         }
-        
-        guard !records.isEmpty else { return [] }
-        
-        var objectIDs = records.map { $0.objectID }
-        
-        do
-        {
-            let updatedObjectIDs = try RecordController.updateRelationships(for: records, in: context)
-            objectIDs.append(contentsOf: updatedObjectIDs)
-            
-            try context.save()
-        }
-        catch
-        {
-            print(error)
-        }
-        
-        return objectIDs
-    }
-    
-    func updateRecords<T: Collection>(for recordedObjects: T, with status: ManagedRecord.Status, in context: NSManagedObjectContext) -> [NSManagedObjectID] where T.Element == NSManagedObject
-    {
-        let uris = recordedObjects.compactMap { (recordedObject) -> String? in
-            guard recordedObject is SyncableManagedObject else { return nil }
-            
-            let uri = recordedObject.objectID.uriRepresentation().absoluteString
-            return uri
-        }
-
-        guard !uris.isEmpty else { return [] }
-        
-        let batchUpdateRequest = NSBatchUpdateRequest(entity: LocalRecord.entity())
-        batchUpdateRequest.predicate = NSPredicate(format: "%K in %@", #keyPath(LocalRecord.recordedObjectURI), uris)
-        batchUpdateRequest.resultType = .updatedObjectIDsResultType
-        batchUpdateRequest.propertiesToUpdate = [#keyPath(LocalRecord.status): status.rawValue]
-        
-        do
-        {
-            let result = try context.execute(batchUpdateRequest) as! NSBatchUpdateResult
-            
-            let objectIDs = result.result as! [NSManagedObjectID]
-            return objectIDs
-        }
-        catch
-        {
-            print(error)
-        }
-        
-        return []
     }
 }
 
 private extension RecordController
 {
-    @objc func managedObjectContextDidSave(with notification: Notification)
+    func updateManagedRecords<T: Collection & CVarArg, RecordType: RecordRepresentation>(for recordIDs: T, keyPath: ReferenceWritableKeyPath<ManagedRecord, RecordType?>, in context: NSManagedObjectContext)
+        where T.Element == NSManagedObjectID
+    {
+        func configure(_ managedRecord: ManagedRecord, with recordRepresentation: RecordType)
+        {
+            guard managedRecord[keyPath: keyPath] != recordRepresentation else { return }
+            
+            managedRecord[keyPath: keyPath] = recordRepresentation
+        }
+        
+        do
+        {
+            var recordRepresentationsByRecordedObjectID = [ManagedRecord.RecordedObjectID: RecordType]()
+            
+            
+            // Fetch record representations.
+            let recordRepresentationsFetchRequest = RecordType.fetchRequest() as! NSFetchRequest<RecordType>
+            recordRepresentationsFetchRequest.predicate = NSPredicate(format: "SELF in %@", recordIDs)
+            
+            let recordRepresentations = try context.fetch(recordRepresentationsFetchRequest)
+            for record in recordRepresentations
+            {
+                let recordedObjectID = ManagedRecord.RecordedObjectID(type: record.recordedObjectType, identifier: record.recordedObjectIdentifier)
+                recordRepresentationsByRecordedObjectID[recordedObjectID] = record
+            }
+            
+            
+            // Fetch managed records for record representations.
+            let predicates = recordRepresentationsByRecordedObjectID.keys.map {
+                return NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(ManagedRecord.recordedObjectType), $0.type, #keyPath(ManagedRecord.recordedObjectIdentifier), $0.identifier)
+            }
+            
+            let managedRecordsFetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
+            managedRecordsFetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+            
+            let managedRecords = try context.fetch(managedRecordsFetchRequest)
+            
+            
+            // Update existing managed records.
+            for record in managedRecords
+            {
+                let recordedObjectID = ManagedRecord.RecordedObjectID(type: record.recordedObjectType, identifier: record.recordedObjectIdentifier)
+                guard let recordRepresentation = recordRepresentationsByRecordedObjectID[recordedObjectID] else {
+                    continue
+                }
+                
+                configure(record, with: recordRepresentation)
+                
+                // Remove from recordRepresentationsByRecordedObjectID so we know which records we still need to create.
+                recordRepresentationsByRecordedObjectID[recordedObjectID] = nil
+            }
+            
+            
+            // Create missing managed records.
+            for (recordedObjectID, recordRepresentation) in recordRepresentationsByRecordedObjectID
+            {
+                let managedRecord = ManagedRecord(context: context)
+                managedRecord.recordedObjectType = recordedObjectID.type
+                managedRecord.recordedObjectIdentifier = recordedObjectID.identifier
+                
+                configure(managedRecord, with: recordRepresentation)
+            }
+            
+            
+            if context.hasChanges
+            {
+                try context.save()
+            }
+        }
+        catch
+        {
+            print(error)
+        }
+    }
+    
+    func updateLocalRecords<T: Collection>(for recordedObjectIDs: T, status: RecordRepresentation.Status, in context: NSManagedObjectContext) where T.Element == NSManagedObjectID
+    {
+        func configure(_ localRecord: LocalRecord, with status: RecordRepresentation.Status)
+        {
+            guard localRecord.status != status else { return }
+            
+            localRecord.status = status
+        }
+        
+        do
+        {
+            // Map all recordedObjectIDs to URI representations suitable for use with provided context.
+            var recordedObjectURIs = Set(recordedObjectIDs.lazy.compactMap { (recordedObjectID) -> URL? in
+                guard let objectID = context.persistentStoreCoordinator?.managedObjectID(forURIRepresentation: recordedObjectID.uriRepresentation()) else { return nil }
+                return objectID.uriRepresentation()
+            })
+            
+            
+            // Fetch local records for syncable managed objects
+            let predicates = recordedObjectURIs.map { NSPredicate(format: "%K == %@", #keyPath(LocalRecord.recordedObjectURI), $0 as NSURL) }
+            
+            let fetchRequest = LocalRecord.fetchRequest() as NSFetchRequest<LocalRecord>
+            fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+            
+            let localRecords = try context.fetch(fetchRequest)
+            
+            // Update existing local records.
+            for localRecord in localRecords
+            {
+                configure(localRecord, with: status)
+                
+                // Remove from recordedObjectURIs so we know which local records we still need to create.
+                recordedObjectURIs.remove(localRecord.recordedObjectURI)
+            }
+            
+            if status != .deleted
+            {
+                // Create missing local records, but only if we're not marking them as deleted.
+                // This is because deleted objects might not have valid data necessary to create a local record,
+                // and there is no actual need to create a local record just to mark it as deleted immediately.
+                
+                for objectURI in recordedObjectURIs
+                {
+                    do
+                    {
+                        guard
+                            let objectID = self.persistentStoreCoordinator.managedObjectID(forURIRepresentation: objectURI),
+                            let syncableManagedObject = try context.existingObject(with: objectID) as? SyncableManagedObject
+                        else { continue }
+                        
+                        let record = try LocalRecord(recordedObject: syncableManagedObject, context: context)
+                        configure(record, with: status)
+                    }
+                    catch
+                    {
+                        print(error)
+                    }
+                }
+            }
+            
+            if context.hasChanges
+            {
+                try context.save()
+            }
+        }
+        catch
+        {
+            print(error)
+        }
+    }
+}
+
+private extension RecordController
+{
+    @objc func managedObjectContextDidSave(_ notification: Notification)
     {
         guard let processingContext = self.processingContext else { return }
         
@@ -248,44 +342,71 @@ private extension RecordController
         let updatedObjects = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject> ?? []
         let deletedObjects = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject> ?? []
         
+        let changes = [NSInsertedObjectsKey: insertedObjects.map { $0.objectID },
+                       NSUpdatedObjectsKey: updatedObjects.map { $0.objectID},
+                       NSDeletedObjectsKey: deletedObjects.map { $0.objectID}]
+        
+        self.processingDispatchGroup.enter()
+        
         processingContext.perform {
-            var changes = [NSInsertedObjectsKey: insertedObjects.map { $0.objectID },
-                           NSUpdatedObjectsKey: updatedObjects.map { $0.objectID},
-                           NSDeletedObjectsKey: deletedObjects.map { $0.objectID}]
-            
             if managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator
             {
-                if !insertedObjects.isEmpty
-                {
-                    let insertedObjectIDs = self.createRecords(for: insertedObjects, in: processingContext)
-                    changes[NSInsertedObjectsKey]?.append(contentsOf: insertedObjectIDs)
-                }
-                
-                if !updatedObjects.isEmpty
-                {
-                    let updatedObjectIDs = self.updateRecords(for: updatedObjects, with: .updated, in: processingContext)
-                    changes[NSUpdatedObjectsKey]?.append(contentsOf: updatedObjectIDs)
-                }
-                
-                if !deletedObjects.isEmpty
-                {
-                    let updatedObjectIDs = self.updateRecords(for: deletedObjects, with: .deleted, in: processingContext)
-                    changes[NSUpdatedObjectsKey]?.append(contentsOf: updatedObjectIDs)
-                }
-                
-                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [processingContext])
-                
-                // Dispatch async to allow tests to continue without blocking.
-                DispatchQueue.main.async {
-                    NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.viewContext])
-                }
-                
-                NotificationCenter.default.post(name: .recordControllerDidProcessUpdates, object: self)
+                self.processExternalChanges(changes, in: processingContext)
             }
             else
             {
-                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.persistentContainer.viewContext])
+                self.processHarmonyChanges(changes, in: processingContext)
             }
         }
+    }
+    
+    func processExternalChanges(_ changes: [String: [NSManagedObjectID]], in context: NSManagedObjectContext)
+    {
+        let updatedObjectIDs = (changes[NSInsertedObjectsKey] ?? []) + (changes[NSUpdatedObjectsKey] ?? [])
+        let deletedObjectIDs = changes[NSDeletedObjectsKey] ?? []
+        
+        if !updatedObjectIDs.isEmpty
+        {
+            self.updateLocalRecords(for: updatedObjectIDs, status: .updated, in: context)
+        }
+        
+        if !deletedObjectIDs.isEmpty
+        {
+            self.updateLocalRecords(for: deletedObjectIDs, status: .deleted, in: context)
+        }
+        
+        NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
+        
+        // Dispatch async to allow tests to continue without blocking.
+        DispatchQueue.main.async {
+            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.viewContext])
+        }
+        
+        NotificationCenter.default.post(name: .recordControllerDidProcessUpdates, object: self)
+        
+        self.processingDispatchGroup.leave()
+    }
+    
+    func processHarmonyChanges(_ changes: [String: [NSManagedObjectID]], in context: NSManagedObjectContext)
+    {
+        let objectIDs = changes.values.flatMap { $0 }
+        let localRecordIDs = objectIDs.filter { $0.entity == LocalRecord.entity() }
+        let remoteRecordIDs = objectIDs.filter { $0.entity == RemoteRecord.entity() }
+        
+        if !localRecordIDs.isEmpty
+        {
+            self.updateManagedRecords(for: localRecordIDs, keyPath: \ManagedRecord.localRecord, in: context)
+        }
+        
+        if !remoteRecordIDs.isEmpty
+        {
+            self.updateManagedRecords(for: remoteRecordIDs, keyPath: \ManagedRecord.remoteRecord, in: context)
+        }
+        
+        DispatchQueue.main.async {
+            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self.persistentContainer.viewContext])
+        }
+        
+        self.processingDispatchGroup.leave()
     }
 }

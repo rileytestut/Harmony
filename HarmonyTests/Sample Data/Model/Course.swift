@@ -18,7 +18,7 @@ public class Course: NSManagedObject
 
 extension Course: Syncable
 {
-    public var syncablePrimaryKey: AnyKeyPath {
+    public class var syncablePrimaryKey: AnyKeyPath {
         return \Course.identifier
     }
     

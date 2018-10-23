@@ -37,7 +37,7 @@ public class Homework: NSManagedObject
 
 extension Homework: Syncable
 {
-    public var syncablePrimaryKey: AnyKeyPath {
+    public class var syncablePrimaryKey: AnyKeyPath {
         return \Homework.identifier
     }
     

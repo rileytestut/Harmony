@@ -9,9 +9,12 @@
 import Foundation
 import CoreData
 
+import Roxas
+
 class SyncRecordsOperation: Operation<([Result<Void>], Data)>
 {
     let changeToken: Data?
+    let recordController: RecordController
         
     private var updatedChangeToken: Data?
     
@@ -19,11 +22,12 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
         return true
     }
     
-    init(service: Service, changeToken: Data?, managedObjectContext: NSManagedObjectContext)
+    init(changeToken: Data?, service: Service, recordController: RecordController)
     {
         self.changeToken = changeToken
+        self.recordController = recordController
         
-        super.init(service: service, managedObjectContext: managedObjectContext)
+        super.init(service: service)
         
         self.operationQueue.maxConcurrentOperationCount = 1
         self.progress.totalUnitCount = 0
@@ -48,7 +52,7 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
             dispatchGroup.leave()
         }
         
-        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(service: self.service, changeToken: self.changeToken, managedObjectContext: self.managedObjectContext)
+        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, service: self.service, recordController: self.recordController)
         fetchRemoteRecordsOperation.resultHandler = { [weak self] (result) in
             if case .success(_, let changeToken) = result
             {
@@ -56,14 +60,16 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
             }
             
             finish(result, debugTitle: "Fetch Records Result:")
+            
+            self?.recordController.printRecords()
         }
         
-        let uploadRecordsOperation = UploadRecordsOperation(service: self.service, managedObjectContext: self.managedObjectContext)
+        let uploadRecordsOperation = UploadRecordsOperation(service: self.service, recordController: self.recordController)
         uploadRecordsOperation.resultHandler = { (result) in
             finish(result, debugTitle: "Upload Result:")
         }
         
-        let downloadRecordsOperation = DownloadRecordsOperation(service: self.service, managedObjectContext: self.managedObjectContext)
+        let downloadRecordsOperation = DownloadRecordsOperation(service: self.service, recordController: self.recordController)
         downloadRecordsOperation.resultHandler = { (result) in
             finish(result, debugTitle: "Download Result:")
         }
@@ -86,6 +92,8 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
             
             self.result = .success(([], updatedChangeToken))
             self.finish()
+            
+            self.recordController.printRecords()
         }
     }
 }

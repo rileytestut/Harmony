@@ -14,7 +14,6 @@ import Roxas
 class Operation<ResultType>: RSTOperation, ProgressReporting
 {
     let service: Service
-    let managedObjectContext: NSManagedObjectContext
     
     let progress = Progress.discreteProgress(totalUnitCount: 1)
     
@@ -23,10 +22,9 @@ class Operation<ResultType>: RSTOperation, ProgressReporting
     var result: Result<ResultType>?
     var resultHandler: ((Result<ResultType>) -> Void)?
     
-    init(service: Service, managedObjectContext: NSManagedObjectContext)
+    init(service: Service)
     {
         self.service = service
-        self.managedObjectContext = managedObjectContext
         
         self.operationQueue = OperationQueue()
         self.operationQueue.name = "com.rileytestut.Harmony.\(type(of: self)).operationQueue"

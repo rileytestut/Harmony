@@ -21,6 +21,15 @@ public enum Result<ValueType>
         case .failure(let error): throw error
         }
     }
+    
+    public func verify() throws
+    {
+        switch self
+        {
+        case .success: break
+        case .failure(let error): throw error
+        }
+    }
 }
 
 public extension Result where ValueType == Void

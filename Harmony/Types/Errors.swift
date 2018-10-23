@@ -58,6 +58,7 @@ public enum UploadRecordError: HarmonyError
     case cancelled
     case invalidResponse
     case nilManagedObjectContext
+    case nilLocalRecord
     case conflicted
     case service(NSError)
     
@@ -71,6 +72,7 @@ public enum UploadRecordError: HarmonyError
         case .cancelled: return NSLocalizedString("The upload was cancelled.", comment: "")
         case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
         case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
+        case .nilLocalRecord: return NSLocalizedString("The record does not have a local record.", comment: "")
         case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
         case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
         }
@@ -82,6 +84,7 @@ public enum DownloadRecordError: HarmonyError
     case cancelled
     case invalidResponse
     case nilManagedObjectContext
+    case nilRemoteRecord
     case conflicted
     case service(NSError)
     
@@ -95,6 +98,7 @@ public enum DownloadRecordError: HarmonyError
         case .cancelled: return NSLocalizedString("The download was cancelled.", comment: "")
         case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
         case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
+        case .nilRemoteRecord: return NSLocalizedString("The record does not have a remote record.", comment: "")
         case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
         case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
         }

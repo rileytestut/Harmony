@@ -9,72 +9,50 @@
 import Foundation
 import CoreData
 
-extension ManagedRecord
-{
-    @objc public enum Status: Int16, CaseIterable
-    {
-        case normal
-        case updated
-        case deleted
-    }
-}
-
+@objc(ManagedRecord)
 public class ManagedRecord: NSManagedObject
 {
-    @NSManaged public var versionIdentifier: String
-    @NSManaged public var versionDate: Date
-    
-    @NSManaged public var recordedObjectType: String
-    @NSManaged public var recordedObjectIdentifier: String
-    
-    @objc public dynamic var status: Status {
+    /* Properties */
+    @objc var isConflicted: Bool {
         get {
-            self.willAccessValue(forKey: #keyPath(ManagedRecord.status))
-            defer { self.didAccessValue(forKey: #keyPath(ManagedRecord.status)) }
+            self.willAccessValue(forKey: #keyPath(ManagedRecord.isConflicted))
+            defer { self.didAccessValue(forKey: #keyPath(ManagedRecord.isConflicted)) }
             
-            let status = Status(rawValue: self.primitiveStatus.int16Value) ?? .updated
-            return status
+            let isConflicted = self.primitiveValue(forKey: #keyPath(ManagedRecord.isConflicted)) as? Bool ?? false
+            return isConflicted
         }
         set {
-            self.willChangeValue(for: \.status)
-            defer { self.didChangeValue(for: \.status) }
+            self.willChangeValue(for: \.isConflicted)
+            defer { self.didChangeValue(for: \.isConflicted) }
             
-            self.primitiveStatus = NSNumber(value: newValue.rawValue)
+            self.setPrimitiveValue(newValue, forKey: #keyPath(ManagedRecord.isConflicted))
+            
+            if newValue
+            {
+                self.isSyncingEnabled = false
+            }
         }
     }
-}
-
-private extension ManagedRecord
-{
-    @NSManaged var primitiveStatus: NSNumber
+    
+    @NSManaged var isSyncingEnabled: Bool
+    
+    @NSManaged var recordedObjectType: String
+    @NSManaged var recordedObjectIdentifier: String
+    
+    /* Relationships */
+    @NSManaged public var localRecord: LocalRecord?
+    @NSManaged public var remoteRecord: RemoteRecord?
+        
+    private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
+    {
+        super.init(entity: entity, insertInto: context)
+    }
 }
 
 extension ManagedRecord
 {
-    class func predicate(for record: ManagedRecord) -> NSPredicate
+    @nonobjc class func fetchRequest() -> NSFetchRequest<ManagedRecord>
     {
-        let predicate = NSPredicate(format: "%K == %@ AND %K == %@",
-                                    #keyPath(ManagedRecord.recordedObjectType), record.recordedObjectType,
-                                    #keyPath(ManagedRecord.recordedObjectIdentifier), record.recordedObjectIdentifier)
-        return predicate
-    }
-    
-    class func sanitize<RootType: ManagedRecord>(_ keyPath: PartialKeyPath<RootType>) -> String
-    {
-        // This method originally used more Swift.KeyPath logic, but all attempts resulted in crashing at runtime with Swift 4.2.
-        guard let stringValue = keyPath.stringValue else { fatalError("Key path provided to ManagedRecord.sanitizedKeyPath(_:) is not a valid @objc key path.") }
-        
-        let keyPathComponents: [String]
-        
-        switch (self, RootType.self)
-        {
-        case is (LocalRecord.Type, LocalRecord.Type), is (RemoteRecord.Type, RemoteRecord.Type): keyPathComponents = [stringValue]
-        case is (LocalRecord.Type, RemoteRecord.Type): keyPathComponents = [#keyPath(LocalRecord.remoteRecord), stringValue]
-        case is (RemoteRecord.Type, LocalRecord.Type): keyPathComponents = [#keyPath(RemoteRecord.localRecord), stringValue]
-        default: fatalError()
-        }
-
-        let keyPath = keyPathComponents.joined(separator: ".")
-        return keyPath
+        return NSFetchRequest<ManagedRecord>(entityName: "ManagedRecord")
     }
 }

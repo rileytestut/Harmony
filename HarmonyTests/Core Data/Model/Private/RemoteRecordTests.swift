@@ -24,13 +24,13 @@ extension RemoteRecordTests
         let versionDate = Date()
         let recordedObjectType = "type"
         let recordedObjectIdentifier = "recordedObjectIdentifier"
-        let status = ManagedRecord.Status.deleted
+        let status = RecordRepresentation.Status.deleted
         
-        let record = RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, recordedObjectType: recordedObjectType, recordedObjectIdentifier: recordedObjectIdentifier, status: status, managedObjectContext: self.recordController.viewContext)
-        
+        let record = RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, recordedObjectType: recordedObjectType, recordedObjectIdentifier: recordedObjectIdentifier, status: status, context: self.recordController.viewContext)
+
         XCTAssertEqual(record.identifier, identifier)
-        XCTAssertEqual(record.versionIdentifier, versionIdentifier)
-        XCTAssertEqual(record.versionDate, versionDate)
+        XCTAssertEqual(record.version.identifier, versionIdentifier)
+        XCTAssertEqual(record.version.date, versionDate)
         XCTAssertEqual(record.recordedObjectType, recordedObjectType)
         XCTAssertEqual(record.recordedObjectIdentifier, recordedObjectIdentifier)
         XCTAssertEqual(record.status, status)
@@ -42,32 +42,17 @@ extension RemoteRecordTests
     func testStatus()
     {
         // KVO
-        var record = RemoteRecord.make()
+        let record = RemoteRecord.make()
         
-        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: ManagedRecord.Status.updated.rawValue)
+        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: RecordRepresentation.Status.updated.rawValue)
         record.status = .updated
         
         XCTAssertEqual(record.status, .updated)
         
         self.wait(for: [expectation], timeout: 1.0)
         
-        // Deleting without local record
         record.status = .deleted
-        
         XCTAssertEqual(record.status, .deleted)
-        
-        let professor = Professor(context: self.recordController.viewContext)
-        professor.name = "Michael Shindler"
-        professor.identifier = UUID().uuidString
-        
-        let localRecord = try! LocalRecord(managedObject: professor, managedObjectContext: self.recordController.viewContext)
-        
-        record = RemoteRecord.make()
-        record.localRecord = localRecord
-        record.status = .deleted
-        
-        XCTAssertEqual(record.status, .deleted)
-        XCTAssertFalse(record.isDeleted)
     }
     
     func testStatusInvalid()
