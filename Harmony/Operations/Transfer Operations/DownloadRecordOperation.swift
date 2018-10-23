@@ -48,7 +48,7 @@ class DownloadRecordOperation: Operation<LocalRecord>, RecordOperation
                     }
                     catch
                     {
-                        self.result = .failure(error)
+                        self.result = .failure(DownloadError(record: self.record, code: .any(error)))
                     }
                     
                     self.finish()
@@ -58,7 +58,7 @@ class DownloadRecordOperation: Operation<LocalRecord>, RecordOperation
             }
             else
             {
-                self.result = .failure(DownloadRecordError.nilRemoteRecord)
+                self.result = .failure(error)
                 self.finish()
             }
         }

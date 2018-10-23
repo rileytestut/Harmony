@@ -9,14 +9,6 @@
 import Foundation
 import CoreData
 
-extension SyncCoordinator
-{
-    public enum Error: Swift.Error
-    {
-        case databaseCorrupted(Swift.Error)
-    }
-}
-
 public final class SyncCoordinator
 {
     public let service: Service
@@ -47,7 +39,7 @@ public extension SyncCoordinator
         self.recordController.start { (result) in
             if let error = result.values.first
             {
-                completionHandler(.failure(Error.databaseCorrupted(error)))
+                completionHandler(.failure(SyncError(code: .databaseCorrupted(error))))
             }
             else
             {

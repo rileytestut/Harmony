@@ -8,120 +8,218 @@
 
 import Foundation
 
-public enum AuthenticationError: HarmonyError
+public enum _HarmonyErrorCode
 {
     case cancelled
+    
+    case unknown
+    case any(Error)
+    
+    case databaseCorrupted(Swift.Error)
+    
     case noSavedCredentials
     
-    case service(NSError)
+    case invalidChangeToken
+    case invalidResponse
+    case invalidSyncableIdentifier
     
-    public var failureDescription: String {
-        return NSLocalizedString("Failed to authenticate user.", comment: "")
-    }
+    case nilManagedObjectContext
+    case nilLocalRecord
+    case nilRemoteRecord
+    case nilRecordedObject
     
-    public var failureReason: String? {
-        switch self
-        {
-        case .cancelled: return NSLocalizedString("Authentication was cancelled.", comment: "")
-        case .noSavedCredentials: return NSLocalizedString("There are no saved credentials for the user.", comment: "")
-        case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
-        }
-    }
-}
-
-public enum FetchRecordsError: HarmonyError
-{
-    case cancelled
-    case invalidFormat
-    case invalidChangeToken(Data)
-    case service(NSError)
-    case unknown
-    
-    public var failureDescription: String {
-        return NSLocalizedString("Failed to fetch remote records.", comment: "")
-    }
+    case conflicted
+        
+    case unknownRecordType(String)
+    case nonSyncableRecordType(String)
     
     public var failureReason: String? {
         switch self
         {
         case .cancelled: return NSLocalizedString("The operation was cancelled.", comment: "")
-        case .invalidFormat: return NSLocalizedString("The record data was in an invalid format.", comment: "")
-        case .invalidChangeToken: return NSLocalizedString("The provided change token was invalid.", comment: "")
-        case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
         case .unknown: return NSLocalizedString("An unknown error occured.", comment: "")
+        case .any(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
+        case .databaseCorrupted: return NSLocalizedString("The syncing database is corrupted.", comment: "")
+        case .noSavedCredentials: return NSLocalizedString("There are no saved credentials for the current user.", comment: "")
+        case .invalidChangeToken: return NSLocalizedString("The provided change token was invalid.", comment: "")
+        case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
+        case .invalidSyncableIdentifier: return NSLocalizedString("The recorded object has an invalid syncable identifier.", comment: "")
+        case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
+        case .nilLocalRecord: return NSLocalizedString("The record's local data could not be found.", comment: "")
+        case .nilRemoteRecord: return NSLocalizedString("The record's remote data could not be found.", comment: "")
+        case .nilRecordedObject: return NSLocalizedString("The recorded object could not be found.", comment: "")
+        case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
+        case .unknownRecordType(let type): return String.localizedStringWithFormat("Unknown record type '%@'.", type)
+        case .nonSyncableRecordType(let type): return String.localizedStringWithFormat("Record type '%@' does not support syncing.", type)
         }
     }
 }
 
-public enum UploadRecordError: HarmonyError
+public protocol HarmonyError: LocalizedError, CustomNSError
 {
-    case cancelled
-    case invalidResponse
-    case nilManagedObjectContext
-    case nilLocalRecord
-    case conflicted
-    case service(NSError)
+    typealias Code = _HarmonyErrorCode
+    
+    var code: Code { get }
+    var failureDescription: String { get }
+}
+
+extension HarmonyError
+{
+    public var failureReason: String? {
+        return self.code.failureReason
+    }
+    
+    public var errorUserInfo: [String : Any] {
+        let userInfo = [NSLocalizedFailureErrorKey: self.failureDescription]
+        return userInfo
+    }
+}
+
+public struct SyncError: HarmonyError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to sync.", comment: "")
+    }
+    
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct AuthenticationError: HarmonyError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to authenticate user.", comment: "")
+    }
+    
+    public init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct LocalRecordError: HarmonyError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to create local record.", comment: "")
+    }
+    
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct FetchError: HarmonyError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to fetch record.", comment: "")
+    }
+    
+    public init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+
+/* Record Errors */
+
+protocol RecordError: HarmonyError
+{
+    var record: ManagedRecord { get }
+    
+    init(record: ManagedRecord, code: HarmonyError.Code)
+}
+
+public struct UploadError: RecordError
+{
+    public var record: ManagedRecord
+    public var code: HarmonyError.Code
     
     public var failureDescription: String {
         return NSLocalizedString("Failed to upload record.", comment: "")
     }
     
-    public var failureReason: String? {
-        switch self
-        {
-        case .cancelled: return NSLocalizedString("The upload was cancelled.", comment: "")
-        case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
-        case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
-        case .nilLocalRecord: return NSLocalizedString("The record does not have a local record.", comment: "")
-        case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
-        case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
-        }
+    public init(record: ManagedRecord, code: HarmonyError.Code)
+    {
+        self.record = record
+        self.code = code
     }
 }
 
-public enum DownloadRecordError: HarmonyError
+public struct DownloadError: RecordError
 {
-    case cancelled
-    case invalidResponse
-    case nilManagedObjectContext
-    case nilRemoteRecord
-    case conflicted
-    case service(NSError)
+    public var record: ManagedRecord
+    public var code: HarmonyError.Code
     
     public var failureDescription: String {
         return NSLocalizedString("Failed to download record.", comment: "")
     }
     
-    public var failureReason: String? {
-        switch self
-        {
-        case .cancelled: return NSLocalizedString("The download was cancelled.", comment: "")
-        case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
-        case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
-        case .nilRemoteRecord: return NSLocalizedString("The record does not have a remote record.", comment: "")
-        case .service(let error): return error.localizedFailureDescription ?? error.localizedDescription
-        case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
-        }
+    public init(record: ManagedRecord, code: HarmonyError.Code)
+    {
+        self.record = record
+        self.code = code
     }
 }
 
-public enum ParseError: HarmonyError
+
+/* Batch Errors */
+
+protocol BatchError: HarmonyError
 {
-    case nilManagedObjectContext
-    case unknownRecordType(String)
-    case nonSyncableRecordType(String)
+    init(code: HarmonyError.Code)
+}
+
+public struct BatchFetchError: BatchError
+{
+    public var code: HarmonyError.Code
     
     public var failureDescription: String {
-        return NSLocalizedString("Unable to parse record.", comment: "")
+        return NSLocalizedString("Failed to fetch records.", comment: "")
     }
     
-    public var failureReason: String? {
-        switch self
-        {
-        case .nilManagedObjectContext: return NSLocalizedString("The parser's managed object context is nil.", comment: "")
-        case .unknownRecordType(let type): return String.localizedStringWithFormat("Unknown record type '%@'.", type)
-        case .nonSyncableRecordType(let type): return String.localizedStringWithFormat("Record type '%@' does not support syncing.", type)
-        }
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct BatchUploadError: BatchError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to upload records.", comment: "")
+    }
+    
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct BatchDownloadError: BatchError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to download records.", comment: "")
+    }
+    
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
     }
 }
 

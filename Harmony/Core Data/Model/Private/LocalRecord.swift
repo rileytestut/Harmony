@@ -11,22 +11,6 @@ import CoreData
 
 extension LocalRecord
 {
-    enum Error: Swift.Error
-    {
-        case invalidSyncableIdentifier
-        case nilRecordedObject
-        case nilRecordedObjectContext
-        
-        var localizedDescription: String {
-            switch self
-            {
-            case .invalidSyncableIdentifier: return NSLocalizedString("The managed object to be recorded has an invalid syncable identifier.", comment: "")
-            case .nilRecordedObject: return NSLocalizedString("The recorded object could not be found.", comment: "")
-            case .nilRecordedObjectContext: return NSLocalizedString("The recorded object's managed object context is nil", comment: "")
-            }
-        }
-    }
-    
     private enum CodingKeys: String, CodingKey, Codable
     {
         case type
@@ -86,7 +70,7 @@ public class LocalRecord: RecordRepresentation, Codable
     
     public required init(from decoder: Decoder) throws
     {
-        guard let context = decoder.managedObjectContext else { throw ParseError.nilManagedObjectContext }
+        guard let context = decoder.managedObjectContext else { throw LocalRecordError(code: .nilManagedObjectContext) }
         
         super.init(entity: LocalRecord.entity(), insertInto: nil)
         
@@ -98,7 +82,7 @@ public class LocalRecord: RecordRepresentation, Codable
             let entity = NSEntityDescription.entity(forEntityName: recordType, in: context),
             let managedObjectClass = NSClassFromString(entity.managedObjectClassName) as? Syncable.Type,
             let primaryKeyPath = managedObjectClass.syncablePrimaryKey.stringValue
-        else { throw ParseError.unknownRecordType(self.recordedObjectType) }
+        else { throw LocalRecordError(code: .unknownRecordType(self.recordedObjectType)) }
         
         let identifier = try container.decode(String.self, forKey: .identifier)
         
@@ -113,7 +97,7 @@ public class LocalRecord: RecordRepresentation, Codable
         }
         else
         {
-            guard let managedObject = NSManagedObject(entity: entity, insertInto: context) as? SyncableManagedObject else { throw ParseError.nonSyncableRecordType(recordType) }
+            guard let managedObject = NSManagedObject(entity: entity, insertInto: context) as? SyncableManagedObject else { throw LocalRecordError(code: .nonSyncableRecordType(recordType)) }
             
             recordedObject = managedObject
         }
@@ -154,7 +138,7 @@ public class LocalRecord: RecordRepresentation, Codable
         try container.encode(self.recordedObjectType, forKey: .type)
         try container.encode(self.recordedObjectIdentifier, forKey: .identifier)
         
-        guard let recordedObject = self.recordedObject else { throw Error.nilRecordedObject }
+        guard let recordedObject = self.recordedObject else { throw LocalRecordError(code: .nilRecordedObject) }
         
         var recordContainer = container.nestedContainer(keyedBy: RecordKey.self, forKey: .record)
         for key in recordedObject.syncableKeys
@@ -192,11 +176,11 @@ extension LocalRecord
     
     func configure(with recordedObject: SyncableManagedObject) throws
     {
-        guard let recordedObjectIdentifier = recordedObject.syncableIdentifier else { throw Error.invalidSyncableIdentifier }
+        guard let recordedObjectIdentifier = recordedObject.syncableIdentifier else { throw LocalRecordError(code: .invalidSyncableIdentifier) }
         
         if recordedObject.objectID.isTemporaryID
         {
-            guard let context = recordedObject.managedObjectContext else { throw Error.nilRecordedObjectContext }
+            guard let context = recordedObject.managedObjectContext else { throw LocalRecordError(code: .nilManagedObjectContext) }
             try context.obtainPermanentIDs(for: [recordedObject])
         }
         

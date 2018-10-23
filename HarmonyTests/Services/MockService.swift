@@ -56,7 +56,7 @@ extension MockService: Service
             }
             else
             {
-                result = .failure(FetchRecordsError.invalidChangeToken(changeToken))
+                result = .failure(FetchError(code: .invalidChangeToken))
             }
             
             completionHandler(result)

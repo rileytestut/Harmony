@@ -17,7 +17,7 @@ protocol RecordOperation
     init(record: ManagedRecord, service: Service, context: NSManagedObjectContext)
 }
 
-class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & RecordOperation>: Operation<[ManagedRecord: Result<ResultType>]>
+class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & RecordOperation, ErrorType: BatchError>: Operation<[ManagedRecord: Result<ResultType>]>
 {
     let predicate: NSPredicate
     let recordController: RecordController
@@ -81,7 +81,7 @@ class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & Re
                         }
                         catch
                         {
-                            self.result = .failure(error)
+                            self.result = .failure(BatchErrorType.init(code: .any(error)))
                         }
                         
                         self.finish()
@@ -90,7 +90,7 @@ class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & Re
             }
             catch
             {
-                self.result = .failure(error)
+                self.result = .failure(BatchErrorType.init(code: .any(error)))
                 
                 self.finish()
             }
@@ -105,7 +105,7 @@ class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & Re
     }
 }
 
-class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation>
+class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation, UploadError, BatchUploadError>
 {
     init(service: Service, recordController: RecordController)
     {
@@ -113,7 +113,7 @@ class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOpe
     }
 }
 
-class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecordOperation>
+class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecordOperation, DownloadError, BatchDownloadError>
 {
     init(service: Service, recordController: RecordController)
     {

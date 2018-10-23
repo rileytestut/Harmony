@@ -9,7 +9,7 @@
 import CoreData
 
 class UploadRecordOperation: Operation<RemoteRecord>, RecordOperation
-{
+{    
     let record: ManagedRecord
     let managedObjectContext: NSManagedObjectContext
     
@@ -37,11 +37,11 @@ class UploadRecordOperation: Operation<RemoteRecord>, RecordOperation
                     let record = self.managedObjectContext.object(with: self.record.objectID) as! ManagedRecord
                     record.isConflicted = true
                     
-                    self.result = .failure(UploadRecordError.conflicted)
                     self.finish()
                 }
                 
                 return
+                self.result = .failure(UploadError(record: self.record, code: .conflicted))
             }
             
             if let localRecord = self.record.localRecord
@@ -60,7 +60,6 @@ class UploadRecordOperation: Operation<RemoteRecord>, RecordOperation
                     }
                     catch
                     {
-                        self.result = .failure(error)
                     }
                     
                     self.finish()
@@ -68,6 +67,7 @@ class UploadRecordOperation: Operation<RemoteRecord>, RecordOperation
                 
                 self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
             }
+                self.result = .failure(error)
         }
     }
 }
