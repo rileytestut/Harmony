@@ -25,7 +25,7 @@ public class RecordRepresentation: NSManagedObject
     
     @NSManaged public var managedRecord: ManagedRecord?
     
-    @objc var status: RecordRepresentation.Status {
+    @objc public var status: RecordRepresentation.Status {
         get {
             self.willAccessValue(forKey: #keyPath(RecordRepresentation.status))
             defer { self.didAccessValue(forKey: #keyPath(RecordRepresentation.status)) }

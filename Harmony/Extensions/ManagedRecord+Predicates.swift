@@ -66,6 +66,13 @@ extension ManagedRecord
         let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate, self.syncableRecordsPredicate])
         return compoundPredicate
     }
+    
+    class var deleteRecordsPredicate: NSPredicate {
+        let predicate = self.predicate(for: .delete)
+        
+        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate, self.syncableRecordsPredicate])
+        return compoundPredicate
+    }
 }
 
 private extension ManagedRecord
@@ -109,7 +116,8 @@ private extension ManagedRecord
             case let (nil, remoteStatus?):
                 predicate = NSPredicate(format: "(%K == nil) AND (%K == %d)", #keyPath(ManagedRecord.localRecord), #keyPath(ManagedRecord.remoteRecord.status), remoteStatus.rawValue)
                 
-            default: fatalError("ManagedRecord predicate with nil statuses is not supproted")
+            case (nil, nil):
+                predicate = NSPredicate(format: "(%K == nil) AND (%K == nil)", #keyPath(ManagedRecord.localRecord), #keyPath(ManagedRecord.remoteRecord))
             }
             
             return predicate

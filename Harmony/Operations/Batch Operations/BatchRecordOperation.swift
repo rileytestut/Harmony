@@ -9,15 +9,7 @@
 import Foundation
 import CoreData
 
-protocol RecordOperation
-{
-    var record: ManagedRecord { get }
-    var managedObjectContext: NSManagedObjectContext { get }
-    
-    init(record: ManagedRecord, service: Service, context: NSManagedObjectContext)
-}
-
-class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & RecordOperation, ErrorType: BatchError>: Operation<[ManagedRecord: Result<ResultType>]>
+class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType, RecordErrorType>, RecordErrorType: RecordError, BatchErrorType: BatchError>: Operation<[ManagedRecord: Result<ResultType>]>
 {
     let predicate: NSPredicate
     let recordController: RecordController
@@ -47,23 +39,36 @@ class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & Re
         var results = [ManagedRecord: Result<ResultType>]()
         
         self.recordController.performBackgroundTask { (fetchContext) in
+            let saveContext = self.recordController.newBackgroundContext()
+            
             do
             {
                 let records = try fetchContext.fetch(fetchRequest)
                 
-                let saveContext = self.recordController.newBackgroundContext()
-                
-                let operations = records.map { (record) -> OperationType in
-                    let operation = OperationType(record: record, service: self.service, context: saveContext)
-                    operation.resultHandler = { (result) in
-                        results[operation.record] = result
+                let operations = records.compactMap { (record) -> OperationType? in
+                    do
+                    {
+                        let operation = try OperationType(record: record, service: self.service, context: saveContext)
+                        operation.resultHandler = { (result) in
+                            let record = saveContext.object(with: record.objectID) as! ManagedRecord
+                            results[record] = result
+                            
+                            dispatchGroup.leave()
+                        }
                         
-                        dispatchGroup.leave()
+                        dispatchGroup.enter()
+                        
+                        return operation
+                    }
+                    catch
+                    {
+                        saveContext.performAndWait {
+                            let record = saveContext.object(with: record.objectID) as! ManagedRecord
+                            results[record] = .failure(error)
+                        }
                     }
                     
-                    dispatchGroup.enter()
-                    
-                    return operation
+                    return nil
                 }
                 
                 self.progress.totalUnitCount = Int64(operations.count)
@@ -81,7 +86,7 @@ class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & Re
                         }
                         catch
                         {
-                            self.result = .failure(BatchErrorType.init(code: .any(error)))
+                            self.result = .failure(BatchErrorType(code: .any(error)))
                         }
                         
                         self.finish()
@@ -90,9 +95,11 @@ class BatchRecordOperation<ResultType, OperationType: Operation<ResultType> & Re
             }
             catch
             {
-                self.result = .failure(BatchErrorType.init(code: .any(error)))
+                self.result = .failure(BatchErrorType(code: .any(error)))
                 
-                self.finish()
+                saveContext.perform {
+                    self.finish()
+                }
             }
         }
     }
@@ -118,5 +125,13 @@ class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecord
     init(service: Service, recordController: RecordController)
     {
         super.init(predicate: ManagedRecord.downloadRecordsPredicate, service: service, recordController: recordController)
+    }
+}
+
+class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation, DeleteError, BatchDeleteError>
+{
+    init(service: Service, recordController: RecordController)
+    {
+        super.init(predicate: ManagedRecord.deleteRecordsPredicate, service: service, recordController: recordController)
     }
 }

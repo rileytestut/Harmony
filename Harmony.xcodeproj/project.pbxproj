@@ -61,6 +61,8 @@
 		BFBDB7C3216EB1F000DC004B /* RemoteRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */; };
 		BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBDB7C2216EB1F000DC004B /* LocalRecord.swift */; };
 		BFBDB7C6216ECC8500DC004B /* RecordRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBDB7C5216ECC8500DC004B /* RecordRepresentation.swift */; };
+		BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */; };
+		BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD0E2E4217FD02B006945CF /* RecordOperation.swift */; };
 		BFDA96F72164176000AF12F8 /* MergePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFDA96F62164176000AF12F8 /* MergePolicy.swift */; };
 		BFE029292006AE54004F70DC /* SyncableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE029282006AE54004F70DC /* SyncableTests.swift */; };
 		BFE4EAB51FDB8E6400855951 /* RemoteRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */; };
@@ -288,6 +290,8 @@
 		BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteRecord.swift; sourceTree = "<group>"; };
 		BFBDB7C2216EB1F000DC004B /* LocalRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalRecord.swift; sourceTree = "<group>"; };
 		BFBDB7C5216ECC8500DC004B /* RecordRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordRepresentation.swift; sourceTree = "<group>"; };
+		BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteRecordOperation.swift; sourceTree = "<group>"; };
+		BFD0E2E4217FD02B006945CF /* RecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordOperation.swift; sourceTree = "<group>"; };
 		BFDA96F62164176000AF12F8 /* MergePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergePolicy.swift; sourceTree = "<group>"; };
 		BFE029282006AE54004F70DC /* SyncableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncableTests.swift; sourceTree = "<group>"; };
 		BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRecordTests.swift; sourceTree = "<group>"; };
@@ -520,8 +524,10 @@
 		BF9A367A21630F3600F8EE91 /* Transfer Operations */ = {
 			isa = PBXGroup;
 			children = (
+				BFD0E2E4217FD02B006945CF /* RecordOperation.swift */,
 				BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */,
 				BF95137521657437007EF10C /* DownloadRecordOperation.swift */,
+				BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */,
 			);
 			path = "Transfer Operations";
 			sourceTree = "<group>";
@@ -968,6 +974,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */,
 				BF9A3673216303E700F8EE91 /* AnyDecodable.swift in Sources */,
 				BFFB9B1E200ED96700A8F673 /* Result.swift in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
@@ -977,6 +984,7 @@
 				BFBDB7C6216ECC8500DC004B /* RecordRepresentation.swift in Sources */,
 				BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */,
 				BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */,
+				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,

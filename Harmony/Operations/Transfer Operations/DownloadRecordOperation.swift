@@ -8,60 +8,41 @@
 
 import CoreData
 
-class DownloadRecordOperation: Operation<LocalRecord>, RecordOperation
+class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
 {
-    let record: ManagedRecord
-    let managedObjectContext: NSManagedObjectContext
-    
-    // Keep strong reference to recordContext.
-    private let recordContext: NSManagedObjectContext?
-    
-    required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext)
-    {
-        self.record = record
-        self.recordContext = self.record.managedObjectContext
-        
-        self.managedObjectContext = context
-        
-        super.init(service: service)
-    }
-    
     override func main()
     {
         super.main()
         
-        self.recordContext?.perform {
-            if let remoteRecord = self.record.remoteRecord
+        guard let remoteRecord = self.record.remoteRecord else {
+            self.result = .failure(DownloadError(record: self.record, code: .nilRemoteRecord))
+            self.finish()
+            
+            return
+        }
+        
+        let progress = self.service.download(remoteRecord, context: self.managedObjectContext) { (result) in
+            do
             {
-                let progress = self.service.download(remoteRecord, context: self.managedObjectContext) { (result) in
-                    do
-                    {
-                        let localRecord = try result.value()
-                        localRecord.status = .normal
-                        
-                        let remoteRecord = self.managedObjectContext.object(with: remoteRecord.objectID) as! RemoteRecord
-                        remoteRecord.status = .normal
-                        
-                        localRecord.version = remoteRecord.version
-
-                        self.result = .success(localRecord)
-                    }
-                    catch
-                    {
-                        self.result = .failure(DownloadError(record: self.record, code: .any(error)))
-                    }
-                    
-                    self.finish()
-                }
+                let localRecord = try result.value()
+                localRecord.status = .normal
                 
-                self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
+                let remoteRecord = self.managedObjectContext.object(with: remoteRecord.objectID) as! RemoteRecord
+                remoteRecord.status = .normal
+                
+                localRecord.version = remoteRecord.version
+                
+                self.result = .success(localRecord)
             }
-            else
+            catch
             {
                 self.result = .failure(error)
-                self.finish()
             }
+            
+            self.finish()
         }
+        
+        self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
     }
 }
 

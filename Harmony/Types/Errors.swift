@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreData
 
 public enum _HarmonyErrorCode
 {
@@ -27,6 +28,7 @@ public enum _HarmonyErrorCode
     case nilLocalRecord
     case nilRemoteRecord
     case nilRecordedObject
+    case nilManagedRecord
     
     case conflicted
         
@@ -48,6 +50,7 @@ public enum _HarmonyErrorCode
         case .nilLocalRecord: return NSLocalizedString("The record's local data could not be found.", comment: "")
         case .nilRemoteRecord: return NSLocalizedString("The record's remote data could not be found.", comment: "")
         case .nilRecordedObject: return NSLocalizedString("The recorded object could not be found.", comment: "")
+        case .nilManagedRecord: return NSLocalizedString("The record could not be found.", comment: "")
         case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
         case .unknownRecordType(let type): return String.localizedStringWithFormat("Unknown record type '%@'.", type)
         case .nonSyncableRecordType(let type): return String.localizedStringWithFormat("Record type '%@' does not support syncing.", type)
@@ -72,6 +75,20 @@ extension HarmonyError
     public var errorUserInfo: [String : Any] {
         let userInfo = [NSLocalizedFailureErrorKey: self.failureDescription]
         return userInfo
+    }
+}
+
+public struct AnyError: HarmonyError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("The operation could not be completed.", comment: "")
+    }
+    
+    public init(code: HarmonyError.Code)
+    {
+        self.code = code
     }
 }
 
@@ -146,6 +163,8 @@ public struct UploadError: RecordError
     public var record: ManagedRecord
     public var code: HarmonyError.Code
     
+    private var recordContext: NSManagedObjectContext?
+    
     public var failureDescription: String {
         return NSLocalizedString("Failed to upload record.", comment: "")
     }
@@ -154,6 +173,8 @@ public struct UploadError: RecordError
     {
         self.record = record
         self.code = code
+        
+        self.recordContext = self.record.managedObjectContext
     }
 }
 
@@ -161,6 +182,8 @@ public struct DownloadError: RecordError
 {
     public var record: ManagedRecord
     public var code: HarmonyError.Code
+    
+    private var recordContext: NSManagedObjectContext?
     
     public var failureDescription: String {
         return NSLocalizedString("Failed to download record.", comment: "")
@@ -170,6 +193,28 @@ public struct DownloadError: RecordError
     {
         self.record = record
         self.code = code
+        
+        self.recordContext = self.record.managedObjectContext
+    }
+}
+
+public struct DeleteError: RecordError
+{
+    public var record: ManagedRecord
+    public var code: HarmonyError.Code
+    
+    private var recordContext: NSManagedObjectContext?
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to delete record.", comment: "")
+    }
+    
+    public init(record: ManagedRecord, code: HarmonyError.Code)
+    {
+        self.record = record
+        self.code = code
+        
+        self.recordContext = self.record.managedObjectContext
     }
 }
 
@@ -215,6 +260,20 @@ public struct BatchDownloadError: BatchError
     
     public var failureDescription: String {
         return NSLocalizedString("Failed to download records.", comment: "")
+    }
+    
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct BatchDeleteError: BatchError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to delete records.", comment: "")
     }
     
     init(code: HarmonyError.Code)

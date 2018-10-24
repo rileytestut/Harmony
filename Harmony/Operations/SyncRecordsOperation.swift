@@ -74,7 +74,12 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
             finish(result, debugTitle: "Download Result:")
         }
         
-        let operations = [fetchRemoteRecordsOperation, uploadRecordsOperation, downloadRecordsOperation]
+        let deleteRecordsOperation = DeleteRecordsOperation(service: self.service, recordController: self.recordController)
+        deleteRecordsOperation.resultHandler = { (result) in
+            finish(result, debugTitle: "Delete Result:")
+        }
+        
+        let operations = [fetchRemoteRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
         self.progress.totalUnitCount = Int64(operations.count)
         
         for operation in operations

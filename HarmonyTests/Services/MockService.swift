@@ -75,6 +75,11 @@ extension MockService: Service
         fatalError()
     }
     
+    func delete(_ record: RemoteRecord, completionHandler: @escaping (Result<Void>) -> Void) -> Progress
+    {
+        fatalError()
+    }
+    
     func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Void>) -> Void)
     {
     }

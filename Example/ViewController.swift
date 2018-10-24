@@ -77,6 +77,7 @@ private extension ViewController
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \Professor.identifier, ascending: true)]
         
         let dataSource = RSTFetchedResultsTableViewDataSource(fetchRequest: fetchRequest, managedObjectContext: self.persistentContainer.viewContext)
+        dataSource.proxy = self
         dataSource.cellConfigurationHandler = { (cell, professor, indexPath) in
             cell.textLabel?.text = professor.name
             cell.detailTextLabel?.text = professor.identifier
@@ -136,6 +137,20 @@ extension ViewController
         self.persistentContainer.performBackgroundTask { (context) in
             let professor = context.object(with: professor.objectID) as! Professor
             professor.name = UUID().uuidString
+            
+            try! context.save()
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath)
+    {
+        guard editingStyle == .delete else { return }
+        
+        let professor = self.dataSource.item(at: indexPath)
+        
+        self.persistentContainer.performBackgroundTask { (context) in
+            let professor = context.object(with: professor.objectID) as! Professor
+            context.delete(professor)
             
             try! context.save()
         }
