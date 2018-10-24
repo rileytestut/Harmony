@@ -23,7 +23,7 @@ class RecordOperation<ResultType, ErrorType: RecordError>: Operation<ResultType>
     
     required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext) throws
     {
-        guard let recordContext = record.managedObjectContext else { throw ErrorType.init(record: record, code: .nilManagedObjectContext) }
+        guard let recordContext = record.managedObjectContext else { throw ErrorType(record: record, code: .nilManagedObjectContext) }
         
         self.record = record
         self.recordContext = recordContext

@@ -14,19 +14,6 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
     {
         super.main()
         
-        // Mark record as conflicted if its cached version identifier does not match current remote version identifier.
-        guard self.record.remoteRecord == nil || self.record.localRecord?.version?.identifier == self.record.remoteRecord?.version.identifier else {
-            self.managedObjectContext.perform {
-                let record = self.managedObjectContext.object(with: self.record.objectID) as! ManagedRecord
-                record.isConflicted = true
-                
-                self.result = .failure(UploadError(record: self.record, code: .conflicted))
-                self.finish()
-            }
-            
-            return
-        }
-        
         guard let localRecord = self.record.localRecord else {
             self.result = .failure(UploadError(record: self.record, code: .nilLocalRecord))
             self.finish()

@@ -223,6 +223,12 @@ private extension RecordController
                 
                 configure(record, with: recordRepresentation)
                 
+                if record.localRecord?.status == .deleted && record.remoteRecord?.status == .deleted
+                {
+                    // Delete managed records that have been deleted both locally and remotely.
+                    context.delete(record)
+                }
+                
                 // Remove from recordRepresentationsByRecordedObjectID so we know which records we still need to create.
                 recordRepresentationsByRecordedObjectID[recordedObjectID] = nil
             }
@@ -237,7 +243,6 @@ private extension RecordController
                 
                 configure(managedRecord, with: recordRepresentation)
             }
-            
             
             if context.hasChanges
             {

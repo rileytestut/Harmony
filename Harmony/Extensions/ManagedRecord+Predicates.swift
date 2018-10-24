@@ -73,6 +73,25 @@ extension ManagedRecord
         let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate, self.syncableRecordsPredicate])
         return compoundPredicate
     }
+    
+    class var conflictRecordsPredicate: NSPredicate {
+        let predicate = self.predicate(for: .conflict)
+        
+        let allConflictsPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [predicate, self.conflictedUploadsPredicate])
+        
+        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [allConflictsPredicate, self.syncableRecordsPredicate])
+        return compoundPredicate
+    }
+    
+    private class var mismatchedVersionsPredicate: NSPredicate {
+        let predicate = NSPredicate(format: "%K != %K", #keyPath(ManagedRecord.localRecord.version.identifier), #keyPath(ManagedRecord.remoteRecord.version.identifier))
+        return predicate
+    }
+    
+    private class var conflictedUploadsPredicate: NSPredicate {
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [self.uploadRecordsPredicate, self.mismatchedVersionsPredicate])
+        return predicate
+    }
 }
 
 private extension ManagedRecord

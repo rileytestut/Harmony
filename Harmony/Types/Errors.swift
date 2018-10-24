@@ -218,6 +218,25 @@ public struct DeleteError: RecordError
     }
 }
 
+public struct ConflictError: RecordError
+{
+    public var record: ManagedRecord
+    public var code: HarmonyError.Code
+    
+    private var recordContext: NSManagedObjectContext?
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to mark record as conflicted.", comment: "")
+    }
+    
+    public init(record: ManagedRecord, code: HarmonyError.Code)
+    {
+        self.record = record
+        self.code = code
+        
+        self.recordContext = self.record.managedObjectContext
+    }
+}
 
 /* Batch Errors */
 
@@ -274,6 +293,20 @@ public struct BatchDeleteError: BatchError
     
     public var failureDescription: String {
         return NSLocalizedString("Failed to delete records.", comment: "")
+    }
+    
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct BatchConflictError: BatchError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to mark records as conflicted.", comment: "")
     }
     
     init(code: HarmonyError.Code)

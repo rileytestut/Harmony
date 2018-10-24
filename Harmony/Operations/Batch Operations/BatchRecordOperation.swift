@@ -135,3 +135,11 @@ class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation, 
         super.init(predicate: ManagedRecord.deleteRecordsPredicate, service: service, recordController: recordController)
     }
 }
+
+class ConflictRecordsOperation: BatchRecordOperation<Void, ConflictRecordOperation, ConflictError, BatchConflictError>
+{
+    init(service: Service, recordController: RecordController)
+    {
+        super.init(predicate: ManagedRecord.conflictRecordsPredicate, service: service, recordController: recordController)
+    }
+}

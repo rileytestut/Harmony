@@ -20,6 +20,7 @@
 		BF1D94921F9C24DC004216B9 /* XCAssert+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */; };
 		BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */; };
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
+		BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */; };
 		BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */; };
 		BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */; };
 		BF6C9EF21F9BF441001B3F37 /* HarmonyTests.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF01F9BF441001B3F37 /* HarmonyTests.xcdatamodeld */; };
@@ -245,6 +246,7 @@
 		BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordControllerTests.swift; sourceTree = "<group>"; };
 		BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCAssert+Harmony.swift"; sourceTree = "<group>"; };
 		BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Generics.swift"; sourceTree = "<group>"; };
+		BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConflictRecordOperation.swift; sourceTree = "<group>"; };
 		BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyTestCase.swift; sourceTree = "<group>"; };
 		BF6C9EF11F9BF441001B3F37 /* HarmonyTests.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HarmonyTests.xcdatamodel; sourceTree = "<group>"; };
@@ -521,15 +523,16 @@
 			path = "Batch Operations";
 			sourceTree = "<group>";
 		};
-		BF9A367A21630F3600F8EE91 /* Transfer Operations */ = {
+		BF9A367A21630F3600F8EE91 /* Record Operations */ = {
 			isa = PBXGroup;
 			children = (
 				BFD0E2E4217FD02B006945CF /* RecordOperation.swift */,
 				BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */,
 				BF95137521657437007EF10C /* DownloadRecordOperation.swift */,
 				BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */,
+				BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */,
 			);
-			path = "Transfer Operations";
+			path = "Record Operations";
 			sourceTree = "<group>";
 		};
 		BFA1C8CA1ECD01C100DEA99D = {
@@ -662,7 +665,7 @@
 				BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */,
 				BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */,
 				BF9A367921630F2B00F8EE91 /* Batch Operations */,
-				BF9A367A21630F3600F8EE91 /* Transfer Operations */,
+				BF9A367A21630F3600F8EE91 /* Record Operations */,
 			);
 			path = Operations;
 			sourceTree = "<group>";
@@ -1002,6 +1005,7 @@
 				BFDA96F72164176000AF12F8 /* MergePolicy.swift in Sources */,
 				BFFDBA9F216D74FC00AED109 /* File.swift in Sources */,
 				BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */,
+				BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */,
 				BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */,
 				BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */,
 				BFFDBA99216D60EC00AED109 /* FetchRemoteRecordsOperation.swift in Sources */,

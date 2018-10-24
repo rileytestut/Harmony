@@ -64,6 +64,11 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
             self?.recordController.printRecords()
         }
         
+        let conflictRecordsOperation = ConflictRecordsOperation(service: self.service, recordController: self.recordController)
+        conflictRecordsOperation.resultHandler = { (result) in
+            finish(result, debugTitle: "Conflict Result:")
+        }
+        
         let uploadRecordsOperation = UploadRecordsOperation(service: self.service, recordController: self.recordController)
         uploadRecordsOperation.resultHandler = { (result) in
             finish(result, debugTitle: "Upload Result:")
@@ -79,7 +84,7 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
             finish(result, debugTitle: "Delete Result:")
         }
         
-        let operations = [fetchRemoteRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
+        let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
         self.progress.totalUnitCount = Int64(operations.count)
         
         for operation in operations
