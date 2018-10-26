@@ -65,6 +65,18 @@ extension MockService: Service
         return progress
     }
     
+    func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Void>) -> Void)
+    {
+    }
+    
+    func authenticateInBackground(completionHandler: @escaping (Result<Void>) -> Void)
+    {
+    }
+    
+    func deauthenticate(completionHandler: @escaping (Result<Void>) -> Void)
+    {
+    }
+    
     func upload(_ record: LocalRecord, context: NSManagedObjectContext, completionHandler: @escaping (Result<RemoteRecord>) -> Void) -> Progress
     {
         fatalError()
@@ -80,15 +92,13 @@ extension MockService: Service
         fatalError()
     }
     
-    func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Void>) -> Void)
+    func upload(_ file: File, for record: LocalRecord, completionHandler: @escaping (Result<RemoteFile>) -> Void) -> Progress
     {
+        fatalError()
     }
     
-    func authenticateInBackground(completionHandler: @escaping (Result<Void>) -> Void)
+    func download(_ remoteFile: RemoteFile, completionHandler: @escaping (Result<File>) -> Void) -> Progress
     {
-    }
-    
-    func deauthenticate(completionHandler: @escaping (Result<Void>) -> Void)
-    {
+        fatalError()
     }
 }

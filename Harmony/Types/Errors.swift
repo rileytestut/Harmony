@@ -16,7 +16,7 @@ public enum _HarmonyErrorCode
     case unknown
     case any(Error)
     
-    case databaseCorrupted(Swift.Error)
+    case databaseCorrupted(Error)
     
     case noSavedCredentials
     
@@ -29,6 +29,9 @@ public enum _HarmonyErrorCode
     case nilRemoteRecord
     case nilRecordedObject
     case nilManagedRecord
+    
+    case fileUploadsFailed([Error])
+    case fileDownloadsFailed([Error])
     
     case conflicted
         
@@ -51,6 +54,8 @@ public enum _HarmonyErrorCode
         case .nilRemoteRecord: return NSLocalizedString("The record's remote data could not be found.", comment: "")
         case .nilRecordedObject: return NSLocalizedString("The recorded object could not be found.", comment: "")
         case .nilManagedRecord: return NSLocalizedString("The record could not be found.", comment: "")
+        case .fileUploadsFailed: return NSLocalizedString("The record's files could not be uploaded.", comment: "")
+        case .fileDownloadsFailed: return NSLocalizedString("The record's files could not be downloaded.", comment: "")
         case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
         case .unknownRecordType(let type): return String.localizedStringWithFormat("Unknown record type '%@'.", type)
         case .nonSyncableRecordType(let type): return String.localizedStringWithFormat("Record type '%@' does not support syncing.", type)
@@ -235,6 +240,40 @@ public struct ConflictError: RecordError
         self.code = code
         
         self.recordContext = self.record.managedObjectContext
+    }
+}
+
+/* File Errors */
+
+public struct UploadFileError: HarmonyError
+{
+    public var file: File
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to upload file.", comment: "")
+    }
+    
+    public init(file: File, code: HarmonyError.Code)
+    {
+        self.file = file
+        self.code = code
+    }
+}
+
+public struct DownloadFileError: HarmonyError
+{
+    public var file: RemoteFile
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to download file.", comment: "")
+    }
+    
+    public init(file: RemoteFile, code: HarmonyError.Code)
+    {
+        self.file = file
+        self.code = code
     }
 }
 

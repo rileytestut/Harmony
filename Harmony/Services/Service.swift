@@ -26,6 +26,9 @@ public protocol Service
     func download(_ record: RemoteRecord, context: NSManagedObjectContext, completionHandler: @escaping (Result<LocalRecord>) -> Void) -> Progress
     
     func delete(_ record: RemoteRecord, completionHandler: @escaping (Result<Void>) -> Void) -> Progress
+    
+    func upload(_ file: File, for record: LocalRecord, completionHandler: @escaping (Result<RemoteFile>) -> Void) -> Progress
+    func download(_ remoteFile: RemoteFile, completionHandler: @escaping (Result<File>) -> Void) -> Progress
 }
 
 public func ==(lhs: Service, rhs: Service) -> Bool

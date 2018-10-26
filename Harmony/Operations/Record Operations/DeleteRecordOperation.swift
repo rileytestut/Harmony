@@ -61,7 +61,7 @@ private extension DeleteRecordOperation
     func deleteManagedRecord(completionHandler: @escaping (Result<Void>) -> Void)
     {
         self.managedObjectContext.perform {
-            let record = self.managedObjectContext.object(with: self.record.objectID) as! ManagedRecord
+            let record = self.record.in(self.managedObjectContext)
             
             if let recordedObject = record.localRecord?.recordedObject
             {

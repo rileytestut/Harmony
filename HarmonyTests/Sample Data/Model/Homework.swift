@@ -15,23 +15,8 @@ import Harmony
 public class Homework: NSManagedObject
 {
     var fileURL: URL? {
-        get {
-            guard let bookmark = self.bookmark else { return nil }
-            
-            var isStale = false
-            let fileURL = try! URL(resolvingBookmarkData: bookmark, bookmarkDataIsStale: &isStale)
-            return fileURL
-        }
-        set {
-            if let fileURL = newValue
-            {
-                self.bookmark = try? fileURL.bookmarkData()
-            }
-            else
-            {
-                self.bookmark = nil
-            }
-        }
+        guard let identifier = self.identifier else { return nil }
+        return FileManager.default.documentsDirectory.appendingPathComponent(identifier)
     }
 }
 

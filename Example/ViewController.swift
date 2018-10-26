@@ -71,16 +71,16 @@ class ViewController: UITableViewController
 
 private extension ViewController
 {
-    func makeDataSource() -> RSTFetchedResultsTableViewDataSource<Professor>
+    func makeDataSource() -> RSTFetchedResultsTableViewDataSource<Homework>
     {
-        let fetchRequest = Professor.fetchRequest() as NSFetchRequest<Professor>
-        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \Professor.identifier, ascending: true)]
+        let fetchRequest = Homework.fetchRequest() as NSFetchRequest<Homework>
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \Homework.identifier, ascending: true)]
         
         let dataSource = RSTFetchedResultsTableViewDataSource(fetchRequest: fetchRequest, managedObjectContext: self.persistentContainer.viewContext)
         dataSource.proxy = self
-        dataSource.cellConfigurationHandler = { (cell, professor, indexPath) in
-            cell.textLabel?.text = professor.name
-            cell.detailTextLabel?.text = professor.identifier
+        dataSource.cellConfigurationHandler = { (cell, homework, indexPath) in
+            cell.textLabel?.text = homework.name
+            cell.detailTextLabel?.text = homework.identifier
         }
         
         return dataSource
@@ -100,13 +100,17 @@ private extension ViewController
         }
     }
     
-    @IBAction func addPerson(_ sender: UIBarButtonItem)
+    @IBAction func addHomework(_ sender: UIBarButtonItem)
     {
         self.persistentContainer.performBackgroundTask { (context) in
-            let professor = Professor(context: context)
-            professor.name = UUID().uuidString
-            professor.identifier = UUID().uuidString
+            let homework = Homework(context: context)
+            homework.name = UUID().uuidString
+            homework.identifier = UUID().uuidString
+            homework.dueDate = Date()
             
+            let fileURL = Bundle.main.url(forResource: "Project1", withExtension: "pdf")!
+            try! FileManager.default.copyItem(at: fileURL, to: homework.fileURL!)
+                        
             try! context.save()
         }
     }
@@ -132,11 +136,11 @@ extension ViewController
 {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-        let professor = self.dataSource.item(at: indexPath)
+        let homework = self.dataSource.item(at: indexPath)
         
         self.persistentContainer.performBackgroundTask { (context) in
-            let professor = context.object(with: professor.objectID) as! Professor
-            professor.name = UUID().uuidString
+            let homework = context.object(with: homework.objectID) as! Homework
+            homework.name = UUID().uuidString
             
             try! context.save()
         }
@@ -146,11 +150,11 @@ extension ViewController
     {
         guard editingStyle == .delete else { return }
         
-        let professor = self.dataSource.item(at: indexPath)
+        let homework = self.dataSource.item(at: indexPath)
         
         self.persistentContainer.performBackgroundTask { (context) in
-            let professor = context.object(with: professor.objectID) as! Professor
-            context.delete(professor)
+            let homework = context.object(with: homework.objectID) as! Homework
+            context.delete(homework)
             
             try! context.save()
         }

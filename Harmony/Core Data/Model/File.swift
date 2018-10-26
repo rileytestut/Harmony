@@ -7,9 +7,8 @@
 //
 
 import Foundation
-import CoreData
 
-public struct File
+public struct File: Hashable
 {
     public var identifier: String
     public var fileURL: URL
@@ -18,17 +17,5 @@ public struct File
     {
         self.identifier = identifier
         self.fileURL = fileURL
-    }
-}
-
-extension File: Hashable
-{
-    public var hashValue: Int {
-        return self.identifier.hashValue ^ self.fileURL.hashValue
-    }
-    
-    public static func ==(lhs: File, rhs: File) -> Bool
-    {
-        return lhs.identifier == rhs.identifier && lhs.fileURL == rhs.fileURL
     }
 }

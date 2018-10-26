@@ -10,16 +10,104 @@ import CoreData
 
 class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
 {
+    required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext) throws
+    {
+        try super.init(record: record, service: service, context: context)
+        
+        guard let localRecord = self.record.localRecord else {
+            throw self.recordError(code: .nilLocalRecord)
+        }
+        
+        guard let recordedObject = localRecord.recordedObject else {
+            throw self.recordError(code: .nilRecordedObject)
+        }
+        
+        self.progress.totalUnitCount = Int64(recordedObject.syncableFiles.count) + 1
+    }
+    
     override func main()
     {
         super.main()
         
-        guard let localRecord = self.record.localRecord else {
-            self.result = .failure(UploadError(record: self.record, code: .nilLocalRecord))
-            self.finish()
-            
-            return
+        self.uploadFiles() { (result) in
+            do
+            {
+                let remoteFiles = try result.value()
+                
+                // We're on record's context queue, so we can update attributes.
+                self.record.localRecord?.remoteFiles = remoteFiles
+                
+                self.uploadRecord() { (result) in
+                    self.result = result
+                    self.finish()
+                }
+            }
+            catch
+            {
+                self.result = .failure(error)
+                self.finish()
+            }
         }
+    }
+    
+    private func uploadFiles(completionHandler: @escaping (Result<Set<RemoteFile>>) -> Void)
+    {
+        guard let localRecord = self.record.localRecord else { return completionHandler(.failure(self.recordError(code: .nilLocalRecord))) }
+        guard let recordedObject = localRecord.recordedObject else { return completionHandler(.failure(self.recordError(code: .nilRecordedObject))) }
+        
+        let files = recordedObject.syncableFiles
+        
+        let uploadFilesProgress = Progress(totalUnitCount: Int64(files.count), parent: self.progress, pendingUnitCount: Int64(files.count))
+        
+        var remoteFiles = Set<RemoteFile>()
+        var errors = [Error]()
+        
+        let dispatchGroup = DispatchGroup()
+        
+        for file in files
+        {
+            dispatchGroup.enter()
+            
+            let progress = self.service.upload(file, for: localRecord) { (result) in
+                do
+                {
+                    let remoteFile = try result.value()
+                    remoteFiles.insert(remoteFile)
+                }
+                catch HarmonyError.Code.cancelled
+                {
+                    // Ignore
+                }
+                catch
+                {
+                    errors.append(error)
+                    
+                    uploadFilesProgress.cancel()
+                }
+                
+                dispatchGroup.leave()
+            }
+            
+            uploadFilesProgress.addChild(progress, withPendingUnitCount: 1)
+        }
+        
+        dispatchGroup.notify(queue: .global()) {
+            self.record.managedObjectContext?.perform {
+                if !errors.isEmpty
+                {
+                    completionHandler(.failure(self.recordError(code: .fileUploadsFailed(errors))))
+                }
+                else
+                {
+                    completionHandler(.success(remoteFiles))
+                }
+            }
+        }
+    }
+    
+    private func uploadRecord(completionHandler: @escaping (Result<RemoteRecord>) -> Void)
+    {
+        guard let localRecord = self.record.localRecord else { return completionHandler(.failure(self.recordError(code: .nilLocalRecord))) }
         
         let progress = self.service.upload(localRecord, context: self.managedObjectContext) { (result) in
             do
@@ -27,18 +115,16 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
                 let remoteRecord = try result.value()
                 remoteRecord.status = .normal
                 
-                let localRecord = self.managedObjectContext.object(with: localRecord.objectID) as! LocalRecord
+                let localRecord = localRecord.in(self.managedObjectContext)
                 localRecord.version = remoteRecord.version
                 localRecord.status = .normal
                 
-                self.result = .success(remoteRecord)
+                completionHandler(.success(remoteRecord))
             }
             catch
             {
-                self.result = .failure(error)
+                completionHandler(.failure(error))
             }
-            
-            self.finish()
         }
         
         self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)

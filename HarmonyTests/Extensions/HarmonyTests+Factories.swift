@@ -63,8 +63,9 @@ extension Homework
         homework.name = name
         homework.identifier = identifier
         homework.dueDate = dueDate
-        homework.fileURL = fileURL
         homework.course = course
+        
+        try! FileManager.default.copyItem(at: fileURL, to: homework.fileURL!)
         
         if let context = context, automaticallySave
         {

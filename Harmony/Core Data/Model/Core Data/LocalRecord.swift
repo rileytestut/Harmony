@@ -16,9 +16,10 @@ extension LocalRecord
         case type
         case identifier
         case record
+        case files
     }
     
-    private struct RecordKey: CodingKey
+    private struct AnyKey: CodingKey
     {
         var stringValue: String
         var intValue: Int?
@@ -51,6 +52,8 @@ public class LocalRecord: RecordRepresentation, Codable
     var recordedObjectID: NSManagedObjectID? {
         return self.resolveRecordedObjectID()
     }
+    
+    var remoteFiles = Set<RemoteFile>()
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
@@ -104,14 +107,16 @@ public class LocalRecord: RecordRepresentation, Codable
         
         recordedObject.syncableIdentifier = identifier
         
-        let recordContainer = try container.nestedContainer(keyedBy: RecordKey.self, forKey: .record)
+        let recordContainer = try container.nestedContainer(keyedBy: AnyKey.self, forKey: .record)
         for key in recordedObject.syncableKeys
         {
             guard let stringValue = key.stringValue else { continue }
             
-            let value = try recordContainer.decode(AnyDecodable.self, forKey: RecordKey(stringValue: stringValue))
-            recordedObject.setValue(value.value, forKey: stringValue)
+            let value = try recordContainer.decodeManagedValue(forKey: AnyKey(stringValue: stringValue), entity: entity)
+            recordedObject.setValue(value, forKey: stringValue)
         }
+        
+        self.remoteFiles = try container.decode(Set<RemoteFile>.self, forKey: .files)
         
         do
         {
@@ -140,7 +145,7 @@ public class LocalRecord: RecordRepresentation, Codable
         
         guard let recordedObject = self.recordedObject else { throw LocalRecordError(code: .nilRecordedObject) }
         
-        var recordContainer = container.nestedContainer(keyedBy: RecordKey.self, forKey: .record)
+        var recordContainer = container.nestedContainer(keyedBy: AnyKey.self, forKey: .record)
         for key in recordedObject.syncableKeys
         {
             guard let stringValue = key.stringValue else { continue }
@@ -153,7 +158,7 @@ public class LocalRecord: RecordRepresentation, Codable
             // As a workaround, we attempt to encode all syncableKey values, and just ignore the ones that fail.
             do
             {
-                try recordContainer.encode(AnyEncodable(value), forKey: RecordKey(stringValue: stringValue))
+                try recordContainer.encodeManagedValue(value, forKey: AnyKey(stringValue: stringValue), entity: recordedObject.entity)
             }
             catch EncodingError.invalidValue
             {
@@ -164,6 +169,8 @@ public class LocalRecord: RecordRepresentation, Codable
                 throw error
             }
         }
+        
+        try container.encode(self.remoteFiles, forKey: .files)
     }
 }
 

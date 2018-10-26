@@ -21,6 +21,8 @@
 		BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */; };
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
 		BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */; };
+		BF3915DB21810E4800AF74E5 /* RemoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915DA21810E4800AF74E5 /* RemoteFile.swift */; };
+		BF3915E121812F0200AF74E5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
 		BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */; };
 		BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */; };
 		BF6C9EF21F9BF441001B3F37 /* HarmonyTests.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF01F9BF441001B3F37 /* HarmonyTests.xcdatamodeld */; };
@@ -39,9 +41,6 @@
 		BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */; };
 		BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */; };
 		BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */; };
-		BF9A3672216303E700F8EE91 /* AnyCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A366F216303E600F8EE91 /* AnyCodable.swift */; };
-		BF9A3673216303E700F8EE91 /* AnyDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A3670216303E600F8EE91 /* AnyDecodable.swift */; };
-		BF9A3674216303E700F8EE91 /* AnyEncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A3671216303E700F8EE91 /* AnyEncodable.swift */; };
 		BF9A367F2163FF5900F8EE91 /* HarmonyTests.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF01F9BF441001B3F37 /* HarmonyTests.xcdatamodeld */; };
 		BF9A36802163FF5C00F8EE91 /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF41F9BF7CC001B3F37 /* Course.swift */; };
 		BF9A36812163FF5E00F8EE91 /* Homework.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF61F9BF7D9001B3F37 /* Homework.swift */; };
@@ -59,6 +58,8 @@
 		BFAC53AD2017FE5A006E0D36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFAC53AC2017FE5A006E0D36 /* Assets.xcassets */; };
 		BFAC53B02017FE5A006E0D36 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFAC53AE2017FE5A006E0D36 /* LaunchScreen.storyboard */; };
 		BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */; };
+		BFBC1392218265CD001A321F /* NSManagedObject+Conveniences.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBC1391218265CD001A321F /* NSManagedObject+Conveniences.swift */; };
+		BFBC13A221827D15001A321F /* KeyedContainers+ManagedValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBC13A121827D15001A321F /* KeyedContainers+ManagedValues.swift */; };
 		BFBDB7C3216EB1F000DC004B /* RemoteRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */; };
 		BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBDB7C2216EB1F000DC004B /* LocalRecord.swift */; };
 		BFBDB7C6216ECC8500DC004B /* RecordRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBDB7C5216ECC8500DC004B /* RecordRepresentation.swift */; };
@@ -247,6 +248,7 @@
 		BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCAssert+Harmony.swift"; sourceTree = "<group>"; };
 		BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Generics.swift"; sourceTree = "<group>"; };
 		BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConflictRecordOperation.swift; sourceTree = "<group>"; };
+		BF3915DA21810E4800AF74E5 /* RemoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteFile.swift; sourceTree = "<group>"; };
 		BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyTestCase.swift; sourceTree = "<group>"; };
 		BF6C9EF11F9BF441001B3F37 /* HarmonyTests.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HarmonyTests.xcdatamodel; sourceTree = "<group>"; };
@@ -265,9 +267,6 @@
 		BF95137721657632007EF10C /* BatchRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchRecordOperation.swift; sourceTree = "<group>"; };
 		BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncCoordinator.swift; sourceTree = "<group>"; };
 		BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncRecordsOperation.swift; sourceTree = "<group>"; };
-		BF9A366F216303E600F8EE91 /* AnyCodable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyCodable.swift; sourceTree = "<group>"; };
-		BF9A3670216303E600F8EE91 /* AnyDecodable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyDecodable.swift; sourceTree = "<group>"; };
-		BF9A3671216303E700F8EE91 /* AnyEncodable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyEncodable.swift; sourceTree = "<group>"; };
 		BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadRecordOperation.swift; sourceTree = "<group>"; };
 		BF9E9DB1202110A900F09B98 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		BF9E9DB3202110B800F09B98 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
@@ -289,6 +288,8 @@
 		BFAC53B12017FE5A006E0D36 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFB045491F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSPersistentStore+Configuration.swift"; sourceTree = "<group>"; };
 		BFB3396B1FD3A4DF006FACAD /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		BFBC1391218265CD001A321F /* NSManagedObject+Conveniences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Conveniences.swift"; sourceTree = "<group>"; };
+		BFBC13A121827D15001A321F /* KeyedContainers+ManagedValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyedContainers+ManagedValues.swift"; sourceTree = "<group>"; };
 		BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteRecord.swift; sourceTree = "<group>"; };
 		BFBDB7C2216EB1F000DC004B /* LocalRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalRecord.swift; sourceTree = "<group>"; };
 		BFBDB7C5216ECC8500DC004B /* RecordRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordRepresentation.swift; sourceTree = "<group>"; };
@@ -357,8 +358,9 @@
 		BF04998E1F9AEE9C00E0EFEE /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				BF3043301FD3A02A0053E884 /* Public */,
-				BF30432F1FD3A0260053E884 /* Private */,
+				BFB3396B1FD3A4DF006FACAD /* File.swift */,
+				BF3915DA21810E4800AF74E5 /* RemoteFile.swift */,
+				BF30432F1FD3A0260053E884 /* Core Data */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -390,7 +392,7 @@
 			path = "Core Data";
 			sourceTree = "<group>";
 		};
-		BF30432F1FD3A0260053E884 /* Private */ = {
+		BF30432F1FD3A0260053E884 /* Core Data */ = {
 			isa = PBXGroup;
 			children = (
 				BF0499841F9AE06400E0EFEE /* Harmony.xcdatamodeld */,
@@ -400,15 +402,7 @@
 				BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */,
 				BFFDBAA0216D785E00AED109 /* ManagedVersion.swift */,
 			);
-			path = Private;
-			sourceTree = "<group>";
-		};
-		BF3043301FD3A02A0053E884 /* Public */ = {
-			isa = PBXGroup;
-			children = (
-				BFB3396B1FD3A4DF006FACAD /* File.swift */,
-			);
-			path = Public;
+			path = "Core Data";
 			sourceTree = "<group>";
 		};
 		BF5784001FB17B9200BD043C /* Extensions */ = {
@@ -466,6 +460,8 @@
 				BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */,
 				BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */,
 				BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */,
+				BFBC1391218265CD001A321F /* NSManagedObject+Conveniences.swift */,
+				BFBC13A121827D15001A321F /* KeyedContainers+ManagedValues.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -495,24 +491,6 @@
 				BF7A200F1F9D667B0061B187 /* CwlPreconditionTesting_tvOSTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		BF9A366D216303D200F8EE91 /* Dependencies */ = {
-			isa = PBXGroup;
-			children = (
-				BF9A366E216303DE00F8EE91 /* AnyCodable */,
-			);
-			path = Dependencies;
-			sourceTree = "<group>";
-		};
-		BF9A366E216303DE00F8EE91 /* AnyCodable */ = {
-			isa = PBXGroup;
-			children = (
-				BF9A366F216303E600F8EE91 /* AnyCodable.swift */,
-				BF9A3671216303E700F8EE91 /* AnyEncodable.swift */,
-				BF9A3670216303E600F8EE91 /* AnyDecodable.swift */,
-			);
-			path = AnyCodable;
 			sourceTree = "<group>";
 		};
 		BF9A367921630F2B00F8EE91 /* Batch Operations */ = {
@@ -568,7 +546,6 @@
 				BFFB9B1C200ED93E00A8F673 /* Types */,
 				BF0499911F9AEEE000E0EFEE /* Protocols */,
 				BF7A1FC81F9D5F440061B187 /* Extensions */,
-				BF9A366D216303D200F8EE91 /* Dependencies */,
 				BFA1C8D81ECD01C100DEA99D /* Info.plist */,
 			);
 			path = Harmony;
@@ -965,6 +942,7 @@
 			files = (
 				BFAC53B02017FE5A006E0D36 /* LaunchScreen.storyboard in Resources */,
 				BFAC53AD2017FE5A006E0D36 /* Assets.xcassets in Resources */,
+				BF3915E121812F0200AF74E5 /* Project1.pdf in Resources */,
 				BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */,
 				BFAC53AB2017FE5A006E0D36 /* Main.storyboard in Resources */,
 			);
@@ -978,10 +956,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */,
-				BF9A3673216303E700F8EE91 /* AnyDecodable.swift in Sources */,
 				BFFB9B1E200ED96700A8F673 /* Result.swift in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,
+				BFBC13A221827D15001A321F /* KeyedContainers+ManagedValues.swift in Sources */,
 				BFBDB7C3216EB1F000DC004B /* RemoteRecord.swift in Sources */,
 				BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */,
 				BFBDB7C6216ECC8500DC004B /* RecordRepresentation.swift in Sources */,
@@ -990,13 +968,13 @@
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
+				BFBC1392218265CD001A321F /* NSManagedObject+Conveniences.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
 				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
 				BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */,
-				BF9A3674216303E700F8EE91 /* AnyEncodable.swift in Sources */,
+				BF3915DB21810E4800AF74E5 /* RemoteFile.swift in Sources */,
 				BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */,
 				BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */,
-				BF9A3672216303E700F8EE91 /* AnyCodable.swift in Sources */,
 				BFFDBA9A216D642500AED109 /* BatchRecordOperation.swift in Sources */,
 				BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */,
 				BFFB9B1B200ED7EA00A8F673 /* Service.swift in Sources */,

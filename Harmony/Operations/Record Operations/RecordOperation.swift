@@ -45,7 +45,35 @@ class RecordOperation<ResultType, ErrorType: RecordError>: Operation<ResultType>
     override func finish()
     {
         self.managedObjectContext.performAndWait {
+            if let result = self.result
+            {
+                do
+                {
+                    try result.verify()
+                }
+                catch let error as ErrorType where error.record.managedObjectContext != self.managedObjectContext
+                {
+                    // Ensure RecordErrors' record is in self.managedObjectContext.
+                    let record = error.record.in(self.managedObjectContext)
+                    
+                    let recordError = ErrorType(record: record, code: error.code)
+                    self.result = .failure(recordError)
+                }
+                catch {}
+            }
+            
             super.finish()
         }
+    }
+}
+
+extension RecordOperation
+{
+    func recordError(code: HarmonyError.Code) -> ErrorType
+    {
+        let record = self.managedObjectContext.performAndWait { self.record.in(self.managedObjectContext) }
+        
+        let error = ErrorType(record: record, code: code)
+        return error
     }
 }
