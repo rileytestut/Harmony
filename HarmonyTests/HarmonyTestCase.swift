@@ -37,6 +37,8 @@ class HarmonyTestCase: XCTestCase
     {
         super.setUp()
         
+        try? FileManager.default.createDirectory(at: FileManager.default.documentsDirectory, withIntermediateDirectories: true, attributes: nil)
+        
         self.performSaveInTearDown = true
                 
         self.prepareDatabase()

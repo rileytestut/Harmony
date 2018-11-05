@@ -68,7 +68,9 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         {
             dispatchGroup.enter()
             
-            let progress = self.service.upload(file, for: localRecord) { (result) in
+            let metadata: [HarmonyMetadataKey: String] = [.relationshipIdentifier: file.identifier]
+            
+            let progress = self.service.upload(file, for: localRecord, metadata: metadata) { (result) in
                 do
                 {
                     let remoteFile = try result.value()
@@ -109,7 +111,9 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
     {
         guard let localRecord = self.record.localRecord else { return completionHandler(.failure(self.recordError(code: .nilLocalRecord))) }
         
-        let progress = self.service.upload(localRecord, context: self.managedObjectContext) { (result) in
+        let metadata: [HarmonyMetadataKey: String] = [.recordedObjectType: localRecord.recordedObjectType, .recordedObjectIdentifier: localRecord.recordedObjectIdentifier]
+        
+        let progress = self.service.upload(localRecord, metadata: metadata, context: self.managedObjectContext) { (result) in
             do
             {
                 let remoteRecord = try result.value()

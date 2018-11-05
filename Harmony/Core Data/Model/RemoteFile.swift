@@ -14,8 +14,10 @@ public struct RemoteFile: Hashable, Codable
     public var remoteIdentifier: String
     public var versionIdentifier: String
     
-    public init(identifier: String, remoteIdentifier: String, versionIdentifier: String)
+    public init(remoteIdentifier: String, versionIdentifier: String, metadata: [HarmonyMetadataKey: String]) throws
     {
+        guard let identifier = metadata[.relationshipIdentifier] else { throw RemoteFileError(code: .invalidMetadata) }
+        
         self.identifier = identifier
         self.remoteIdentifier = remoteIdentifier
         self.versionIdentifier = versionIdentifier

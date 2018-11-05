@@ -29,7 +29,6 @@
 		BF6C9EF51F9BF7CC001B3F37 /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF41F9BF7CC001B3F37 /* Course.swift */; };
 		BF6C9EF71F9BF7D9001B3F37 /* Homework.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF61F9BF7D9001B3F37 /* Homework.swift */; };
 		BF6C9EF91F9BFA05001B3F37 /* Professor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF81F9BFA05001B3F37 /* Professor.swift */; };
-		BF6C9EFC1F9C02C9001B3F37 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
 		BF6DADDF1F9EB86A00F04D61 /* LocalRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA1C8E21ECD01C100DEA99D /* LocalRecordTests.swift */; };
 		BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7A1FC91F9D5F610061B187 /* NSManagedObject+Harmony.swift */; };
 		BF7A20101F9D67500061B187 /* CwlCatchException.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20031F9D667B0061B187 /* CwlCatchException.framework */; };
@@ -69,6 +68,8 @@
 		BFE029292006AE54004F70DC /* SyncableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE029282006AE54004F70DC /* SyncableTests.swift */; };
 		BFE4EAB51FDB8E6400855951 /* RemoteRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */; };
 		BFE4EAC71FDBB00600855951 /* FileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC61FDBB00600855951 /* FileTests.swift */; };
+		BFECF5772190DCB9006DB8F5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
+		BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */; };
 		BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF0169620040FD300210A38 /* ManagedRecord.swift */; };
 		BFFAA627200582D700C4E475 /* HarmonyTests+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */; };
 		BFFAA65020059C5400C4E475 /* Harmony+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */; };
@@ -299,6 +300,7 @@
 		BFE029282006AE54004F70DC /* SyncableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncableTests.swift; sourceTree = "<group>"; };
 		BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRecordTests.swift; sourceTree = "<group>"; };
 		BFE4EAC61FDBB00600855951 /* FileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTests.swift; sourceTree = "<group>"; };
+		BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HarmonyMetadataKey+Keys.swift"; sourceTree = "<group>"; };
 		BFF0169620040FD300210A38 /* ManagedRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedRecord.swift; sourceTree = "<group>"; };
 		BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HarmonyTests+Factories.swift"; sourceTree = "<group>"; };
 		BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Harmony+Factories.swift"; sourceTree = "<group>"; };
@@ -462,6 +464,7 @@
 				BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */,
 				BFBC1391218265CD001A321F /* NSManagedObject+Conveniences.swift */,
 				BFBC13A121827D15001A321F /* KeyedContainers+ManagedValues.swift */,
+				BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -932,7 +935,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF6C9EFC1F9C02C9001B3F37 /* Project1.pdf in Resources */,
+				BFECF5772190DCB9006DB8F5 /* Project1.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -972,6 +975,7 @@
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
 				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
 				BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */,
+				BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */,
 				BF3915DB21810E4800AF74E5 /* RemoteFile.swift in Sources */,
 				BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */,
 				BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */,

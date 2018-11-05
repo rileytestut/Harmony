@@ -15,5 +15,5 @@ FOUNDATION_EXPORT double HarmonyVersionNumber;
 FOUNDATION_EXPORT const unsigned char HarmonyVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <Harmony/PublicHeader.h>
-
+typedef NSString *HarmonyMetadataKey NS_TYPED_EXTENSIBLE_ENUM;
 

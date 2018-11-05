@@ -24,6 +24,8 @@ public enum _HarmonyErrorCode
     case invalidResponse
     case invalidSyncableIdentifier
     
+    case invalidMetadata
+    
     case nilManagedObjectContext
     case nilLocalRecord
     case nilRemoteRecord
@@ -49,6 +51,7 @@ public enum _HarmonyErrorCode
         case .invalidChangeToken: return NSLocalizedString("The provided change token was invalid.", comment: "")
         case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
         case .invalidSyncableIdentifier: return NSLocalizedString("The recorded object has an invalid syncable identifier.", comment: "")
+        case .invalidMetadata: return NSLocalizedString("The file's metadata is invalid.", comment: "")
         case .nilManagedObjectContext: return NSLocalizedString("The record's managed object context is nil.", comment: "")
         case .nilLocalRecord: return NSLocalizedString("The record's local data could not be found.", comment: "")
         case .nilRemoteRecord: return NSLocalizedString("The record's remote data could not be found.", comment: "")
@@ -131,6 +134,34 @@ public struct LocalRecordError: HarmonyError
     
     public var failureDescription: String {
         return NSLocalizedString("Failed to create local record.", comment: "")
+    }
+    
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct RemoteRecordError: HarmonyError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to parse remote record.", comment: "")
+    }
+    
+    init(code: HarmonyError.Code)
+    {
+        self.code = code
+    }
+}
+
+public struct RemoteFileError: HarmonyError
+{
+    public var code: HarmonyError.Code
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to parse remote file.", comment: "")
     }
     
     init(code: HarmonyError.Code)

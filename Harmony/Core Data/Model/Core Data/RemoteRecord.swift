@@ -17,8 +17,10 @@ public class RemoteRecord: RecordRepresentation
     /* Relationships */
     @NSManaged var version: ManagedVersion
     
-    public init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: RecordRepresentation.Status, context: NSManagedObjectContext)
+    public init(identifier: String, versionIdentifier: String, versionDate: Date, metadata: [HarmonyMetadataKey: String], status: RecordRepresentation.Status, context: NSManagedObjectContext) throws
     {
+        guard let recordedObjectType = metadata[.recordedObjectType], let recordedObjectIdentifier = metadata[.recordedObjectIdentifier] else { throw RemoteRecordError(code: .invalidMetadata) }
+        
         super.init(entity: RemoteRecord.entity(), insertInto: context)
         
         self.identifier = identifier

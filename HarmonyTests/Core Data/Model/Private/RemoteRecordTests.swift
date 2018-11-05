@@ -26,7 +26,9 @@ extension RemoteRecordTests
         let recordedObjectIdentifier = "recordedObjectIdentifier"
         let status = RecordRepresentation.Status.deleted
         
-        let record = RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, recordedObjectType: recordedObjectType, recordedObjectIdentifier: recordedObjectIdentifier, status: status, context: self.recordController.viewContext)
+        let metadata: [HarmonyMetadataKey: String] = [.recordedObjectType: recordedObjectType, .recordedObjectIdentifier: recordedObjectIdentifier]
+        
+        let record = try! RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, metadata: metadata, status: status, context: self.recordController.viewContext)
 
         XCTAssertEqual(record.identifier, identifier)
         XCTAssertEqual(record.version.identifier, versionIdentifier)
@@ -34,6 +36,18 @@ extension RemoteRecordTests
         XCTAssertEqual(record.recordedObjectType, recordedObjectType)
         XCTAssertEqual(record.recordedObjectIdentifier, recordedObjectIdentifier)
         XCTAssertEqual(record.status, status)
+    }
+    
+    func testInitializationInvalid()
+    {
+        let identifier = "identifier"
+        let versionIdentifier = "versionIdentifier"
+        let versionDate = Date()
+        let status = RecordRepresentation.Status.deleted
+        
+        let metadata: [HarmonyMetadataKey: String] = [:]
+        
+        XCTAssertThrowsError(try RemoteRecord(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, metadata: metadata, status: status, context: self.recordController.viewContext))
     }
 }
 
