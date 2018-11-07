@@ -80,7 +80,8 @@ private extension ViewController
         dataSource.proxy = self
         dataSource.cellConfigurationHandler = { (cell, homework, indexPath) in
             cell.textLabel?.text = homework.name
-            cell.detailTextLabel?.text = homework.identifier
+            cell.detailTextLabel?.numberOfLines = 3
+            cell.detailTextLabel?.text = "ID: \(homework.identifier ?? "nil")\nCourse Name: \(homework.course?.name ?? "nil")\nCourse ID: \(homework.course?.name ?? "nil")"
         }
         
         return dataSource
@@ -103,10 +104,15 @@ private extension ViewController
     @IBAction func addHomework(_ sender: UIBarButtonItem)
     {
         self.persistentContainer.performBackgroundTask { (context) in
+            let course = Course(context: context)
+            course.name = "CSCI-170"
+            course.identifier = "CSCI-170"
+            
             let homework = Homework(context: context)
             homework.name = UUID().uuidString
             homework.identifier = UUID().uuidString
             homework.dueDate = Date()
+            homework.course = course
             
             let fileURL = Bundle.main.url(forResource: "Project1", withExtension: "pdf")!
             try! FileManager.default.copyItem(at: fileURL, to: homework.fileURL!)

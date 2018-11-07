@@ -14,4 +14,9 @@ extension HarmonyMetadataKey
     static let recordedObjectIdentifier = HarmonyMetadataKey("recordedObjectIdentifier")
     
     static let relationshipIdentifier = HarmonyMetadataKey("relationshipIdentifier")
+    
+    static let isLocked = HarmonyMetadataKey("locked")
+    
+    static let previousVersionIdentifier = HarmonyMetadataKey("previousVersionIdentifier")
+    static let previousVersionDate = HarmonyMetadataKey("previousVersionDate")
 }

@@ -11,18 +11,19 @@ import CoreData
 @objc(ManagedVersion)
 public class ManagedVersion: NSManagedObject
 {
-    @NSManaged var identifier: String
-    @NSManaged var date: Date
+    @NSManaged public var identifier: String
+    @NSManaged public var date: Date
     
     @NSManaged var localRecord: LocalRecord?
     @NSManaged var remoteRecord: RemoteRecord?
+    @NSManaged var previousUnlockedRemoteRecord: RemoteRecord?
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
         super.init(entity: entity, insertInto: context)
     }
     
-    init(identifier: String, date: Date, context: NSManagedObjectContext)
+    public init(identifier: String, date: Date, context: NSManagedObjectContext)
     {
         super.init(entity: ManagedVersion.entity(), insertInto: context)
         
@@ -36,7 +37,7 @@ public class ManagedVersion: NSManagedObject
         
         guard !self.isDeleted else { return }
         
-        if self.localRecord == nil && self.remoteRecord == nil
+        if self.localRecord == nil && self.remoteRecord == nil && self.previousUnlockedRemoteRecord == nil
         {
             self.managedObjectContext?.delete(self)
         }

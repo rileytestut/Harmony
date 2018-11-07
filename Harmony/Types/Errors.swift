@@ -31,6 +31,9 @@ public enum _HarmonyErrorCode
     case nilRemoteRecord
     case nilRecordedObject
     case nilManagedRecord
+    case nilRelationshipObject
+    
+    case recordLocked
     
     case fileUploadsFailed([Error])
     case fileDownloadsFailed([Error])
@@ -57,6 +60,8 @@ public enum _HarmonyErrorCode
         case .nilRemoteRecord: return NSLocalizedString("The record's remote data could not be found.", comment: "")
         case .nilRecordedObject: return NSLocalizedString("The recorded object could not be found.", comment: "")
         case .nilManagedRecord: return NSLocalizedString("The record could not be found.", comment: "")
+        case .nilRelationshipObject: return NSLocalizedString("The relationship object could not be found.", comment: "")
+        case .recordLocked: return NSLocalizedString("The record is locked.", comment: "")
         case .fileUploadsFailed: return NSLocalizedString("The record's files could not be uploaded.", comment: "")
         case .fileDownloadsFailed: return NSLocalizedString("The record's files could not be downloaded.", comment: "")
         case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")

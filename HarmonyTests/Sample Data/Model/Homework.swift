@@ -34,4 +34,8 @@ extension Homework: Syncable
         let fileURL = self.fileURL ?? URL(fileURLWithPath: "invalidFileURL.me")
         return [File(identifier: "homework", fileURL: fileURL)]
     }
+    
+    public var syncableRelationships: Set<AnyKeyPath> {
+        return [\Homework.course]
+    }
 }

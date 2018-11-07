@@ -52,7 +52,22 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
     {
         guard let remoteRecord = self.record.remoteRecord else { return completionHandler(.failure(self.recordError(code: .nilRemoteRecord))) }
         
-        let progress = self.service.download(remoteRecord, context: self.managedObjectContext) { (result) in
+        let version: ManagedVersion
+        
+        if remoteRecord.isLocked
+        {
+            guard let previousVersion = remoteRecord.previousUnlockedVersion else {
+                return completionHandler(.failure(self.recordError(code: .recordLocked)))
+            }
+            
+            version = previousVersion
+        }
+        else
+        {
+            version = remoteRecord.version
+        }
+        
+        let progress = self.service.download(remoteRecord, version: version, context: self.managedObjectContext) { (result) in
             do
             {
                 let localRecord = try result.value()
@@ -61,7 +76,8 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
                 let remoteRecord = remoteRecord.in(self.managedObjectContext)
                 remoteRecord.status = .normal
                 
-                localRecord.version = remoteRecord.version
+                let version = version.in(self.managedObjectContext)
+                localRecord.version = version
                 
                 completionHandler(.success(localRecord))
             }

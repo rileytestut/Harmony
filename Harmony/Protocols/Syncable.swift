@@ -20,6 +20,8 @@ public protocol Syncable: NSObjectProtocol
     var syncableKeys: Set<AnyKeyPath> { get }
     
     var syncableFiles: Set<File> { get }
+    
+    var syncableRelationships: Set<AnyKeyPath> { get }
 }
 
 public extension Syncable where Self: NSManagedObject
@@ -30,6 +32,10 @@ public extension Syncable where Self: NSManagedObject
     }
     
     var syncableFiles: Set<File> {
+        return []
+    }
+    
+    var syncableRelationships: Set<AnyKeyPath> {
         return []
     }
 }
@@ -48,5 +54,22 @@ public extension Syncable where Self: NSManagedObject
             guard let keyPath = Self.syncablePrimaryKey.stringValue else { fatalError("Syncable.syncablePrimaryKey must reference an @objc String property.") }
             self.setValue(newValue, forKeyPath: keyPath)
         }
+    }
+}
+
+internal extension Syncable where Self: NSManagedObject
+{
+    var syncableRelationshipObjects: [String: SyncableManagedObject] {
+        var relationshipObjects = [String: SyncableManagedObject]()
+        
+        for keyPath in self.syncableRelationships
+        {
+            guard let stringValue = keyPath.stringValue else { continue }
+            
+            let relationshipObject = self.value(forKeyPath: stringValue) as? SyncableManagedObject
+            relationshipObjects[stringValue] = relationshipObject
+        }
+
+        return relationshipObjects
     }
 }

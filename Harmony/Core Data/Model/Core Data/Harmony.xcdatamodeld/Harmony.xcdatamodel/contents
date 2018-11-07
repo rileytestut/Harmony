@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14315.18" systemVersion="18A391" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="18A391" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="LocalRecord" representedClassName="LocalRecord" syncable="YES">
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
@@ -36,15 +36,21 @@
         <attribute name="date" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <relationship name="localRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LocalRecord" inverseName="version" inverseEntity="LocalRecord" syncable="YES"/>
+        <relationship name="previousUnlockedRemoteRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RemoteRecord" inverseName="previousUnlockedVersion" inverseEntity="RemoteRecord" syncable="YES"/>
         <relationship name="remoteRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RemoteRecord" inverseName="version" inverseEntity="RemoteRecord" syncable="YES"/>
     </entity>
     <entity name="RemoteRecord" representedClassName="RemoteRecord" syncable="YES">
         <attribute name="identifier" attributeType="String" syncable="YES"/>
+        <attribute name="isLocked" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <relationship name="managedRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedRecord" inverseName="remoteRecord" inverseEntity="ManagedRecord" syncable="YES"/>
+        <relationship name="previousUnlockedVersion" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedVersion" inverseName="previousUnlockedRemoteRecord" inverseEntity="ManagedVersion" syncable="YES"/>
         <relationship name="version" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedVersion" inverseName="remoteRecord" inverseEntity="ManagedVersion" syncable="YES"/>
+        <fetchIndex name="byIdentifier">
+            <fetchIndexElement property="identifier" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="recordedObjectType"/>
@@ -60,9 +66,9 @@
         <memberEntity name="RemoteRecord"/>
     </configuration>
     <elements>
-        <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
-        <element name="ManagedVersion" positionX="298.94921875" positionY="439.0625" width="128" height="103"/>
-        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="133"/>
         <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="133"/>
+        <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
+        <element name="ManagedVersion" positionX="298.94921875" positionY="439.0625" width="128" height="120"/>
+        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="165"/>
     </elements>
 </model>

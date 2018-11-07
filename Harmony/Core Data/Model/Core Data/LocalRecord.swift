@@ -17,6 +17,7 @@ extension LocalRecord
         case identifier
         case record
         case files
+        case relationships
     }
     
     private struct AnyKey: CodingKey
@@ -54,6 +55,7 @@ public class LocalRecord: RecordRepresentation, Codable
     }
     
     var remoteFiles = Set<RemoteFile>()
+    var remoteRelationships: [String: Reference]?
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
@@ -107,19 +109,20 @@ public class LocalRecord: RecordRepresentation, Codable
         
         recordedObject.syncableIdentifier = identifier
         
-        let recordContainer = try container.nestedContainer(keyedBy: AnyKey.self, forKey: .record)
-        for key in recordedObject.syncableKeys
-        {
-            guard let stringValue = key.stringValue else { continue }
-            
-            let value = try recordContainer.decodeManagedValue(forKey: AnyKey(stringValue: stringValue), entity: entity)
-            recordedObject.setValue(value, forKey: stringValue)
-        }
-        
-        self.remoteFiles = try container.decode(Set<RemoteFile>.self, forKey: .files)
-        
         do
         {
+            let recordContainer = try container.nestedContainer(keyedBy: AnyKey.self, forKey: .record)
+            for key in recordedObject.syncableKeys
+            {
+                guard let stringValue = key.stringValue else { continue }
+                
+                let value = try recordContainer.decodeManagedValue(forKey: AnyKey(stringValue: stringValue), entity: entity)
+                recordedObject.setValue(value, forKey: stringValue)
+            }
+            
+            self.remoteRelationships = try container.decodeIfPresent([String: Reference].self, forKey: .relationships)
+            self.remoteFiles = try container.decode(Set<RemoteFile>.self, forKey: .files)
+            
             try self.configure(with: recordedObject)
         }
         catch
@@ -169,6 +172,15 @@ public class LocalRecord: RecordRepresentation, Codable
                 throw error
             }
         }
+        
+        let relationships = recordedObject.syncableRelationshipObjects.mapValues { (relationshipObject) -> Reference? in
+            guard let identifier = relationshipObject.syncableIdentifier else { return nil }
+            
+            let relationship = Reference(type: relationshipObject.syncableType, identifier: identifier)
+            return relationship
+        }
+        
+        try container.encode(relationships, forKey: .relationships)
         
         try container.encode(self.remoteFiles, forKey: .files)
     }

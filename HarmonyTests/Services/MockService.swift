@@ -77,12 +77,12 @@ extension MockService: Service
     {
     }
     
-    func upload(_ record: LocalRecord, metadata: [HarmonyMetadataKey: String], context: NSManagedObjectContext, completionHandler: @escaping (Result<RemoteRecord>) -> Void) -> Progress
+    func upload(_ record: LocalRecord, metadata: [HarmonyMetadataKey: Any], context: NSManagedObjectContext, completionHandler: @escaping (Result<RemoteRecord>) -> Void) -> Progress
     {
         fatalError()
     }
     
-    func download(_ record: RemoteRecord, context: NSManagedObjectContext, completionHandler: @escaping (Result<LocalRecord>) -> Void) -> Progress
+    func download(_ record: RemoteRecord, version: ManagedVersion, context: NSManagedObjectContext, completionHandler: @escaping (Result<LocalRecord>) -> Void) -> Progress
     {
         fatalError()
     }
@@ -92,12 +92,17 @@ extension MockService: Service
         fatalError()
     }
     
-    func upload(_ file: File, for record: LocalRecord, metadata: [HarmonyMetadataKey: String], completionHandler: @escaping (Result<RemoteFile>) -> Void) -> Progress
+    func upload(_ file: File, for record: LocalRecord, metadata: [HarmonyMetadataKey: Any], completionHandler: @escaping (Result<RemoteFile>) -> Void) -> Progress
     {
         fatalError()
     }
     
     func download(_ remoteFile: RemoteFile, completionHandler: @escaping (Result<File>) -> Void) -> Progress
+    {
+        fatalError()
+    }
+    
+    func updateMetadata(_ metadata: [HarmonyMetadataKey : Any], for record: RemoteRecord, completionHandler: @escaping (Result<Void>) -> Void) -> Progress
     {
         fatalError()
     }

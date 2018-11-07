@@ -41,7 +41,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                 context.perform {
                     do
                     {
-                        let records: Set<RemoteRecord>
+                        var records = updatedRecords
                         
                         if let recordIDs = deletedRecordIDs
                         {
@@ -51,11 +51,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                             let deletedRecords = try context.fetch(fetchRequest)
                             deletedRecords.forEach { $0.status = .deleted }
                             
-                            records = Set(updatedRecords + deletedRecords)
-                        }
-                        else
-                        {
-                            records = updatedRecords
+                            records.formUnion(deletedRecords)
                         }
                         
                         try context.save()

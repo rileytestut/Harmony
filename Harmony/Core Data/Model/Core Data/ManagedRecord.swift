@@ -42,6 +42,8 @@ public class ManagedRecord: NSManagedObject
     /* Relationships */
     @NSManaged public var localRecord: LocalRecord?
     @NSManaged public var remoteRecord: RemoteRecord?
+    
+    var shouldLockWhenUploading = false
         
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {

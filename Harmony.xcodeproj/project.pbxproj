@@ -70,6 +70,10 @@
 		BFE4EAC71FDBB00600855951 /* FileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC61FDBB00600855951 /* FileTests.swift */; };
 		BFECF5772190DCB9006DB8F5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
 		BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */; };
+		BFECF57D219100DB006DB8F5 /* Reference.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF57C219100DB006DB8F5 /* Reference.swift */; };
+		BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */; };
+		BFECF58121912203006DB8F5 /* UploadRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */; };
+		BFECF58321912559006DB8F5 /* DownloadRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */; };
 		BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF0169620040FD300210A38 /* ManagedRecord.swift */; };
 		BFFAA627200582D700C4E475 /* HarmonyTests+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */; };
 		BFFAA65020059C5400C4E475 /* Harmony+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */; };
@@ -301,6 +305,10 @@
 		BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRecordTests.swift; sourceTree = "<group>"; };
 		BFE4EAC61FDBB00600855951 /* FileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTests.swift; sourceTree = "<group>"; };
 		BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HarmonyMetadataKey+Keys.swift"; sourceTree = "<group>"; };
+		BFECF57C219100DB006DB8F5 /* Reference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reference.swift; sourceTree = "<group>"; };
+		BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateRecordMetadataOperation.swift; sourceTree = "<group>"; };
+		BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadRecordsOperation.swift; sourceTree = "<group>"; };
+		BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadRecordsOperation.swift; sourceTree = "<group>"; };
 		BFF0169620040FD300210A38 /* ManagedRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedRecord.swift; sourceTree = "<group>"; };
 		BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HarmonyTests+Factories.swift"; sourceTree = "<group>"; };
 		BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Harmony+Factories.swift"; sourceTree = "<group>"; };
@@ -361,6 +369,7 @@
 			isa = PBXGroup;
 			children = (
 				BFB3396B1FD3A4DF006FACAD /* File.swift */,
+				BFECF57C219100DB006DB8F5 /* Reference.swift */,
 				BF3915DA21810E4800AF74E5 /* RemoteFile.swift */,
 				BF30432F1FD3A0260053E884 /* Core Data */,
 			);
@@ -500,6 +509,8 @@
 			isa = PBXGroup;
 			children = (
 				BF95137721657632007EF10C /* BatchRecordOperation.swift */,
+				BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */,
+				BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */,
 			);
 			path = "Batch Operations";
 			sourceTree = "<group>";
@@ -512,6 +523,7 @@
 				BF95137521657437007EF10C /* DownloadRecordOperation.swift */,
 				BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */,
 				BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */,
+				BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */,
 			);
 			path = "Record Operations";
 			sourceTree = "<group>";
@@ -965,11 +977,14 @@
 				BFBC13A221827D15001A321F /* KeyedContainers+ManagedValues.swift in Sources */,
 				BFBDB7C3216EB1F000DC004B /* RemoteRecord.swift in Sources */,
 				BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */,
+				BFECF58121912203006DB8F5 /* UploadRecordsOperation.swift in Sources */,
 				BFBDB7C6216ECC8500DC004B /* RecordRepresentation.swift in Sources */,
 				BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */,
 				BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */,
+				BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */,
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */,
+				BFECF58321912559006DB8F5 /* DownloadRecordsOperation.swift in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
 				BFBC1392218265CD001A321F /* NSManagedObject+Conveniences.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
@@ -988,6 +1003,7 @@
 				BFFDBA9F216D74FC00AED109 /* File.swift in Sources */,
 				BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */,
 				BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */,
+				BFECF57D219100DB006DB8F5 /* Reference.swift in Sources */,
 				BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */,
 				BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */,
 				BFFDBA99216D60EC00AED109 /* FetchRemoteRecordsOperation.swift in Sources */,

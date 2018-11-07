@@ -68,7 +68,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         {
             dispatchGroup.enter()
             
-            let metadata: [HarmonyMetadataKey: String] = [.relationshipIdentifier: file.identifier]
+            let metadata: [HarmonyMetadataKey: Any] = [.relationshipIdentifier: file.identifier]
             
             let progress = self.service.upload(file, for: localRecord, metadata: metadata) { (result) in
                 do
@@ -111,7 +111,20 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
     {
         guard let localRecord = self.record.localRecord else { return completionHandler(.failure(self.recordError(code: .nilLocalRecord))) }
         
-        let metadata: [HarmonyMetadataKey: String] = [.recordedObjectType: localRecord.recordedObjectType, .recordedObjectIdentifier: localRecord.recordedObjectIdentifier]
+        var metadata: [HarmonyMetadataKey: Any] = [.recordedObjectType: localRecord.recordedObjectType,
+                                                   .recordedObjectIdentifier: localRecord.recordedObjectIdentifier]
+        
+        if self.record.shouldLockWhenUploading
+        {
+            metadata[.isLocked] = true
+        }
+        
+        // Keep track of the previous non-locked version, so we can restore to it in case record is locked indefinitely.
+        if let remoteRecord = self.record.remoteRecord, !remoteRecord.isLocked
+        {
+            metadata[.previousVersionIdentifier] = remoteRecord.version.identifier
+            metadata[.previousVersionDate] = String(remoteRecord.version.date.timeIntervalSinceReferenceDate)
+        }
         
         let progress = self.service.upload(localRecord, metadata: metadata, context: self.managedObjectContext) { (result) in
             do
