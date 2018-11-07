@@ -45,6 +45,7 @@ public class LocalRecord: RecordRepresentation, Codable
     
     /* Relationships */
     @NSManaged var version: ManagedVersion?
+    @NSManaged var remoteFiles: Set<RemoteFile>
     
     var recordedObject: SyncableManagedObject? {
         return self.resolveRecordedObject()
@@ -54,7 +55,6 @@ public class LocalRecord: RecordRepresentation, Codable
         return self.resolveRecordedObjectID()
     }
     
-    var remoteFiles = Set<RemoteFile>()
     var remoteRelationships: [String: Reference]?
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
@@ -120,10 +120,16 @@ public class LocalRecord: RecordRepresentation, Codable
                 recordedObject.setValue(value, forKey: stringValue)
             }
             
+            let remoteFiles = try container.decode(Set<RemoteFile>.self, forKey: .files)
             self.remoteRelationships = try container.decodeIfPresent([String: Reference].self, forKey: .relationships)
-            self.remoteFiles = try container.decode(Set<RemoteFile>.self, forKey: .files)
             
             try self.configure(with: recordedObject)
+            
+            // We know initialization didn't fail, so insert self and recordedObject into managed object context.
+            context.insert(self)
+            
+            // Must assign after being inserted into context.
+            self.remoteFiles = remoteFiles
         }
         catch
         {
@@ -134,9 +140,6 @@ public class LocalRecord: RecordRepresentation, Codable
             
             throw error
         }
-        
-        // We know initialization didn't fail, so insert self and recordedObject into managed object context.
-        context.insert(self)
     }
     
     public func encode(to encoder: Encoder) throws

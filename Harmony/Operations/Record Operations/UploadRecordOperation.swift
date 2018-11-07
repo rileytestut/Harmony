@@ -8,8 +8,12 @@
 
 import CoreData
 
+import Roxas
+
 class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
 {
+    private var localRecord: LocalRecord!
+    
     required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext) throws
     {
         try super.init(record: record, service: service, context: context)
@@ -17,6 +21,8 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         guard let localRecord = self.record.localRecord else {
             throw self.recordError(code: .nilLocalRecord)
         }
+        
+        self.localRecord = localRecord
         
         guard let recordedObject = localRecord.recordedObject else {
             throw self.recordError(code: .nilRecordedObject)
@@ -34,10 +40,20 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
             {
                 let remoteFiles = try result.value()
                 
-                // We're on record's context queue, so we can update attributes.
-                self.record.localRecord?.remoteFiles = remoteFiles
+                let localRecord = self.localRecord.in(self.managedObjectContext)
+                let localRecordRemoteFilesByIdentifier = Dictionary(uniqueKeysWithValues: localRecord.remoteFiles.lazy.map { ($0.identifier, $0) })
                 
-                self.uploadRecord() { (result) in
+                for remoteFile in remoteFiles
+                {
+                    if let cachedFile = localRecordRemoteFilesByIdentifier[remoteFile.identifier]
+                    {
+                        localRecord.remoteFiles.remove(cachedFile)
+                    }
+                    
+                    localRecord.remoteFiles.insert(remoteFile)
+                }
+                                
+                self.upload(localRecord) { (result) in
                     self.result = result
                     self.finish()
                 }
@@ -59,42 +75,79 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         
         let uploadFilesProgress = Progress(totalUnitCount: Int64(files.count), parent: self.progress, pendingUnitCount: Int64(files.count))
         
+        let remoteFilesByIdentifier = Dictionary(uniqueKeysWithValues: localRecord.remoteFiles.lazy.map { ($0.identifier, $0) })
+        
+        // Suspend operation queue to prevent upload operations from starting automatically.
+        self.operationQueue.isSuspended = true
+        
         var remoteFiles = Set<RemoteFile>()
         var errors = [Error]()
         
         let dispatchGroup = DispatchGroup()
-        
+
         for file in files
         {
-            dispatchGroup.enter()
-            
-            let metadata: [HarmonyMetadataKey: Any] = [.relationshipIdentifier: file.identifier]
-            
-            let progress = self.service.upload(file, for: localRecord, metadata: metadata) { (result) in
-                do
-                {
-                    let remoteFile = try result.value()
-                    remoteFiles.insert(remoteFile)
-                }
-                catch HarmonyError.Code.cancelled
-                {
-                    // Ignore
-                }
-                catch
-                {
-                    errors.append(error)
-                    
-                    uploadFilesProgress.cancel()
+            do
+            {
+                let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
+                
+                let remoteFile = remoteFilesByIdentifier[file.identifier]
+                guard remoteFile?.sha1Hash != hash else {
+                    // Hash is the same, so don't upload file.
+                    uploadFilesProgress.completedUnitCount += 1
+                    continue
                 }
                 
-                dispatchGroup.leave()
+                // Hash is either different or file hasn't yet been uploaded, so upload file.
+
+                let operation = RSTAsyncBlockOperation { (operation) in
+                    localRecord.managedObjectContext?.perform {
+                        let metadata: [HarmonyMetadataKey: Any] = [.relationshipIdentifier: file.identifier, .sha1Hash: hash]
+                        
+                        let progress = self.service.upload(file, for: localRecord, metadata: metadata, context: self.managedObjectContext) { (result) in
+                            do
+                            {
+                                let remoteFile = try result.value()
+                                remoteFiles.insert(remoteFile)
+                                
+                                uploadFilesProgress.completedUnitCount += 1
+                            }
+                            catch HarmonyError.Code.cancelled
+                            {
+                                // Ignore
+                            }
+                            catch
+                            {
+                                errors.append(error)
+                                uploadFilesProgress.cancel()
+                            }
+                            
+                            dispatchGroup.leave()
+                            
+                            operation.finish()
+                        }
+                        
+                        uploadFilesProgress.addChild(progress, withPendingUnitCount: 1)
+                    }
+                }
+                self.operationQueue.addOperation(operation)
             }
-            
-            uploadFilesProgress.addChild(progress, withPendingUnitCount: 1)
+            catch
+            {
+                errors.append(error)
+            }
         }
         
+        if errors.isEmpty
+        {
+            self.operationQueue.operations.forEach { _ in dispatchGroup.enter() }
+            self.operationQueue.isSuspended = false
+        }
+
         dispatchGroup.notify(queue: .global()) {
-            self.record.managedObjectContext?.perform {
+            self.managedObjectContext.perform {
+                uploadFilesProgress.completedUnitCount = uploadFilesProgress.totalUnitCount
+                
                 if !errors.isEmpty
                 {
                     completionHandler(.failure(self.recordError(code: .fileUploadsFailed(errors))))
@@ -107,20 +160,18 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         }
     }
     
-    private func uploadRecord(completionHandler: @escaping (Result<RemoteRecord>) -> Void)
+    private func upload(_ localRecord: LocalRecord, completionHandler: @escaping (Result<RemoteRecord>) -> Void)
     {
-        guard let localRecord = self.record.localRecord else { return completionHandler(.failure(self.recordError(code: .nilLocalRecord))) }
-        
         var metadata: [HarmonyMetadataKey: Any] = [.recordedObjectType: localRecord.recordedObjectType,
                                                    .recordedObjectIdentifier: localRecord.recordedObjectIdentifier]
         
         if self.record.shouldLockWhenUploading
         {
-            metadata[.isLocked] = true
+            metadata[.isLocked] = String(true)
         }
         
         // Keep track of the previous non-locked version, so we can restore to it in case record is locked indefinitely.
-        if let remoteRecord = self.record.remoteRecord, !remoteRecord.isLocked
+        if let remoteRecord = localRecord.managedRecord?.remoteRecord, !remoteRecord.isLocked
         {
             metadata[.previousVersionIdentifier] = remoteRecord.version.identifier
             metadata[.previousVersionDate] = String(remoteRecord.version.date.timeIntervalSinceReferenceDate)

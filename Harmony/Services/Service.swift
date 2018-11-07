@@ -27,7 +27,7 @@ public protocol Service
     
     func delete(_ record: RemoteRecord, completionHandler: @escaping (Result<Void>) -> Void) -> Progress
     
-    func upload(_ file: File, for record: LocalRecord, metadata: [HarmonyMetadataKey: Any], completionHandler: @escaping (Result<RemoteFile>) -> Void) -> Progress
+    func upload(_ file: File, for record: LocalRecord, metadata: [HarmonyMetadataKey: Any], context: NSManagedObjectContext, completionHandler: @escaping (Result<RemoteFile>) -> Void) -> Progress
     func download(_ remoteFile: RemoteFile, completionHandler: @escaping (Result<File>) -> Void) -> Progress
     
     func updateMetadata(_ metadata: [HarmonyMetadataKey: Any], for record: RemoteRecord, completionHandler: @escaping (Result<Void>) -> Void) -> Progress

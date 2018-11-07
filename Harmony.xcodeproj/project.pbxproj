@@ -21,7 +21,6 @@
 		BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */; };
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
 		BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */; };
-		BF3915DB21810E4800AF74E5 /* RemoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915DA21810E4800AF74E5 /* RemoteFile.swift */; };
 		BF3915E121812F0200AF74E5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
 		BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */; };
 		BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */; };
@@ -34,6 +33,7 @@
 		BF7A20101F9D67500061B187 /* CwlCatchException.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20031F9D667B0061B187 /* CwlCatchException.framework */; };
 		BF7A20111F9D67520061B187 /* CwlPreconditionTesting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20051F9D667B0061B187 /* CwlPreconditionTesting.framework */; };
 		BF81658F20164A280025CA9F /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81658E20164A280025CA9F /* OperationTests.swift */; };
+		BF84220C21936E950035340B /* RemoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF84220B21936E950035340B /* RemoteFile.swift */; };
 		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
 		BF91BA6A201FB8FC004498F3 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA69201FB8FC004498F3 /* Errors.swift */; };
 		BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */; };
@@ -264,6 +264,7 @@
 		BF7A1FC91F9D5F610061B187 /* NSManagedObject+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Harmony.swift"; sourceTree = "<group>"; };
 		BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CwlPreconditionTesting.xcodeproj; path = External/CwlPreconditionTesting/CwlPreconditionTesting.xcodeproj; sourceTree = SOURCE_ROOT; };
 		BF81658E20164A280025CA9F /* OperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationTests.swift; sourceTree = "<group>"; };
+		BF84220B21936E950035340B /* RemoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteFile.swift; sourceTree = "<group>"; };
 		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
 		BF91BA69201FB8FC004498F3 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+ManagedObjectContext.swift"; sourceTree = "<group>"; };
@@ -412,6 +413,7 @@
 				BFBDB7C2216EB1F000DC004B /* LocalRecord.swift */,
 				BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */,
 				BFFDBAA0216D785E00AED109 /* ManagedVersion.swift */,
+				BF84220B21936E950035340B /* RemoteFile.swift */,
 			);
 			path = "Core Data";
 			sourceTree = "<group>";
@@ -985,13 +987,13 @@
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */,
 				BFECF58321912559006DB8F5 /* DownloadRecordsOperation.swift in Sources */,
+				BF84220C21936E950035340B /* RemoteFile.swift in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
 				BFBC1392218265CD001A321F /* NSManagedObject+Conveniences.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
 				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
 				BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */,
 				BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */,
-				BF3915DB21810E4800AF74E5 /* RemoteFile.swift in Sources */,
 				BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */,
 				BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */,
 				BFFDBA9A216D642500AED109 /* BatchRecordOperation.swift in Sources */,

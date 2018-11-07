@@ -6,6 +6,7 @@
         <attribute name="recordedObjectURI" attributeType="URI" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <relationship name="managedRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedRecord" inverseName="localRecord" inverseEntity="ManagedRecord" syncable="YES"/>
+        <relationship name="remoteFiles" toMany="YES" deletionRule="Cascade" destinationEntity="RemoteFile" inverseName="localRecord" inverseEntity="RemoteFile" syncable="YES"/>
         <relationship name="version" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedVersion" inverseName="localRecord" inverseEntity="ManagedVersion" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -39,6 +40,13 @@
         <relationship name="previousUnlockedRemoteRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RemoteRecord" inverseName="previousUnlockedVersion" inverseEntity="RemoteRecord" syncable="YES"/>
         <relationship name="remoteRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RemoteRecord" inverseName="version" inverseEntity="RemoteRecord" syncable="YES"/>
     </entity>
+    <entity name="RemoteFile" representedClassName="RemoteFile" syncable="YES">
+        <attribute name="identifier" attributeType="String" syncable="YES"/>
+        <attribute name="remoteIdentifier" attributeType="String" syncable="YES"/>
+        <attribute name="sha1Hash" attributeType="String" syncable="YES"/>
+        <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
+        <relationship name="localRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LocalRecord" inverseName="remoteFiles" inverseEntity="LocalRecord" syncable="YES"/>
+    </entity>
     <entity name="RemoteRecord" representedClassName="RemoteRecord" syncable="YES">
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <attribute name="isLocked" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
@@ -64,11 +72,13 @@
         <memberEntity name="ManagedVersion"/>
         <memberEntity name="LocalRecord"/>
         <memberEntity name="RemoteRecord"/>
+        <memberEntity name="RemoteFile"/>
     </configuration>
     <elements>
-        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="133"/>
+        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="150"/>
         <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
         <element name="ManagedVersion" positionX="298.94921875" positionY="439.0625" width="128" height="120"/>
         <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="165"/>
+        <element name="RemoteFile" positionX="288" positionY="378" width="128" height="120"/>
     </elements>
 </model>

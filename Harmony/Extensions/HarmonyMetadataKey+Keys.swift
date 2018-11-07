@@ -19,4 +19,6 @@ extension HarmonyMetadataKey
     
     static let previousVersionIdentifier = HarmonyMetadataKey("previousVersionIdentifier")
     static let previousVersionDate = HarmonyMetadataKey("previousVersionDate")
+    
+    static let sha1Hash = HarmonyMetadataKey("sha1Hash")
 }
