@@ -102,6 +102,11 @@ extension MockService: Service
         fatalError()
     }
     
+    func delete(_ remoteFile: RemoteFile, completionHandler: @escaping (Result<Void>) -> Void) -> Progress
+    {
+        fatalError()
+    }
+    
     func updateMetadata(_ metadata: [HarmonyMetadataKey : Any], for record: RemoteRecord, completionHandler: @escaping (Result<Void>) -> Void) -> Progress
     {
         fatalError()

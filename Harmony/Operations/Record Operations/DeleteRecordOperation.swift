@@ -17,14 +17,26 @@ class DeleteRecordOperation: RecordOperation<Void, DeleteError>
         
         self.progress.totalUnitCount = 2
         
-        self.deleteRemoteRecord { (result) in
+        self.deleteRemoteFiles { (result) in
             do
             {
                 try result.verify()
                 
-                self.deleteManagedRecord { (result) in                    
-                    self.result = result
-                    self.finish()
+                self.deleteRemoteRecord { (result) in
+                    do
+                    {
+                        try result.verify()
+                        
+                        self.deleteManagedRecord { (result) in
+                            self.result = result
+                            self.finish()
+                        }
+                    }
+                    catch
+                    {
+                        self.result = result
+                        self.finish()
+                    }
                 }
             }
             catch
@@ -38,6 +50,64 @@ class DeleteRecordOperation: RecordOperation<Void, DeleteError>
 
 private extension DeleteRecordOperation
 {
+    func deleteRemoteFiles(completionHandler: @escaping (Result<Void>) -> Void)
+    {
+        // If local record doesn't exist, we don't treat it as an error and just say it succeeded.
+        guard let localRecord = self.record.localRecord else { return completionHandler(.success) }
+        
+        self.managedObjectContext.perform {
+            // Perform on managedObjectContext queue to ensure remote files returned in errors are in managedObjectContext.
+            let localRecord = localRecord.in(self.managedObjectContext)
+            
+            var errors = [Error]()
+            
+            let dispatchGroup = DispatchGroup()
+            
+            for remoteFile in localRecord.remoteFiles
+            {
+                self.progress.totalUnitCount += 1
+                
+                dispatchGroup.enter()
+                
+                let progress = self.service.delete(remoteFile) { (result) in
+                    do
+                    {
+                        try result.verify()
+                    }
+                    catch let error as HarmonyError
+                    {
+                        switch error.code
+                        {
+                        case .fileDoesNotExist: break
+                        default: errors.append(error)
+                        }
+                    }
+                    catch
+                    {
+                        errors.append(error)
+                    }
+                    
+                    dispatchGroup.leave()
+                }
+                
+                self.progress.addChild(progress, withPendingUnitCount: 1)
+            }
+            
+            dispatchGroup.notify(queue: .global()) {
+                self.record.managedObjectContext?.perform {
+                    if !errors.isEmpty
+                    {
+                        completionHandler(.failure(self.recordError(code: .fileDeletionsFailed(errors))))
+                    }
+                    else
+                    {
+                        completionHandler(.success)
+                    }
+                }
+            }
+        }
+    }
+    
     func deleteRemoteRecord(completionHandler: @escaping (Result<Void>) -> Void)
     {
         guard let remoteRecord = self.record.remoteRecord, remoteRecord.status != .deleted else { return completionHandler(.success) }
@@ -48,6 +118,14 @@ private extension DeleteRecordOperation
                 try result.verify()
                 
                 completionHandler(.success)
+            }
+            catch let error as HarmonyError
+            {
+                switch error.code
+                {
+                case .recordDoesNotExist: completionHandler(.success)
+                default: completionHandler(.failure(error))
+                }
             }
             catch
             {

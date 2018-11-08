@@ -33,12 +33,15 @@ public enum _HarmonyErrorCode
     case nilManagedRecord
     case nilRelationshipObject
     
-    case unknownFile
-    
     case recordLocked
+    case recordDoesNotExist
+    
+    case unknownFile
+    case fileDoesNotExist
     
     case fileUploadsFailed([Error])
     case fileDownloadsFailed([Error])
+    case fileDeletionsFailed([Error])
     
     case conflicted
         
@@ -63,10 +66,13 @@ public enum _HarmonyErrorCode
         case .nilRecordedObject: return NSLocalizedString("The recorded object could not be found.", comment: "")
         case .nilManagedRecord: return NSLocalizedString("The record could not be found.", comment: "")
         case .nilRelationshipObject: return NSLocalizedString("The relationship object could not be found.", comment: "")
-        case .unknownFile: return NSLocalizedString("The file is unknown.", comment: "")
         case .recordLocked: return NSLocalizedString("The record is locked.", comment: "")
+        case .recordDoesNotExist: return NSLocalizedString("The record does not exist.", comment: "")
+        case .unknownFile: return NSLocalizedString("The file is unknown.", comment: "")
+        case .fileDoesNotExist: return NSLocalizedString("The file does not exist.", comment: "")
         case .fileUploadsFailed: return NSLocalizedString("The record's files could not be uploaded.", comment: "")
         case .fileDownloadsFailed: return NSLocalizedString("The record's files could not be downloaded.", comment: "")
+        case .fileDeletionsFailed: return NSLocalizedString("The record's files could not be deleted.", comment: "")
         case .conflicted: return NSLocalizedString("There is a conflict with the record.", comment: "")
         case .unknownRecordType(let type): return String.localizedStringWithFormat("Unknown record type '%@'.", type)
         case .nonSyncableRecordType(let type): return String.localizedStringWithFormat("Record type '%@' does not support syncing.", type)
@@ -305,6 +311,8 @@ public struct DownloadFileError: HarmonyError
     public var file: RemoteFile
     public var code: HarmonyError.Code
     
+    private var fileContext: NSManagedObjectContext?
+    
     public var failureDescription: String {
         return NSLocalizedString("Failed to download file.", comment: "")
     }
@@ -313,6 +321,28 @@ public struct DownloadFileError: HarmonyError
     {
         self.file = file
         self.code = code
+        
+        self.fileContext = file.managedObjectContext
+    }
+}
+
+public struct DeleteFileError: HarmonyError
+{
+    public var file: RemoteFile
+    public var code: HarmonyError.Code
+    
+    private var fileContext: NSManagedObjectContext?
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to delete remote file.", comment: "")
+    }
+    
+    public init(file: RemoteFile, code: HarmonyError.Code)
+    {
+        self.file = file
+        self.code = code
+        
+        self.fileContext = file.managedObjectContext
     }
 }
 
