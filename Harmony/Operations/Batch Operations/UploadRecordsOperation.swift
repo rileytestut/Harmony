@@ -115,16 +115,12 @@ class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOpe
             self.operationQueue.addOperations(operations, waitUntilFinished: false)
             
             dispatchGroup.notify(queue: .global()) {
-                context.perform {
-                    completionHandler(.success(results))
-                }
+                completionHandler(.success(results))
             }
         }
         catch
         {
-            context.perform {
-                completionHandler(.failure(error))
-            }
+            completionHandler(.failure(error))
         }
     }
 }

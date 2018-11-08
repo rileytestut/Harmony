@@ -66,6 +66,8 @@
 		BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */; };
 		BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD0E2E4217FD02B006945CF /* RecordOperation.swift */; };
 		BFDA96F72164176000AF12F8 /* MergePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFDA96F62164176000AF12F8 /* MergePolicy.swift */; };
+		BFDDC0FC2194F065009732B7 /* DeleteRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFDDC0FB2194F065009732B7 /* DeleteRecordsOperation.swift */; };
+		BFDDC10C2194F337009732B7 /* ConflictRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFDDC10B2194F337009732B7 /* ConflictRecordsOperation.swift */; };
 		BFE029292006AE54004F70DC /* SyncableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE029282006AE54004F70DC /* SyncableTests.swift */; };
 		BFE4EAB51FDB8E6400855951 /* RemoteRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */; };
 		BFE4EAC71FDBB00600855951 /* FileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC61FDBB00600855951 /* FileTests.swift */; };
@@ -304,6 +306,8 @@
 		BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteRecordOperation.swift; sourceTree = "<group>"; };
 		BFD0E2E4217FD02B006945CF /* RecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordOperation.swift; sourceTree = "<group>"; };
 		BFDA96F62164176000AF12F8 /* MergePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergePolicy.swift; sourceTree = "<group>"; };
+		BFDDC0FB2194F065009732B7 /* DeleteRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteRecordsOperation.swift; sourceTree = "<group>"; };
+		BFDDC10B2194F337009732B7 /* ConflictRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConflictRecordsOperation.swift; sourceTree = "<group>"; };
 		BFE029282006AE54004F70DC /* SyncableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncableTests.swift; sourceTree = "<group>"; };
 		BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRecordTests.swift; sourceTree = "<group>"; };
 		BFE4EAC61FDBB00600855951 /* FileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTests.swift; sourceTree = "<group>"; };
@@ -516,6 +520,8 @@
 				BF95137721657632007EF10C /* BatchRecordOperation.swift */,
 				BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */,
 				BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */,
+				BFDDC0FB2194F065009732B7 /* DeleteRecordsOperation.swift */,
+				BFDDC10B2194F337009732B7 /* ConflictRecordsOperation.swift */,
 			);
 			path = "Batch Operations";
 			sourceTree = "<group>";
@@ -989,6 +995,7 @@
 				BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */,
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */,
+				BFDDC10C2194F337009732B7 /* ConflictRecordsOperation.swift in Sources */,
 				BFA4134B2194CDA90001D71A /* Dictionary+Sequence.swift in Sources */,
 				BFECF58321912559006DB8F5 /* DownloadRecordsOperation.swift in Sources */,
 				BF84220C21936E950035340B /* RemoteFile.swift in Sources */,
@@ -996,6 +1003,7 @@
 				BFBC1392218265CD001A321F /* NSManagedObject+Conveniences.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
 				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
+				BFDDC0FC2194F065009732B7 /* DeleteRecordsOperation.swift in Sources */,
 				BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */,
 				BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */,
 				BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */,

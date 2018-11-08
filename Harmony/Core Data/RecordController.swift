@@ -35,6 +35,7 @@ public final class RecordController: RSTPersistentContainer
     private let processingDispatchGroup = DispatchGroup()
     
     private let updatedObjectKeys = NSMapTable<NSManagedObject, NSSet>.weakToStrongObjects()
+    private let pendingDeletionFiles = NSMapTable<NSManagedObjectID, NSSet>.weakToStrongObjects()
     
     init(persistentContainer: NSPersistentContainer)
     {
@@ -100,6 +101,7 @@ public extension RecordController
         {
             self.processingContext = self.newBackgroundContext()
             
+            NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextWillSave(_:)), name: .NSManagedObjectContextWillSave, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextObjectsDidChange(_:)), name: .NSManagedObjectContextObjectsDidChange, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(_:)), name: .NSManagedObjectContextDidSave, object: nil)
             
@@ -328,10 +330,51 @@ private extension RecordController
             print(error)
         }
     }
+    
+    func finishPendingFileDeletions<T: Collection>(for deletedObjectIDs: T) where T.Element == NSManagedObjectID
+    {
+        for objectID in deletedObjectIDs
+        {
+            guard let files = self.pendingDeletionFiles.object(forKey: objectID) as? Set<File> else { continue }
+            
+            for file in files
+            {
+                do
+                {
+                    try FileManager.default.removeItem(at: file.fileURL)
+                }
+                catch CocoaError.fileNoSuchFile
+                {
+                    // Ignore
+                }
+                catch
+                {
+                    print("Harmony failed to delete local file at URL:", file.fileURL)
+                }
+            }
+            
+            self.pendingDeletionFiles.removeObject(forKey: objectID)
+        }
+    }
 }
 
 private extension RecordController
 {
+    @objc func managedObjectContextWillSave(_ notification: Notification)
+    {
+        guard
+            let managedObjectContext = notification.object as? NSManagedObjectContext,
+            managedObjectContext.parent == nil,
+            managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator,
+            !self.persistentStoreCoordinator.persistentStores.isEmpty
+        else { return }
+        
+        for case let deletedObject as SyncableManagedObject in managedObjectContext.deletedObjects
+        {
+            self.pendingDeletionFiles.setObject(deletedObject.syncableFiles as NSSet, forKey: deletedObject.objectID)
+        }
+    }
+    
     @objc func managedObjectContextObjectsDidChange(_ notification: Notification)
     {
         guard
@@ -430,6 +473,7 @@ private extension RecordController
         if !deletedObjectIDs.isEmpty
         {
             self.updateLocalRecords(for: deletedObjectIDs, status: .deleted, in: context)
+            self.finishPendingFileDeletions(for: deletedObjectIDs)
         }
         
         NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])

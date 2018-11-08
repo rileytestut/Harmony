@@ -84,9 +84,7 @@ class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecord
             }
             catch
             {
-                context.perform {
-                    completionHandler(.failure(BatchDownloadError(code: .any(error))))
-                }
+                completionHandler(.failure(BatchDownloadError(code: .any(error))))
             }
         }
     }

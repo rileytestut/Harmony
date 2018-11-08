@@ -46,74 +46,82 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                 let records = try fetchContext.fetch(fetchRequest)
                 
                 self.process(records, in: fetchContext) { (result) in
-                    do
-                    {
-                        let records = try result.value()
-                        
-                        let operations = records.compactMap { (record) -> OperationType? in
-                            do
-                            {
-                                let operation = try OperationType(record: record, service: self.service, context: saveContext)
-                                operation.resultHandler = { (result) in
-                                    let contextRecord = saveContext.object(with: record.objectID) as! ManagedRecord
-                                    contextRecord.shouldLockWhenUploading = record.shouldLockWhenUploading
-                                    results[contextRecord] = result
+                    fetchContext.perform {
+                        do
+                        {
+                            let records = try result.value()
+                            
+                            let operations = records.compactMap { (record) -> OperationType? in
+                                do
+                                {
+                                    let operation = try OperationType(record: record, service: self.service, context: saveContext)
+                                    operation.resultHandler = { (result) in
+                                        let contextRecord = saveContext.object(with: record.objectID) as! ManagedRecord
+                                        contextRecord.shouldLockWhenUploading = record.shouldLockWhenUploading
+                                        results[contextRecord] = result
+                                        
+                                        dispatchGroup.leave()
+                                    }
                                     
-                                    dispatchGroup.leave()
+                                    dispatchGroup.enter()
+                                    
+                                    return operation
+                                }
+                                catch
+                                {
+                                    saveContext.performAndWait {
+                                        let contextRecord = saveContext.object(with: record.objectID) as! ManagedRecord
+                                        contextRecord.shouldLockWhenUploading = record.shouldLockWhenUploading
+                                        results[contextRecord] = .failure(error)
+                                    }
                                 }
                                 
-                                dispatchGroup.enter()
-                                
-                                return operation
-                            }
-                            catch
-                            {
-                                saveContext.performAndWait {
-                                    let contextRecord = saveContext.object(with: record.objectID) as! ManagedRecord
-                                    contextRecord.shouldLockWhenUploading = record.shouldLockWhenUploading
-                                    results[contextRecord] = .failure(error)
-                                }
+                                return nil
                             }
                             
-                            return nil
-                        }
-                        
-                        self.progress.totalUnitCount = Int64(operations.count)
-                        operations.forEach { self.progress.addChild($0.progress, withPendingUnitCount: 1) }
-                        
-                        self.operationQueue.addOperations(operations, waitUntilFinished: false)
-                        
-                        dispatchGroup.notify(queue: .global()) {
-                            saveContext.perform {
-                                self.process(results, in: saveContext) { (result) in
-                                    do
-                                    {
-                                        let results = try result.value()
-                                        
-                                        try saveContext.save()
-                                        
-                                        self.result = .success(results)
+                            self.progress.totalUnitCount = Int64(operations.count)
+                            operations.forEach { self.progress.addChild($0.progress, withPendingUnitCount: 1) }
+                            
+                            self.operationQueue.addOperations(operations, waitUntilFinished: false)
+                            
+                            dispatchGroup.notify(queue: .global()) {
+                                saveContext.perform {
+                                    self.process(results, in: saveContext) { (result) in
+                                        saveContext.perform {
+                                            do
+                                            {
+                                                let results = try result.value()
+                                                
+                                                try saveContext.save()
+                                                
+                                                self.result = .success(results)
+                                            }
+                                            catch let error as HarmonyError
+                                            {
+                                                self.result = .failure(error)
+                                            }
+                                            catch
+                                            {
+                                                self.result = .failure(BatchErrorType(code: .any(error)))
+                                            }
+                                            
+                                            self.process(self.result!, in: saveContext) {
+                                                saveContext.perform {
+                                                    self.finish()
+                                                }
+                                            }
+                                        }
                                     }
-                                    catch let error as HarmonyError
-                                    {
-                                        self.result = .failure(error)
-                                    }
-                                    catch
-                                    {
-                                        self.result = .failure(BatchErrorType(code: .any(error)))
-                                    }
-                                    
-                                    self.finish()
                                 }
                             }
                         }
-                    }
-                    catch
-                    {
-                        self.result = .failure(error)
-                        
-                        saveContext.perform {
-                            self.finish()
+                        catch
+                        {
+                            self.result = .failure(error)
+                            
+                            saveContext.perform {
+                                self.finish()
+                            }
                         }
                     }
                 }
@@ -139,26 +147,15 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         completionHandler(.success(results))
     }
     
+    func process(_ result: Result<[ManagedRecord: Result<ResultType>]>, in context: NSManagedObjectContext, completionHandler: @escaping () -> Void)
+    {
+        completionHandler()
+    }
+    
     override func finish()
     {
         self.recordController.processPendingUpdates()
         
         super.finish()
-    }
-}
-
-class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation, DeleteError, BatchDeleteError>
-{
-    init(service: Service, recordController: RecordController)
-    {
-        super.init(predicate: ManagedRecord.deleteRecordsPredicate, service: service, recordController: recordController)
-    }
-}
-
-class ConflictRecordsOperation: BatchRecordOperation<Void, ConflictRecordOperation, ConflictError, BatchConflictError>
-{
-    init(service: Service, recordController: RecordController)
-    {
-        super.init(predicate: ManagedRecord.conflictRecordsPredicate, service: service, recordController: recordController)
     }
 }
