@@ -49,6 +49,7 @@
 		BF9E9DB4202110B900F09B98 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF9E9DB3202110B800F09B98 /* SafariServices.framework */; };
 		BFA1C8DE1ECD01C100DEA99D /* Harmony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFA1C8D41ECD01C100DEA99D /* Harmony.framework */; };
 		BFA1C8E51ECD01C100DEA99D /* Harmony.h in Headers */ = {isa = PBXBuildFile; fileRef = BFA1C8D71ECD01C100DEA99D /* Harmony.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BFA4134B2194CDA90001D71A /* Dictionary+Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA4134A2194CDA90001D71A /* Dictionary+Sequence.swift */; };
 		BFAA23B91F9C14CC00969993 /* RecordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFAA23B81F9C14CC00969993 /* RecordController.swift */; };
 		BFAB991520082E9900FF274D /* Placeholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFAB991420082E9900FF274D /* Placeholder.swift */; };
 		BFAC53A62017FE5A006E0D36 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFAC53A52017FE5A006E0D36 /* AppDelegate.swift */; };
@@ -282,6 +283,7 @@
 		BFA1C8DD1ECD01C100DEA99D /* HarmonyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HarmonyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFA1C8E21ECD01C100DEA99D /* LocalRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRecordTests.swift; sourceTree = "<group>"; };
 		BFA1C8E41ECD01C100DEA99D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BFA4134A2194CDA90001D71A /* Dictionary+Sequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+Sequence.swift"; sourceTree = "<group>"; };
 		BFAA23B81F9C14CC00969993 /* RecordController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordController.swift; sourceTree = "<group>"; };
 		BFAB991420082E9900FF274D /* Placeholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Placeholder.swift; sourceTree = "<group>"; };
 		BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "Harmony-Drive.xcodeproj"; sourceTree = "<group>"; };
@@ -476,6 +478,7 @@
 				BFBC1391218265CD001A321F /* NSManagedObject+Conveniences.swift */,
 				BFBC13A121827D15001A321F /* KeyedContainers+ManagedValues.swift */,
 				BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */,
+				BFA4134A2194CDA90001D71A /* Dictionary+Sequence.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -986,6 +989,7 @@
 				BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */,
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */,
+				BFA4134B2194CDA90001D71A /* Dictionary+Sequence.swift in Sources */,
 				BFECF58321912559006DB8F5 /* DownloadRecordsOperation.swift in Sources */,
 				BF84220C21936E950035340B /* RemoteFile.swift in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,

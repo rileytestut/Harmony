@@ -22,7 +22,7 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
             {
                 let localRecord = try result.value()
                 
-                self.download(localRecord.remoteFiles) { (result) in
+                self.downloadFiles(for: localRecord) { (result) in
                     self.managedObjectContext.perform {
                         do
                         {
@@ -90,42 +90,78 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
         self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
     }
     
-    func download(_ remoteFiles: Set<RemoteFile>, completionHandler: @escaping (Result<Set<File>>) -> Void)
+    func downloadFiles(for localRecord: LocalRecord, completionHandler: @escaping (Result<Set<File>>) -> Void)
     {
-        self.progress.totalUnitCount += Int64(remoteFiles.count)
+        guard let recordedObject = localRecord.recordedObject else { return completionHandler(.failure(self.recordError(code: .nilRecordedObject))) }
         
-        let downloadFilesProgress = Progress(totalUnitCount: Int64(remoteFiles.count), parent: self.progress, pendingUnitCount: Int64(remoteFiles.count))
+        let filesByIdentifier = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
+        
+        // Suspend operation queue to prevent download operations from starting automatically.
+        self.operationQueue.isSuspended = true
         
         var files = Set<File>()
         var errors = [Error]()
         
         let dispatchGroup = DispatchGroup()
         
-        for remoteFile in remoteFiles
+        for remoteFile in localRecord.remoteFiles
         {
-            dispatchGroup.enter()
-            
-            let progress = self.service.download(remoteFile) { (result) in
+            do
+            {
+                guard let localFile = filesByIdentifier[remoteFile.identifier] else {
+                    throw DownloadFileError(file: remoteFile, code: .unknownFile)
+                }
+                
                 do
                 {
-                    let file = try result.value()
-                    files.insert(file)
+                    let hash = try RSTHasher.sha1HashOfFile(at: localFile.fileURL)
+                    
+                    guard remoteFile.sha1Hash != hash else {
+                        // Hash is the same, so don't download file.
+                        continue
+                    }
                 }
-                catch HarmonyError.Code.cancelled
+                catch CocoaError.fileNoSuchFile
                 {
                     // Ignore
                 }
-                catch
-                {
-                    errors.append(error)
-                    
-                    downloadFilesProgress.cancel()
+                
+                self.progress.totalUnitCount += 1
+                
+                let operation = RSTAsyncBlockOperation { (operation) in
+                    remoteFile.managedObjectContext?.perform {
+                        let progress = self.service.download(remoteFile) { (result) in
+                            do
+                            {
+                                let file = try result.value()
+                                files.insert(file)
+                            }
+                            catch
+                            {
+                                errors.append(error)
+                            }
+                            
+                            dispatchGroup.leave()
+                            
+                            operation.finish()
+                        }
+                        
+                        self.progress.addChild(progress, withPendingUnitCount: 1)
+                    }
                 }
                 
-                dispatchGroup.leave()
+                self.operationQueue.addOperation(operation)
             }
-            
-            downloadFilesProgress.addChild(progress, withPendingUnitCount: 1)
+            catch
+            {
+                errors.append(error)
+            }
+        }
+        
+        if errors.isEmpty
+        {
+            self.operationQueue.operations.forEach { _ in dispatchGroup.enter() }
+            self.operationQueue.isSuspended = false
         }
         
         dispatchGroup.notify(queue: .global()) {
@@ -147,7 +183,7 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
         guard let recordedObject = localRecord.recordedObject else { throw self.recordError(code: .nilRecordedObject) }
         
         let temporaryURLsByFile = Dictionary(uniqueKeysWithValues: recordedObject.syncableFiles.lazy.map { ($0, FileManager.default.uniqueTemporaryURL()) })
-        let filesByIdentifier = Dictionary(uniqueKeysWithValues: recordedObject.syncableFiles.lazy.map { ($0.identifier, $0) })
+        let filesByIdentifier = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
         
         // Copy existing files to a backup location in case something goes wrong.
         for (file, temporaryURL) in temporaryURLsByFile

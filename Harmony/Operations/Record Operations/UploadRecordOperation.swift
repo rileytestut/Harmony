@@ -41,7 +41,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
                 let remoteFiles = try result.value()
                 
                 let localRecord = self.localRecord.in(self.managedObjectContext)
-                let localRecordRemoteFilesByIdentifier = Dictionary(uniqueKeysWithValues: localRecord.remoteFiles.lazy.map { ($0.identifier, $0) })
+                let localRecordRemoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
                 
                 for remoteFile in remoteFiles
                 {
@@ -70,10 +70,8 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
     {
         guard let localRecord = self.record.localRecord else { return completionHandler(.failure(self.recordError(code: .nilLocalRecord))) }
         guard let recordedObject = localRecord.recordedObject else { return completionHandler(.failure(self.recordError(code: .nilRecordedObject))) }
-        
-        let files = recordedObject.syncableFiles
-        
-        let remoteFilesByIdentifier = Dictionary(uniqueKeysWithValues: localRecord.remoteFiles.lazy.map { ($0.identifier, $0) })
+                
+        let remoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
         
         // Suspend operation queue to prevent upload operations from starting automatically.
         self.operationQueue.isSuspended = true
@@ -83,7 +81,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         
         let dispatchGroup = DispatchGroup()
 
-        for file in files
+        for file in recordedObject.syncableFiles
         {
             do
             {

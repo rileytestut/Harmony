@@ -33,6 +33,8 @@ public enum _HarmonyErrorCode
     case nilManagedRecord
     case nilRelationshipObject
     
+    case unknownFile
+    
     case recordLocked
     
     case fileUploadsFailed([Error])
@@ -61,6 +63,7 @@ public enum _HarmonyErrorCode
         case .nilRecordedObject: return NSLocalizedString("The recorded object could not be found.", comment: "")
         case .nilManagedRecord: return NSLocalizedString("The record could not be found.", comment: "")
         case .nilRelationshipObject: return NSLocalizedString("The relationship object could not be found.", comment: "")
+        case .unknownFile: return NSLocalizedString("The file is unknown.", comment: "")
         case .recordLocked: return NSLocalizedString("The record is locked.", comment: "")
         case .fileUploadsFailed: return NSLocalizedString("The record's files could not be uploaded.", comment: "")
         case .fileDownloadsFailed: return NSLocalizedString("The record's files could not be downloaded.", comment: "")
