@@ -17,6 +17,8 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
     {
         super.main()
         
+        let remoteRecord = self.record.remoteRecord
+        
         self.downloadRecord { (result) in
             do
             {
@@ -32,7 +34,31 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
                             self.result = .success(localRecord)
                         }
                         catch
-                        {
+                        {                            
+                            // Remove local record + recorded object, since the download ultimately failed.
+                            self.managedObjectContext.delete(localRecord)
+                            
+                            if let recordedObject = localRecord.recordedObject
+                            {
+                                if recordedObject.isInserted
+                                {
+                                    // This is a new recorded object, so we can just delete it.
+                                    self.managedObjectContext.delete(recordedObject)
+                                }
+                                else
+                                {
+                                    // We're updating an existing recorded object, so we simply discard our changes.
+                                    self.managedObjectContext.refresh(recordedObject, mergeChanges: false)
+                                }
+                            }
+                            
+                            if let remoteRecord = remoteRecord
+                            {
+                                // Reset remoteRecord status to make us retry the download again in the future.
+                                let remoteRecord = remoteRecord.in(self.managedObjectContext)
+                                remoteRecord.status = .updated
+                            }
+                            
                             self.result = .failure(error)
                         }
                         
