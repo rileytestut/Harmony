@@ -73,8 +73,6 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         
         let files = recordedObject.syncableFiles
         
-        let uploadFilesProgress = Progress(totalUnitCount: Int64(files.count), parent: self.progress, pendingUnitCount: Int64(files.count))
-        
         let remoteFilesByIdentifier = Dictionary(uniqueKeysWithValues: localRecord.remoteFiles.lazy.map { ($0.identifier, $0) })
         
         // Suspend operation queue to prevent upload operations from starting automatically.
@@ -94,7 +92,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
                 let remoteFile = remoteFilesByIdentifier[file.identifier]
                 guard remoteFile?.sha1Hash != hash else {
                     // Hash is the same, so don't upload file.
-                    uploadFilesProgress.completedUnitCount += 1
+                    self.progress.completedUnitCount += 1
                     continue
                 }
                 
@@ -109,17 +107,10 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
                             {
                                 let remoteFile = try result.value()
                                 remoteFiles.insert(remoteFile)
-                                
-                                uploadFilesProgress.completedUnitCount += 1
-                            }
-                            catch HarmonyError.Code.cancelled
-                            {
-                                // Ignore
                             }
                             catch
                             {
                                 errors.append(error)
-                                uploadFilesProgress.cancel()
                             }
                             
                             dispatchGroup.leave()
@@ -127,7 +118,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
                             operation.finish()
                         }
                         
-                        uploadFilesProgress.addChild(progress, withPendingUnitCount: 1)
+                        self.progress.addChild(progress, withPendingUnitCount: 1)
                     }
                 }
                 self.operationQueue.addOperation(operation)
@@ -145,9 +136,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         }
 
         dispatchGroup.notify(queue: .global()) {
-            self.managedObjectContext.perform {
-                uploadFilesProgress.completedUnitCount = uploadFilesProgress.totalUnitCount
-                
+            self.managedObjectContext.perform {                
                 if !errors.isEmpty
                 {
                     completionHandler(.failure(self.recordError(code: .fileUploadsFailed(errors))))
