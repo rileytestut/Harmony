@@ -34,6 +34,8 @@ public final class RecordController: RSTPersistentContainer
     private var processingContext: NSManagedObjectContext?
     private let processingDispatchGroup = DispatchGroup()
     
+    private let updatedObjectKeys = NSMapTable<NSManagedObject, NSSet>.weakToStrongObjects()
+    
     init(persistentContainer: NSPersistentContainer)
     {
         let configurations = persistentContainer.managedObjectModel.configurations.compactMap(NSManagedObjectModel.Configuration.init(rawValue:))
@@ -98,6 +100,7 @@ public extension RecordController
         {
             self.processingContext = self.newBackgroundContext()
             
+            NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextObjectsDidChange(_:)), name: .NSManagedObjectContextObjectsDidChange, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(_:)), name: .NSManagedObjectContextDidSave, object: nil)
             
             completionHandler(errors)
@@ -329,6 +332,23 @@ private extension RecordController
 
 private extension RecordController
 {
+    @objc func managedObjectContextObjectsDidChange(_ notification: Notification)
+    {
+        guard
+            let managedObjectContext = notification.object as? NSManagedObjectContext,
+            managedObjectContext.parent == nil,
+            managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator,
+            !self.persistentStoreCoordinator.persistentStores.isEmpty
+        else { return }
+        
+        // Must use registeredObjects, because an inserted object may become an updated object after saving due to merging.
+        for case let syncableManagedObject as SyncableManagedObject in managedObjectContext.registeredObjects
+        {
+            let changedKeys = Set(syncableManagedObject.changedValues().keys) as NSSet
+            self.updatedObjectKeys.setObject(changedKeys, forKey: syncableManagedObject)
+        }
+    }
+    
     @objc func managedObjectContextDidSave(_ notification: Notification)
     {
         guard let processingContext = self.processingContext else { return }
@@ -343,9 +363,41 @@ private extension RecordController
         
         guard let userInfo = notification.userInfo else { return }
         
-        let insertedObjects = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject> ?? []
-        let updatedObjects = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject> ?? []
-        let deletedObjects = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject> ?? []
+        var insertedObjects = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject> ?? []
+        var updatedObjects = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject> ?? []
+        var deletedObjects = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject> ?? []
+        
+        if managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator
+        {
+            // Filter out non-syncabled managed objects.
+            insertedObjects = insertedObjects.filter { $0 is SyncableManagedObject }
+            deletedObjects = deletedObjects.filter { $0 is SyncableManagedObject }
+            
+            var validatedUpdatedObjects = Set<NSManagedObject>()
+            
+            // Only include updated objects whose syncable keys have been updated.
+            for case let syncableManagedObject as SyncableManagedObject in updatedObjects
+            {
+                if let changedKeys = self.updatedObjectKeys.object(forKey: syncableManagedObject) as? Set<String>
+                {
+                    let syncableKeys = Set(syncableManagedObject.syncableKeys.lazy.compactMap { $0.stringValue })
+                    
+                    if !syncableKeys.isDisjoint(with: changedKeys)
+                    {
+                        validatedUpdatedObjects.insert(syncableManagedObject)
+                    }
+                    
+                    self.updatedObjectKeys.removeObject(forKey: syncableManagedObject)
+                }
+                else
+                {
+                    // Fall back to marking object as updated if we don't have the changed keys for some reason.
+                    validatedUpdatedObjects.insert(syncableManagedObject)
+                }
+            }
+            
+            updatedObjects = validatedUpdatedObjects
+        }
         
         let changes = [NSInsertedObjectsKey: insertedObjects.map { $0.objectID },
                        NSUpdatedObjectsKey: updatedObjects.map { $0.objectID},
