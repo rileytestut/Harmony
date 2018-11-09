@@ -9,6 +9,13 @@
 import Foundation
 import CoreData
 
+public extension SyncCoordinator
+{
+    static let didFinishSyncingNotification = Notification.Name("syncCoordinatorDidFinishSyncingNotification")
+    
+    static let syncResultKey = "syncResult"
+}
+
 public final class SyncCoordinator
 {
     public let service: Service
@@ -27,6 +34,7 @@ public final class SyncCoordinator
         self.operationQueue = OperationQueue()
         self.operationQueue.name = "com.rileytestut.Harmony.SyncCoordinator.operationQueue"
         self.operationQueue.qualityOfService = .utility
+        self.operationQueue.maxConcurrentOperationCount = 1
     }
 }
 
@@ -46,21 +54,31 @@ public extension SyncCoordinator
         }
     }
     
-    @discardableResult func sync(completionHandler: @escaping (Result<[Result<Void>]>) -> Void) -> (Foundation.Operation & ProgressReporting)
+    @discardableResult func sync() -> (Foundation.Operation & ProgressReporting)
     {
+        // If there is already a sync operation waiting to execute, no use adding another one.
+        if self.operationQueue.operationCount > 1, let operation = self.operationQueue.operations.last as? SyncRecordsOperation
+        {
+            return operation
+        }
+        
         let syncRecordsOperation = SyncRecordsOperation(changeToken: UserDefaults.standard.harmonyChangeToken, service: self.service, recordController: self.recordController)
         syncRecordsOperation.resultHandler = { (result) in
+            let syncResult: Result<[Result<Void>]>
+            
             do
             {
                 let (_, changeToken) = try result.value()
                 UserDefaults.standard.harmonyChangeToken = changeToken
-                                
-                completionHandler(.success([]))
+                
+                syncResult = .success([])
             }
             catch
             {
-                completionHandler(.failure(error))
+                syncResult = .failure(error)
             }
+            
+            NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: syncResult])
         }
         self.operationQueue.addOperation(syncRecordsOperation)
         

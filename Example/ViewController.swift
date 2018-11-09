@@ -52,6 +52,8 @@ class ViewController: UITableViewController
             }
         }
         
+        NotificationCenter.default.addObserver(self, selector: #selector(ViewController.syncDidFinish(_:)), name: SyncCoordinator.didFinishSyncingNotification, object: self.syncCoordinator)
+        
         DriveService.shared.clientID = "1075055855134-qilcmemb9e2pngq0i1n0ptpsc0pq43vp.apps.googleusercontent.com"
         
         DriveService.shared.authenticateInBackground { (result) in
@@ -123,17 +125,22 @@ private extension ViewController
     
     @IBAction func sync(_ sender: UIBarButtonItem)
     {
-        self.syncCoordinator.sync { (result) in
-            do
-            {
-                _ = try result.value()
-                
-                print("Sync Succeeded")
-            }
-            catch
-            {
-                print("Sync Failed:", error)
-            }
+        self.syncCoordinator.sync()
+    }
+    
+    @objc func syncDidFinish(_ notification: Notification)
+    {
+        guard let result = notification.userInfo?[SyncCoordinator.syncResultKey] as? Result<[Result<Void>]> else { return }
+        
+        do
+        {
+            _ = try result.value()
+            
+            print("Sync Succeeded")
+        }
+        catch
+        {
+            print("Sync Failed:", error)
         }
     }
 }
