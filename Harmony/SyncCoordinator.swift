@@ -18,8 +18,6 @@ public final class SyncCoordinator
     
     private let operationQueue: OperationQueue
     
-    private var changeToken: Data?
-    
     public init(service: Service, persistentContainer: NSPersistentContainer)
     {
         self.service = service
@@ -50,12 +48,12 @@ public extension SyncCoordinator
     
     @discardableResult func sync(completionHandler: @escaping (Result<[Result<Void>]>) -> Void) -> (Foundation.Operation & ProgressReporting)
     {
-        let syncRecordsOperation = SyncRecordsOperation(changeToken: self.changeToken, service: self.service, recordController: self.recordController)
+        let syncRecordsOperation = SyncRecordsOperation(changeToken: UserDefaults.standard.harmonyChangeToken, service: self.service, recordController: self.recordController)
         syncRecordsOperation.resultHandler = { (result) in
             do
             {
                 let (_, changeToken) = try result.value()
-                self.changeToken = changeToken
+                UserDefaults.standard.harmonyChangeToken = changeToken
                                 
                 completionHandler(.success([]))
             }
