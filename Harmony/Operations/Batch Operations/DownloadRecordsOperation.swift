@@ -58,23 +58,33 @@ class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecord
                     
                     for (managedRecord, result) in results
                     {
-                        guard let localRecord = try? result.value(), let recordedObject = localRecord.recordedObject, let relationships = localRecord.remoteRelationships else { continue }
-                        
-                        for (key, reference) in relationships
+                        do
                         {
-                            if let relationshipObject = relationshipObjects[reference]
+                            let localRecord = try result.value()
+                            
+                            do
                             {
-                                let relationshipObject = relationshipObject.in(context)
-                                recordedObject.setValue(relationshipObject, forKey: key)
+                                try self.updateRelationships(for: localRecord, managedRecord: managedRecord, relationshipObjects: relationshipObjects, context: context)
+                                
+                                // Update files after updating relationships (to prevent replacing files prematurely).
+                                try self.updateFiles(for: localRecord, managedRecord: managedRecord)
                             }
-                            else
+                            catch
                             {
-                                context.delete(localRecord)
-                                context.delete(recordedObject)
+                                localRecord.removeFromContext()
                                 
-                                results[managedRecord] = .failure(DownloadError(record: managedRecord, code: .nilRelationshipObject))
-                                
-                                break
+                                throw error
+                            }
+                        }
+                        catch
+                        {
+                            results[managedRecord] = .failure(error)
+                            
+                            if let remoteRecordObjectID = managedRecord.managedObjectContext?.performAndWait({ managedRecord.remoteRecord?.objectID })
+                            {
+                                // Reset remoteRecord status to make us retry the download again in the future.
+                                let remoteRecord = context.object(with: remoteRecordObjectID) as! RemoteRecord
+                                remoteRecord.status = .updated
                             }
                         }
                     }
@@ -85,6 +95,141 @@ class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecord
             catch
             {
                 completionHandler(.failure(BatchDownloadError(code: .any(error))))
+            }
+        }
+    }
+}
+
+private extension DownloadRecordsOperation
+{
+    func updateRelationships(for localRecord: LocalRecord, managedRecord: ManagedRecord, relationshipObjects: [Reference: SyncableManagedObject], context: NSManagedObjectContext) throws
+    {
+        guard let recordedObject = localRecord.recordedObject else { throw DownloadError(record: managedRecord, code: .nilRecordedObject) }
+        
+        guard let relationships = localRecord.remoteRelationships else { return }
+        
+        for (key, reference) in relationships
+        {
+            if let relationshipObject = relationshipObjects[reference]
+            {
+                let relationshipObject = relationshipObject.in(context)
+                recordedObject.setValue(relationshipObject, forKey: key)
+            }
+            else
+            {
+                throw DownloadError(record: managedRecord, code: .nilRelationshipObject)
+            }
+        }
+    }
+    
+    func updateFiles(for localRecord: LocalRecord, managedRecord: ManagedRecord) throws
+    {
+        guard let recordedObject = localRecord.recordedObject else { throw DownloadError(record: managedRecord, code: .nilRecordedObject) }
+        
+        guard let files = localRecord.downloadedFiles else { return }        
+        
+        let temporaryURLsByFile = Dictionary(uniqueKeysWithValues: recordedObject.syncableFiles.lazy.map { ($0, FileManager.default.uniqueTemporaryURL()) })
+        let filesByIdentifier = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
+        
+        let unknownFiles = files.filter { !filesByIdentifier.keys.contains($0.identifier) }
+        guard unknownFiles.isEmpty else {
+            for file in unknownFiles
+            {
+                do
+                {
+                    // File doesn't match any declared file identifiers, so just delete it.
+                    try FileManager.default.removeItem(at: file.fileURL)
+                }
+                catch
+                {
+                    print(error)
+                }
+            }
+            
+            // Grab any remote file whose identifier matches that of an unknown file.
+            if let remoteFile = localRecord.remoteFiles.first(where: { (remoteFile) in unknownFiles.contains { $0.identifier == remoteFile.identifier } })
+            {
+                throw DownloadFileError(file: remoteFile, code: .unknownFile)
+            }
+            else
+            {
+                throw AnyError(code: .unknownFile)
+            }
+        }
+        
+        // Copy existing files to a backup location in case something goes wrong.
+        for (file, temporaryURL) in temporaryURLsByFile
+        {
+            do
+            {
+                try FileManager.default.copyItem(at: file.fileURL, to: temporaryURL)
+            }
+            catch CocoaError.fileReadNoSuchFile
+            {
+                // Ignore
+            }
+            catch
+            {
+                throw DownloadError(record: managedRecord, code: .any(error))
+            }
+        }
+        
+        // Replace files.
+        for file in files
+        {
+            guard let destinationURL = filesByIdentifier[file.identifier]?.fileURL else { continue }
+            
+            do
+            {
+                if FileManager.default.fileExists(atPath: destinationURL.path)
+                {
+                    _ = try FileManager.default.replaceItemAt(destinationURL, withItemAt: file.fileURL)
+                }
+                else
+                {
+                    try FileManager.default.moveItem(at: file.fileURL, to: destinationURL)
+                }
+            }
+            catch
+            {
+                // Restore backed-up files.
+                for (file, temporaryURL) in temporaryURLsByFile
+                {
+                    guard FileManager.default.fileExists(atPath: temporaryURL.path) else { continue }
+                    
+                    do
+                    {
+                        if FileManager.default.fileExists(atPath: file.fileURL.path)
+                        {
+                            _ = try FileManager.default.replaceItemAt(file.fileURL, withItemAt: temporaryURL)
+                        }
+                        else
+                        {
+                            try FileManager.default.moveItem(at: temporaryURL, to: file.fileURL)
+                        }
+                    }
+                    catch
+                    {
+                        print(error)
+                    }
+                }
+                
+                throw DownloadError(record: managedRecord, code: .any(error))
+            }
+        }
+        
+        // Delete backup files.
+        for (_, temporaryURL) in temporaryURLsByFile
+        {
+            guard FileManager.default.fileExists(atPath: temporaryURL.path) else { continue }
+            
+            do
+            {
+                try FileManager.default.removeItem(at: temporaryURL)
+            }
+            catch
+            {
+                print(error)
             }
         }
     }

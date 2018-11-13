@@ -55,6 +55,7 @@ public class LocalRecord: RecordRepresentation, Codable
         return self.resolveRecordedObjectID()
     }
     
+    var downloadedFiles: Set<File>?
     var remoteRelationships: [String: Reference]?
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
@@ -77,40 +78,49 @@ public class LocalRecord: RecordRepresentation, Codable
     {
         guard let context = decoder.managedObjectContext else { throw LocalRecordError(code: .nilManagedObjectContext) }
         
-        super.init(entity: LocalRecord.entity(), insertInto: nil)
+        super.init(entity: LocalRecord.entity(), insertInto: context)
         
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        
-        let recordType = try container.decode(String.self, forKey: .type)
-        
-        guard
-            let entity = NSEntityDescription.entity(forEntityName: recordType, in: context),
-            let managedObjectClass = NSClassFromString(entity.managedObjectClassName) as? Syncable.Type,
-            let primaryKeyPath = managedObjectClass.syncablePrimaryKey.stringValue
-        else { throw LocalRecordError(code: .unknownRecordType(self.recordedObjectType)) }
-        
-        let identifier = try container.decode(String.self, forKey: .identifier)
-        
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: recordType)
-        fetchRequest.predicate = NSPredicate(format: "%K == %@", primaryKeyPath, identifier)
-        
-        let recordedObject: SyncableManagedObject
-        
-        if let managedObject = try context.fetch(fetchRequest).first as? SyncableManagedObject
-        {
-            recordedObject = managedObject
-        }
-        else
-        {
-            guard let managedObject = NSManagedObject(entity: entity, insertInto: context) as? SyncableManagedObject else { throw LocalRecordError(code: .nonSyncableRecordType(recordType)) }
-            
-            recordedObject = managedObject
-        }
-        
-        recordedObject.syncableIdentifier = identifier
+        // Keep reference in case an error occurs between inserting recorded object and assigning it to self.recordedObject.
+        // This way, we can pass it to removeFromContext() to ensure it is properly removed.
+        var tempRecordedObject: NSManagedObject?
         
         do
         {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            let recordType = try container.decode(String.self, forKey: .type)
+            
+            guard
+                let entity = NSEntityDescription.entity(forEntityName: recordType, in: context),
+                let managedObjectClass = NSClassFromString(entity.managedObjectClassName) as? Syncable.Type,
+                let primaryKeyPath = managedObjectClass.syncablePrimaryKey.stringValue
+            else { throw LocalRecordError(code: .unknownRecordType(self.recordedObjectType)) }
+            
+            let identifier = try container.decode(String.self, forKey: .identifier)
+            
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: recordType)
+            fetchRequest.predicate = NSPredicate(format: "%K == %@", primaryKeyPath, identifier)
+            
+            let recordedObject: SyncableManagedObject
+            
+            if let managedObject = try context.fetch(fetchRequest).first as? SyncableManagedObject
+            {
+                tempRecordedObject = managedObject
+                recordedObject = managedObject
+            }
+            else
+            {
+                let managedObject = NSManagedObject(entity: entity, insertInto: context)
+                
+                // Assign to tempRecordedObject immediately before checking if it is a SyncableManagedObject so we can remove it if not.
+                tempRecordedObject = managedObject
+                
+                guard let syncableManagedObject = managedObject as? SyncableManagedObject else { throw LocalRecordError(code: .nonSyncableRecordType(recordType)) }
+                recordedObject = syncableManagedObject
+            }
+            
+            recordedObject.syncableIdentifier = identifier
+            
             let recordContainer = try container.nestedContainer(keyedBy: AnyKey.self, forKey: .record)
             for key in recordedObject.syncableKeys
             {
@@ -120,23 +130,14 @@ public class LocalRecord: RecordRepresentation, Codable
                 recordedObject.setValue(value, forKey: stringValue)
             }
             
-            let remoteFiles = try container.decode(Set<RemoteFile>.self, forKey: .files)
-            self.remoteRelationships = try container.decodeIfPresent([String: Reference].self, forKey: .relationships)
-            
             try self.configure(with: recordedObject)
             
-            // We know initialization didn't fail, so insert self and recordedObject into managed object context.
-            context.insert(self)
-            
-            // Must assign after being inserted into context.
-            self.remoteFiles = remoteFiles
+            self.remoteFiles = try container.decode(Set<RemoteFile>.self, forKey: .files)
+            self.remoteRelationships = try container.decodeIfPresent([String: Reference].self, forKey: .relationships)
         }
         catch
         {
-            if recordedObject.isInserted
-            {
-                context.delete(recordedObject)
-            }
+            self.removeFromContext(recordedObject: tempRecordedObject)
             
             throw error
         }
@@ -247,6 +248,31 @@ private extension LocalRecord
         {
             print(error)
             return nil
+        }
+    }
+}
+
+extension LocalRecord
+{
+    // Removes a LocalRecord that failed to completely download/parse from its managed object context.
+    func removeFromContext(recordedObject: NSManagedObject? = nil)
+    {
+        guard let context = self.managedObjectContext else { return }
+        
+        context.delete(self)
+        
+        if let recordedObject = recordedObject ?? self.recordedObject
+        {
+            if recordedObject.isInserted
+            {
+                // This is a new recorded object, so we can just delete it.
+                context.delete(recordedObject)
+            }
+            else
+            {
+                // We're updating an existing recorded object, so we simply discard our changes.
+                context.refresh(recordedObject, mergeChanges: false)
+            }
         }
     }
 }

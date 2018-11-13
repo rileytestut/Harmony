@@ -16,9 +16,7 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
     override func main()
     {
         super.main()
-        
-        let remoteRecord = self.record.remoteRecord
-        
+                
         self.downloadRecord { (result) in
             do
             {
@@ -29,37 +27,15 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
                         do
                         {
                             let files = try result.value()
-                            try self.replaceFiles(for: localRecord, with: files)
+                            localRecord.downloadedFiles = files
                             
                             self.result = .success(localRecord)
                         }
                         catch
-                        {                            
-                            // Remove local record + recorded object, since the download ultimately failed.
-                            self.managedObjectContext.delete(localRecord)
-                            
-                            if let recordedObject = localRecord.recordedObject
-                            {
-                                if recordedObject.isInserted
-                                {
-                                    // This is a new recorded object, so we can just delete it.
-                                    self.managedObjectContext.delete(recordedObject)
-                                }
-                                else
-                                {
-                                    // We're updating an existing recorded object, so we simply discard our changes.
-                                    self.managedObjectContext.refresh(recordedObject, mergeChanges: false)
-                                }
-                            }
-                            
-                            if let remoteRecord = remoteRecord
-                            {
-                                // Reset remoteRecord status to make us retry the download again in the future.
-                                let remoteRecord = remoteRecord.in(self.managedObjectContext)
-                                remoteRecord.status = .updated
-                            }
-                            
+                        {
                             self.result = .failure(error)
+                            
+                            localRecord.removeFromContext()
                         }
                         
                         self.finish()
@@ -118,9 +94,16 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
     
     func downloadFiles(for localRecord: LocalRecord, completionHandler: @escaping (Result<Set<File>>) -> Void)
     {
-        guard let recordedObject = localRecord.recordedObject else { return completionHandler(.failure(self.recordError(code: .nilRecordedObject))) }
+        guard let context = self.record.managedObjectContext else { return completionHandler(.failure(self.recordError(code: .nilManagedObjectContext))) }
         
-        let filesByIdentifier = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
+        // Retrieve files from self.record.localRecord because file URLs may depend on relationships that haven't been downloaded yet.
+        // If self.record.localRecord doesn't exist, we can just assume we should download all files.
+        let filesByIdentifier = context.performAndWait { () -> [String: File]? in
+            guard let recordedObject = self.record.localRecord?.recordedObject else { return nil }
+            
+            let dictionary = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
+            return dictionary
+        }
         
         // Suspend operation queue to prevent download operations from starting automatically.
         self.operationQueue.isSuspended = true
@@ -134,22 +117,27 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
         {
             do
             {
-                guard let localFile = filesByIdentifier[remoteFile.identifier] else {
-                    throw DownloadFileError(file: remoteFile, code: .unknownFile)
-                }
-                
-                do
+                // If there _are_ cached files, compare hashes to ensure we're not unnecessarily downloading unchanged files.
+                if let filesByIdentifier = filesByIdentifier
                 {
-                    let hash = try RSTHasher.sha1HashOfFile(at: localFile.fileURL)
-                    
-                    guard remoteFile.sha1Hash != hash else {
-                        // Hash is the same, so don't download file.
-                        continue
+                    guard let localFile = filesByIdentifier[remoteFile.identifier] else {
+                        throw DownloadFileError(file: remoteFile, code: .unknownFile)
                     }
-                }
-                catch CocoaError.fileNoSuchFile
-                {
-                    // Ignore
+                    
+                    do
+                    {
+                        let hash = try RSTHasher.sha1HashOfFile(at: localFile.fileURL)
+                        
+                        if remoteFile.sha1Hash == hash
+                        {
+                            // Hash is the same, so don't download file.
+                            continue
+                        }
+                    }
+                    catch CocoaError.fileNoSuchFile
+                    {
+                        // Ignore
+                    }
                 }
                 
                 self.progress.totalUnitCount += 1
@@ -200,90 +188,6 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
                 {
                     completionHandler(.success(files))
                 }
-            }
-        }
-    }
-    
-    func replaceFiles(for localRecord: LocalRecord, with files: Set<File>) throws
-    {
-        guard let recordedObject = localRecord.recordedObject else { throw self.recordError(code: .nilRecordedObject) }
-        
-        let temporaryURLsByFile = Dictionary(uniqueKeysWithValues: recordedObject.syncableFiles.lazy.map { ($0, FileManager.default.uniqueTemporaryURL()) })
-        let filesByIdentifier = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
-        
-        // Copy existing files to a backup location in case something goes wrong.
-        for (file, temporaryURL) in temporaryURLsByFile
-        {
-            do
-            {
-                try FileManager.default.copyItem(at: file.fileURL, to: temporaryURL)
-            }
-            catch CocoaError.fileReadNoSuchFile
-            {
-                // Ignore
-            }
-            catch
-            {
-                throw self.recordError(code: .any(error))
-            }
-        }
-        
-        // Replace files.
-        for file in files
-        {
-            guard let destinationURL = filesByIdentifier[file.identifier]?.fileURL else { continue }
-            
-            do
-            {
-                if FileManager.default.fileExists(atPath: destinationURL.path)
-                {
-                    _ = try FileManager.default.replaceItemAt(destinationURL, withItemAt: file.fileURL)
-                }
-                else
-                {
-                    try FileManager.default.moveItem(at: file.fileURL, to: destinationURL)
-                }
-            }
-            catch
-            {
-                // Restore backed-up files.
-                for (file, temporaryURL) in temporaryURLsByFile
-                {
-                    guard FileManager.default.fileExists(atPath: temporaryURL.path) else { continue }
-                    
-                    do
-                    {
-                        if FileManager.default.fileExists(atPath: file.fileURL.path)
-                        {
-                            _ = try FileManager.default.replaceItemAt(file.fileURL, withItemAt: temporaryURL)
-                        }
-                        else
-                        {
-                            try FileManager.default.moveItem(at: temporaryURL, to: file.fileURL)
-                        }
-                    }
-                    catch
-                    {
-                        print(error)
-                    }
-                }
-                
-                throw self.recordError(code: .any(error))
-            }
-        }
-        
-        // Delete backup files.
-        for (_, temporaryURL) in temporaryURLsByFile
-        {
-            guard FileManager.default.fileExists(atPath: temporaryURL.path) else { continue }
-            
-            do
-            {
-                try FileManager.default.removeItem(at: temporaryURL)
-            }
-            catch
-            {
-                print(error)
             }
         }
     }
