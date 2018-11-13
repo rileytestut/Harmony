@@ -180,7 +180,11 @@ public class LocalRecord: RecordRepresentation, Codable
         let relationships = recordedObject.syncableRelationshipObjects.mapValues { (relationshipObject) -> Reference? in
             guard let identifier = relationshipObject.syncableIdentifier else { return nil }
             
-            let relationship = Reference(type: relationshipObject.syncableType, identifier: identifier)
+            // For some _bizarre_ reason, occasionally Core Data entity names encode themselves as gibberish.
+            // To prevent this, we perform a deep copy of the syncableType, which we then encode 🤷‍♂️.
+            let syncableType = String(relationshipObject.syncableType.lazy.map { $0 })
+            
+            let relationship = Reference(type: syncableType, identifier: identifier)
             return relationship
         }
         
