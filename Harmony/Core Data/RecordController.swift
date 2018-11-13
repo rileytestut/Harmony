@@ -34,9 +34,6 @@ public final class RecordController: RSTPersistentContainer
     private var processingContext: NSManagedObjectContext?
     private let processingDispatchGroup = DispatchGroup()
     
-    private let updatedObjectKeys = NSMapTable<NSManagedObject, NSSet>.weakToStrongObjects()
-    private let pendingDeletionFiles = NSMapTable<NSManagedObjectID, NSSet>.weakToStrongObjects()
-    
     init(persistentContainer: NSPersistentContainer)
     {
         let configurations = persistentContainer.managedObjectModel.configurations.compactMap(NSManagedObjectModel.Configuration.init(rawValue:))
@@ -330,32 +327,6 @@ private extension RecordController
             print(error)
         }
     }
-    
-    func finishPendingFileDeletions<T: Collection>(for deletedObjectIDs: T) where T.Element == NSManagedObjectID
-    {
-        for objectID in deletedObjectIDs
-        {
-            guard let files = self.pendingDeletionFiles.object(forKey: objectID) as? Set<File> else { continue }
-            
-            for file in files
-            {
-                do
-                {
-                    try FileManager.default.removeItem(at: file.fileURL)
-                }
-                catch CocoaError.fileNoSuchFile
-                {
-                    // Ignore
-                }
-                catch
-                {
-                    print("Harmony failed to delete local file at URL:", file.fileURL)
-                }
-            }
-            
-            self.pendingDeletionFiles.removeObject(forKey: objectID)
-        }
-    }
 }
 
 private extension RecordController
@@ -369,10 +340,14 @@ private extension RecordController
             !self.persistentStoreCoordinator.persistentStores.isEmpty
         else { return }
         
-        for case let deletedObject as SyncableManagedObject in managedObjectContext.deletedObjects
+        let cache = ContextCache()
+        
+        for case let updatedObject as SyncableManagedObject in managedObjectContext.registeredObjects where updatedObject.hasChanges
         {
-            self.pendingDeletionFiles.setObject(deletedObject.syncableFiles as NSSet, forKey: deletedObject.objectID)
+            cache.setChangedKeys(Set(updatedObject.changedValues().keys), for: updatedObject)
         }
+        
+        managedObjectContext.savingCache = cache
     }
     
     @objc func managedObjectContextObjectsDidChange(_ notification: Notification)
@@ -384,11 +359,12 @@ private extension RecordController
             !self.persistentStoreCoordinator.persistentStores.isEmpty
         else { return }
         
+        guard let cache = managedObjectContext.savingCache else { return }
+        
         // Must use registeredObjects, because an inserted object may become an updated object after saving due to merging.
-        for case let syncableManagedObject as SyncableManagedObject in managedObjectContext.registeredObjects
+        for case let updatedObject as SyncableManagedObject in managedObjectContext.registeredObjects where updatedObject.hasChanges
         {
-            let changedKeys = Set(syncableManagedObject.changedValues().keys) as NSSet
-            self.updatedObjectKeys.setObject(changedKeys, forKey: syncableManagedObject)
+            cache.setChangedKeys(Set(updatedObject.changedValues().keys), for: updatedObject)
         }
     }
     
@@ -410,9 +386,12 @@ private extension RecordController
         var updatedObjects = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject> ?? []
         var deletedObjects = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject> ?? []
         
+        let cache = managedObjectContext.savingCache ?? ContextCache()
+        managedObjectContext.savingCache = nil
+        
         if managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator
         {
-            // Filter out non-syncabled managed objects.
+            // Filter out non-syncable managed objects.
             insertedObjects = insertedObjects.filter { $0 is SyncableManagedObject }
             deletedObjects = deletedObjects.filter { $0 is SyncableManagedObject }
             
@@ -421,7 +400,7 @@ private extension RecordController
             // Only include updated objects whose syncable keys have been updated.
             for case let syncableManagedObject as SyncableManagedObject in updatedObjects
             {
-                if let changedKeys = self.updatedObjectKeys.object(forKey: syncableManagedObject) as? Set<String>
+                if let changedKeys = cache.changedKeys(for: syncableManagedObject)
                 {
                     let syncableKeys = Set(syncableManagedObject.syncableKeys.lazy.compactMap { $0.stringValue })
                     
@@ -429,8 +408,6 @@ private extension RecordController
                     {
                         validatedUpdatedObjects.insert(syncableManagedObject)
                     }
-                    
-                    self.updatedObjectKeys.removeObject(forKey: syncableManagedObject)
                 }
                 else
                 {
@@ -473,7 +450,6 @@ private extension RecordController
         if !deletedObjectIDs.isEmpty
         {
             self.updateLocalRecords(for: deletedObjectIDs, status: .deleted, in: context)
-            self.finishPendingFileDeletions(for: deletedObjectIDs)
         }
         
         NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
