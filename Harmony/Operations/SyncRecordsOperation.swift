@@ -46,7 +46,7 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
             switch result
             {
             case .success: break
-            case .failure: self.cancel()
+            case .failure: self.finish()
             }
             
             dispatchGroup.leave()
