@@ -9,32 +9,80 @@
 import Foundation
 import CoreData
 
+private struct AnyNSCodable: Codable
+{
+    var value: NSCoding
+    
+    init(value: NSCoding)
+    {
+        self.value = value
+    }
+    
+    init(from decoder: Decoder) throws
+    {
+        let container = try decoder.singleValueContainer()
+        
+        let data = try container.decode(Data.self)
+        
+        if let value = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? NSCoding
+        {
+            self.value = value
+        }
+        else
+        {
+            throw DecodingError.typeMismatch(NSCoding.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Value does not conform to NSCoding."))
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws
+    {
+        var container = encoder.singleValueContainer()
+        
+        let data = try NSKeyedArchiver.archivedData(withRootObject: self.value, requiringSecureCoding: false)
+        try container.encode(data)
+    }
+}
+
 extension KeyedDecodingContainer
 {
-    func decodeManagedValue(forKey key: Key, entity: NSEntityDescription) throws -> Any
+    func decodeManagedValue(forKey key: Key, entity: NSEntityDescription) throws -> Any?
     {
         guard let attribute = entity.attributesByName[key.stringValue] else {
             throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "Managed object's property \(key.stringValue) could not be found.")
         }
         
+        func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T?
+        {
+            let value = attribute.isOptional ? try self.decodeIfPresent(type, forKey: key) : try self.decode(type, forKey: key)
+            return value
+        }
+        
+        let value: Any?
+        
         switch attribute.attributeType
         {
-        case .integer16AttributeType: return try self.decode(Int16.self, forKey: key)
-        case .integer32AttributeType: return try self.decode(Int32.self, forKey: key)
-        case .integer64AttributeType: return try self.decode(Int64.self, forKey: key)
-        case .decimalAttributeType: return try self.decode(Decimal.self, forKey: key)
-        case .doubleAttributeType: return try self.decode(Double.self, forKey: key)
-        case .floatAttributeType: return try self.decode(Float.self, forKey: key)
-        case .stringAttributeType: return try self.decode(String.self, forKey: key)
-        case .booleanAttributeType: return try self.decode(Bool.self, forKey: key)
-        case .dateAttributeType: return try self.decode(Date.self, forKey: key)
-        case .binaryDataAttributeType: return try self.decode(Data.self, forKey: key)
-        case .UUIDAttributeType: return try self.decode(UUID.self, forKey: key)
-        case .URIAttributeType: return try self.decode(URL.self, forKey: key)
+        case .integer16AttributeType: value = try decode(Int16.self, forKey: key)
+        case .integer32AttributeType: value = try decode(Int32.self, forKey: key)
+        case .integer64AttributeType: value = try decode(Int64.self, forKey: key)
+        case .decimalAttributeType: value = try decode(Decimal.self, forKey: key)
+        case .doubleAttributeType: value = try decode(Double.self, forKey: key)
+        case .floatAttributeType: value = try decode(Float.self, forKey: key)
+        case .stringAttributeType: value = try decode(String.self, forKey: key)
+        case .booleanAttributeType: value = try decode(Bool.self, forKey: key)
+        case .dateAttributeType: value = try decode(Date.self, forKey: key)
+        case .binaryDataAttributeType: value = try decode(Data.self, forKey: key)
+        case .UUIDAttributeType: value = try decode(UUID.self, forKey: key)
+        case .URIAttributeType: value = try decode(URL.self, forKey: key)
+            
+        case .transformableAttributeType:
+            let anyNSCodable = try decode(AnyNSCodable.self, forKey: key)
+            value = anyNSCodable?.value
+            
         case .undefinedAttributeType: fatalError("KeyedDecodingContainer.decodeManagedValue() does not yet support undefined attribute types.")
-        case .transformableAttributeType: fatalError("KeyedDecodingContainer.decodeManagedValue() does not yet support transformable attributes.")
         case .objectIDAttributeType: fatalError("KeyedDecodingContainer.decodeManagedValue() does not yet support objectID attributes.")
         }
+        
+        return value
     }
 }
 
@@ -65,6 +113,10 @@ extension KeyedEncodingContainer
             case (.UUIDAttributeType, let value as UUID): try self.encode(value, forKey: key)
             case (.URIAttributeType, let value as URL): try self.encode(value, forKey: key)
                 
+            case (.transformableAttributeType, let value as NSCoding):
+                let anyNSCodable = AnyNSCodable(value: value)
+                try self.encode(anyNSCodable, forKey: key)
+                
             case (.integer16AttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
             case (.integer32AttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
             case (.integer64AttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
@@ -77,9 +129,9 @@ extension KeyedEncodingContainer
             case (.binaryDataAttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
             case (.UUIDAttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
             case (.URIAttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
+            case (.transformableAttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
                 
             case (.undefinedAttributeType, _): fatalError("KeyedEncodingContainer.encodeManagedValue() does not yet support undefined attribute types.")
-            case (.transformableAttributeType, _): fatalError("KeyedEncodingContainer.encodeManagedValue() does not yet support transformable attributes.")
             case (.objectIDAttributeType, _): fatalError("KeyedEncodingContainer.encodeManagedValue() does not yet support objectID attributes.")
             }
         }
