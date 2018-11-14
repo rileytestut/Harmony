@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-public enum _HarmonyErrorCode
+public enum _HarmonyErrorCode: Equatable
 {
     case cancelled
     
@@ -77,6 +77,64 @@ public enum _HarmonyErrorCode
         case .unknownRecordType(let type): return String.localizedStringWithFormat("Unknown record type '%@'.", type)
         case .nonSyncableRecordType(let type): return String.localizedStringWithFormat("Record type '%@' does not support syncing.", type)
         }
+    }
+}
+
+public func ==(lhs: _HarmonyErrorCode, rhs: _HarmonyErrorCode) -> Bool
+{
+    switch (lhs, rhs)
+    {
+    case (.cancelled, .cancelled): return true
+    case (.unknown, .unknown): return true
+    case (.any(let a), .any(let b)): return (a as NSError) == (b as NSError)
+    case (.databaseCorrupted(let a), .databaseCorrupted(let b)): return (a as NSError) == (b as NSError)
+    case (.noSavedCredentials, .noSavedCredentials): return true
+    case (.invalidChangeToken, .invalidChangeToken): return true
+    case (.invalidResponse, .invalidResponse): return true
+    case (.invalidSyncableIdentifier, .invalidSyncableIdentifier): return true
+    case (.invalidMetadata, .invalidMetadata): return true
+    case (.nilManagedObjectContext, .nilManagedObjectContext): return true
+    case (.nilLocalRecord, .nilLocalRecord): return true
+    case (.nilRemoteRecord, .nilRemoteRecord): return true
+    case (.nilRecordedObject, .nilRecordedObject): return true
+    case (.nilManagedRecord, .nilManagedRecord): return true
+    case (.nilRelationshipObject, .nilRelationshipObject): return true
+    case (.recordLocked, .recordLocked): return true
+    case (.recordDoesNotExist, .recordDoesNotExist): return true
+    case (.unknownFile, .unknownFile): return true
+    case (.fileDoesNotExist, .fileDoesNotExist): return true
+    case (.fileUploadsFailed(let a), .fileUploadsFailed(let b)): return a.map { $0 as NSError } == b.map { $0 as NSError }
+    case (.fileDownloadsFailed(let a), .fileDownloadsFailed(let b)): return a.map { $0 as NSError } == b.map { $0 as NSError }
+    case (.fileDeletionsFailed(let a), .fileDeletionsFailed(let b)): return a.map { $0 as NSError } == b.map { $0 as NSError }
+    case (.conflicted, .conflicted): return true
+    case (.unknownRecordType(let a), .unknownRecordType(let b)): return a == b
+    case (.nonSyncableRecordType(let a), .nonSyncableRecordType(let b)): return a == b
+        
+    case (.cancelled, _): return false
+    case (.unknown, _): return false
+    case (.any, _): return false
+    case (.databaseCorrupted, _): return false
+    case (.noSavedCredentials, _): return false
+    case (.invalidChangeToken, _): return false
+    case (.invalidResponse, _): return false
+    case (.invalidSyncableIdentifier, _): return false
+    case (.invalidMetadata, _): return false
+    case (.nilManagedObjectContext, _): return false
+    case (.nilLocalRecord, _): return false
+    case (.nilRemoteRecord, _): return false
+    case (.nilRecordedObject, _): return false
+    case (.nilManagedRecord, _): return false
+    case (.nilRelationshipObject, _): return false
+    case (.recordLocked, _): return false
+    case (.recordDoesNotExist, _): return false
+    case (.unknownFile, _): return false
+    case (.fileDoesNotExist, _): return false
+    case (.fileUploadsFailed, _): return false
+    case (.fileDownloadsFailed, _): return false
+    case (.fileDeletionsFailed, _): return false
+    case (.conflicted, _): return false
+    case (.unknownRecordType, _): return false
+    case (.nonSyncableRecordType, _): return false
     }
 }
 
