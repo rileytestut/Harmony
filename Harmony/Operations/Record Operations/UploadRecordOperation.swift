@@ -121,6 +121,10 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
                 }
                 self.operationQueue.addOperation(operation)
             }
+            catch CocoaError.fileNoSuchFile
+            {
+                // File doesn't exist (which is valid), so just continue along.
+            }
             catch
             {
                 errors.append(error)
