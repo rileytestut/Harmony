@@ -22,6 +22,8 @@ public protocol Syncable: NSObjectProtocol
     var syncableFiles: Set<File> { get }
     
     var syncableRelationships: Set<AnyKeyPath> { get }
+    
+    var isSyncingEnabled: Bool { get }
 }
 
 public extension Syncable where Self: NSManagedObject
@@ -37,6 +39,10 @@ public extension Syncable where Self: NSManagedObject
     
     var syncableRelationships: Set<AnyKeyPath> {
         return []
+    }
+    
+    var isSyncingEnabled: Bool {
+        return true
     }
 }
 

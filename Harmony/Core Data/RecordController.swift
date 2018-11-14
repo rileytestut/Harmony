@@ -342,7 +342,7 @@ private extension RecordController
         
         let cache = ContextCache()
         
-        for case let updatedObject as SyncableManagedObject in managedObjectContext.registeredObjects where updatedObject.hasChanges
+        for case let updatedObject as SyncableManagedObject in managedObjectContext.registeredObjects where updatedObject.hasChanges && updatedObject.isSyncingEnabled
         {
             cache.setChangedKeys(Set(updatedObject.changedValues().keys), for: updatedObject)
         }
@@ -362,7 +362,7 @@ private extension RecordController
         guard let cache = managedObjectContext.savingCache else { return }
         
         // Must use registeredObjects, because an inserted object may become an updated object after saving due to merging.
-        for case let updatedObject as SyncableManagedObject in managedObjectContext.registeredObjects where updatedObject.hasChanges
+        for case let updatedObject as SyncableManagedObject in managedObjectContext.registeredObjects where updatedObject.hasChanges && updatedObject.isSyncingEnabled
         {
             cache.setChangedKeys(Set(updatedObject.changedValues().keys), for: updatedObject)
         }
@@ -392,13 +392,13 @@ private extension RecordController
         if managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator
         {
             // Filter out non-syncable managed objects.
-            insertedObjects = insertedObjects.filter { $0 is SyncableManagedObject }
-            deletedObjects = deletedObjects.filter { $0 is SyncableManagedObject }
+            insertedObjects = insertedObjects.filter { ($0 as? SyncableManagedObject)?.isSyncingEnabled == true }
+            deletedObjects = deletedObjects.filter { ($0 as? SyncableManagedObject)?.isSyncingEnabled == true }
             
             var validatedUpdatedObjects = Set<NSManagedObject>()
             
             // Only include updated objects whose syncable keys have been updated.
-            for case let syncableManagedObject as SyncableManagedObject in updatedObjects
+            for case let syncableManagedObject as SyncableManagedObject in updatedObjects where syncableManagedObject.isSyncingEnabled
             {
                 if let changedKeys = cache.changedKeys(for: syncableManagedObject)
                 {

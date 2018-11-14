@@ -203,6 +203,8 @@ extension LocalRecord
     
     func configure(with recordedObject: SyncableManagedObject) throws
     {
+        guard recordedObject.isSyncingEnabled else { throw LocalRecordError(code: .recordSyncingDisabled) }
+        
         guard let recordedObjectIdentifier = recordedObject.syncableIdentifier else { throw LocalRecordError(code: .invalidSyncableIdentifier) }
         
         if recordedObject.objectID.isTemporaryID

@@ -35,6 +35,7 @@ public enum _HarmonyErrorCode: Equatable
     
     case recordLocked
     case recordDoesNotExist
+    case recordSyncingDisabled
     
     case unknownFile
     case fileDoesNotExist
@@ -68,6 +69,7 @@ public enum _HarmonyErrorCode: Equatable
         case .nilRelationshipObject: return NSLocalizedString("The relationship object could not be found.", comment: "")
         case .recordLocked: return NSLocalizedString("The record is locked.", comment: "")
         case .recordDoesNotExist: return NSLocalizedString("The record does not exist.", comment: "")
+        case .recordSyncingDisabled: return NSLocalizedString("Syncing is disabled for the record.", comment: "")
         case .unknownFile: return NSLocalizedString("The file is unknown.", comment: "")
         case .fileDoesNotExist: return NSLocalizedString("The file does not exist.", comment: "")
         case .fileUploadsFailed: return NSLocalizedString("The record's files could not be uploaded.", comment: "")
@@ -101,6 +103,7 @@ public func ==(lhs: _HarmonyErrorCode, rhs: _HarmonyErrorCode) -> Bool
     case (.nilRelationshipObject, .nilRelationshipObject): return true
     case (.recordLocked, .recordLocked): return true
     case (.recordDoesNotExist, .recordDoesNotExist): return true
+    case (.recordSyncingDisabled, .recordSyncingDisabled): return true
     case (.unknownFile, .unknownFile): return true
     case (.fileDoesNotExist, .fileDoesNotExist): return true
     case (.fileUploadsFailed(let a), .fileUploadsFailed(let b)): return a.map { $0 as NSError } == b.map { $0 as NSError }
@@ -127,6 +130,7 @@ public func ==(lhs: _HarmonyErrorCode, rhs: _HarmonyErrorCode) -> Bool
     case (.nilRelationshipObject, _): return false
     case (.recordLocked, _): return false
     case (.recordDoesNotExist, _): return false
+    case (.recordSyncingDisabled, _): return false
     case (.unknownFile, _): return false
     case (.fileDoesNotExist, _): return false
     case (.fileUploadsFailed, _): return false
