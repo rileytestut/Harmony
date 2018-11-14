@@ -74,9 +74,22 @@ extension KeyedDecodingContainer
         case .UUIDAttributeType: value = try decode(UUID.self, forKey: key)
         case .URIAttributeType: value = try decode(URL.self, forKey: key)
             
-        case .transformableAttributeType:
+        case .transformableAttributeType where attribute.valueTransformerName == nil:
             let anyNSCodable = try decode(AnyNSCodable.self, forKey: key)
             value = anyNSCodable?.value
+            
+        case .transformableAttributeType:
+            guard let data = try decode(Data.self, forKey: key) else {
+                value = nil
+                break
+            }
+            
+            guard
+                let transformerName = attribute.valueTransformerName,
+                let transformer = ValueTransformer(forName: NSValueTransformerName(transformerName))
+            else { throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "The ValueTransformer for this value is invalid.") }
+            
+            value = transformer.reverseTransformedValue(data)
             
         case .undefinedAttributeType: fatalError("KeyedDecodingContainer.decodeManagedValue() does not yet support undefined attribute types.")
         case .objectIDAttributeType: fatalError("KeyedDecodingContainer.decodeManagedValue() does not yet support objectID attributes.")
@@ -117,6 +130,15 @@ extension KeyedEncodingContainer
                 let anyNSCodable = AnyNSCodable(value: value)
                 try self.encode(anyNSCodable, forKey: key)
                 
+            case (.transformableAttributeType, let value):
+                guard
+                    let transformerName = attribute.valueTransformerName,
+                    let transformer = ValueTransformer(forName: NSValueTransformerName(transformerName)),
+                    let data = transformer.transformedValue(value) as? Data
+                else { throw EncodingError.invalidValue(managedValue as Any, context) }
+                
+                try self.encode(data, forKey: key)
+                
             case (.integer16AttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
             case (.integer32AttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
             case (.integer64AttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
@@ -129,7 +151,6 @@ extension KeyedEncodingContainer
             case (.binaryDataAttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
             case (.UUIDAttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
             case (.URIAttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
-            case (.transformableAttributeType, _): throw EncodingError.invalidValue(managedValue as Any, context)
                 
             case (.undefinedAttributeType, _): fatalError("KeyedEncodingContainer.encodeManagedValue() does not yet support undefined attribute types.")
             case (.objectIDAttributeType, _): fatalError("KeyedEncodingContainer.encodeManagedValue() does not yet support objectID attributes.")
