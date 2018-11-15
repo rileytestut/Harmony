@@ -45,12 +45,62 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                         
                         if let recordIDs = deletedRecordIDs
                         {
-                            let fetchRequest = RemoteRecord.fetchRequest() as NSFetchRequest<RemoteRecord>
-                            fetchRequest.predicate = NSPredicate(format: "%K IN %@", #keyPath(RemoteRecord.identifier), recordIDs)
+                            let updatedRecordsByReference = Dictionary(updatedRecords, keyedBy: { Reference(record: $0) })
                             
-                            let deletedRecords = try context.fetch(fetchRequest)
-                            deletedRecords.forEach { $0.status = .deleted }
+                            let childContext = self.recordController.newBackgroundContext(withParent: context)
                             
+                            let result = childContext.performAndWait { () -> Result<Set<RemoteRecord>> in
+                                do
+                                {
+                                    let fetchRequest = RemoteRecord.fetchRequest() as NSFetchRequest<RemoteRecord>
+                                    fetchRequest.predicate = NSPredicate(format: "%K IN %@", #keyPath(RemoteRecord.identifier), recordIDs)
+                                    fetchRequest.includesPendingChanges = false
+                                    
+                                    let fetchedRecords = try childContext.fetch(fetchRequest)
+                                    
+                                    var deletedRecords = Set<RemoteRecord>()
+                                    
+                                    for record in fetchedRecords
+                                    {
+                                        let reference = Reference(record: record)
+                                        
+                                        if let updatedRecord = updatedRecordsByReference[reference]
+                                        {
+                                            // Record has been deleted _and_ updated.
+                                            
+                                            if updatedRecord.identifier == record.identifier
+                                            {
+                                                // Do nothing, update trumps deletion.
+                                            }
+                                            else
+                                            {
+                                                // Deleted and updated remote records have _different_ remote identifiers.
+                                                // This means a new record with the same recorded object type/ID was uploaded after deleting the old record.
+                                                // In this case, delete the old cached remote record, since the updated one will take its place.
+                                                childContext.delete(record)
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Record was deleted and _not_ also updated, so just mark it as deleted to handle it later.
+                                            record.status = .deleted
+                                            
+                                            deletedRecords.insert(record)
+                                        }
+                                    }
+                                    
+                                    // Save to propagate changes to parent context.
+                                    try childContext.save()
+                                    
+                                    return .success(deletedRecords)
+                                }
+                                catch
+                                {
+                                    return .failure(error)
+                                }
+                            }
+                            
+                            let deletedRecords = try result.value().map { $0.in(context) }
                             records.formUnion(deletedRecords)
                         }
                         

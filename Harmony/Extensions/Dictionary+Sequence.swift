@@ -15,4 +15,10 @@ extension Dictionary
         let dictionary = Dictionary(sequence.lazy.map { ($0[keyPath: keyPath], $0) }, uniquingKeysWith: { (first, last) in last })
         self = dictionary
     }
+    
+    init<S: Sequence>(_ sequence: S, keyedBy closure: @escaping (Value) -> Key) where S.Element == Value
+    {
+        let dictionary = Dictionary(sequence.lazy.map { (closure($0), $0) }, uniquingKeysWith: { (first, last) in last })
+        self = dictionary
+    }
 }
