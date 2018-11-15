@@ -147,7 +147,8 @@ extension RecordController
     
     func printRecords()
     {
-        self.performBackgroundTask { (context) in
+        let context = self.newBackgroundContext()
+        context.performAndWait {
             let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
             
             let records = try! context.fetch(fetchRequest)
@@ -183,6 +184,11 @@ extension RecordController
                 
                 print(string)
             }
+            
+            let remoteFilesFetchRequest = RemoteFile.fetchRequest() as! NSFetchRequest<RemoteFile>
+            
+            let remoteFiles = try! context.fetch(remoteFilesFetchRequest)
+            print("Remote Files:", remoteFiles.count, remoteFiles.map { $0.localRecord?.objectID.uriRepresentation().lastPathComponent ?? "nil" })
         }
     }
 }

@@ -13,12 +13,30 @@ class MergePolicy: RSTRelationshipPreservingMergePolicy
 {
     override func resolve(constraintConflicts conflicts: [NSConstraintConflict]) throws
     {
-        try super.resolve(constraintConflicts: conflicts)
+        var remoteFilesByLocalRecord = [LocalRecord: Set<RemoteFile>]()
         
         for conflict in conflicts
         {
             assert(conflict.databaseObject != nil, "MergePolicy is only intended to work with database-level conflicts.")
             
+            switch conflict.databaseObject
+            {
+            case let databaseObject as LocalRecord:
+                guard
+                    let temporaryObject = conflict.conflictingObjects.first as? LocalRecord,
+                    temporaryObject.changedValues().keys.contains(#keyPath(LocalRecord.remoteFiles))
+                else { continue }
+                
+                remoteFilesByLocalRecord[databaseObject] = temporaryObject.remoteFiles
+                
+            default: break
+            }
+        }
+        
+        try super.resolve(constraintConflicts: conflicts)
+        
+        for conflict in conflicts
+        {            
             switch conflict.databaseObject
             {
             case let databaseObject as RemoteRecord:
@@ -34,6 +52,15 @@ class MergePolicy: RSTRelationshipPreservingMergePolicy
                 {
                     databaseObject.status = .normal
                 }
+                
+            case let databaseObject as LocalRecord:
+                guard let remoteFiles = remoteFilesByLocalRecord[databaseObject] else { continue }
+                
+                // Set localRecord to nil for all databaseObject.remoteFiles that are not in remoteFiles so that they will be deleted.
+                databaseObject.remoteFiles.lazy.filter { !remoteFiles.contains($0) }.forEach { $0.localRecord = nil }
+                
+                // Assign correct remoteFiles back to databaseObject.
+                databaseObject.remoteFiles = remoteFiles
                 
             default: break
             }
