@@ -120,6 +120,18 @@ public extension RecordController
     }
 }
 
+public extension RecordController
+{
+    func updateRecord<T: SyncableManagedObject>(for managedObject: T)
+    {
+        guard let context = self.processingContext else { return }
+        
+        context.performAndWait {
+            self.updateLocalRecords(for: [managedObject.objectID], status: .updated, in: context)
+        }
+    }
+}
+
 extension RecordController
 {
     func processPendingUpdates()
