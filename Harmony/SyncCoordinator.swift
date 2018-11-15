@@ -11,6 +11,7 @@ import CoreData
 
 public extension SyncCoordinator
 {
+    static let didStartSyncingNotification = Notification.Name("syncCoordinatorDidStartSyncingNotification")
     static let didFinishSyncingNotification = Notification.Name("syncCoordinatorDidFinishSyncingNotification")
     
     static let syncResultKey = "syncResult"

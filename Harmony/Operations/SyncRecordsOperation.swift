@@ -37,6 +37,8 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
     {
         super.main()
         
+        NotificationCenter.default.post(name: SyncCoordinator.didStartSyncingNotification, object: nil)
+        
         let dispatchGroup = DispatchGroup()
         
         func finish<T>(_ result: Result<T>, debugTitle: String)
