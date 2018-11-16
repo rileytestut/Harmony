@@ -258,7 +258,6 @@
 		BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCAssert+Harmony.swift"; sourceTree = "<group>"; };
 		BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Generics.swift"; sourceTree = "<group>"; };
 		BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConflictRecordOperation.swift; sourceTree = "<group>"; };
-		BF3915DA21810E4800AF74E5 /* RemoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteFile.swift; sourceTree = "<group>"; };
 		BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyTestCase.swift; sourceTree = "<group>"; };
 		BF6C9EF11F9BF441001B3F37 /* HarmonyTests.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HarmonyTests.xcdatamodel; sourceTree = "<group>"; };
@@ -381,7 +380,6 @@
 			children = (
 				BFB3396B1FD3A4DF006FACAD /* File.swift */,
 				BFECF57C219100DB006DB8F5 /* Reference.swift */,
-				BF3915DA21810E4800AF74E5 /* RemoteFile.swift */,
 				BF30432F1FD3A0260053E884 /* Core Data */,
 			);
 			path = Model;
