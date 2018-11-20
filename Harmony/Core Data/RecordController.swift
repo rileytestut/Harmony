@@ -130,6 +130,35 @@ public extension RecordController
             self.updateLocalRecords(for: [managedObject.objectID], status: .updated, in: context)
         }
     }
+    
+    func fetchConflictedRecords() throws -> Set<Record<NSManagedObject>>
+    {
+        let context = self.newBackgroundContext()
+        context.automaticallyMergesChangesFromParent = false
+        
+        let result = context.performAndWait { () -> Result<Set<Record<NSManagedObject>>> in
+            do
+            {
+                try context.setQueryGenerationFrom(.current)
+                
+                let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
+                fetchRequest.predicate = NSPredicate(format: "%K == YES", #keyPath(ManagedRecord.isConflicted))
+                fetchRequest.returnsObjectsAsFaults = false
+                
+                let managedRecords = try context.fetch(fetchRequest)
+                
+                let records = Set(managedRecords.lazy.map(Record.init))
+                return .success(records)
+            }
+            catch
+            {
+                return .failure(error)
+            }
+        }
+        
+        let records = try result.value()
+        return records
+    }
 }
 
 extension RecordController

@@ -34,6 +34,7 @@
 		BF7A20111F9D67520061B187 /* CwlPreconditionTesting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20051F9D667B0061B187 /* CwlPreconditionTesting.framework */; };
 		BF81658F20164A280025CA9F /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81658E20164A280025CA9F /* OperationTests.swift */; };
 		BF84220C21936E950035340B /* RemoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF84220B21936E950035340B /* RemoteFile.swift */; };
+		BF8A333621A4872300A42FD4 /* Record.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8A333521A4872300A42FD4 /* Record.swift */; };
 		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
 		BF91BA6A201FB8FC004498F3 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA69201FB8FC004498F3 /* Errors.swift */; };
 		BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */; };
@@ -269,6 +270,7 @@
 		BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CwlPreconditionTesting.xcodeproj; path = External/CwlPreconditionTesting/CwlPreconditionTesting.xcodeproj; sourceTree = SOURCE_ROOT; };
 		BF81658E20164A280025CA9F /* OperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationTests.swift; sourceTree = "<group>"; };
 		BF84220B21936E950035340B /* RemoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteFile.swift; sourceTree = "<group>"; };
+		BF8A333521A4872300A42FD4 /* Record.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Record.swift; sourceTree = "<group>"; };
 		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
 		BF91BA69201FB8FC004498F3 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+ManagedObjectContext.swift"; sourceTree = "<group>"; };
@@ -378,6 +380,7 @@
 		BF04998E1F9AEE9C00E0EFEE /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				BF8A333521A4872300A42FD4 /* Record.swift */,
 				BFB3396B1FD3A4DF006FACAD /* File.swift */,
 				BFECF57C219100DB006DB8F5 /* Reference.swift */,
 				BF30432F1FD3A0260053E884 /* Core Data */,
@@ -991,6 +994,7 @@
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,
 				BFBC13A221827D15001A321F /* KeyedContainers+ManagedValues.swift in Sources */,
 				BFDDC10E219504AA009732B7 /* UserDefaults+Harmony.swift in Sources */,
+				BF8A333621A4872300A42FD4 /* Record.swift in Sources */,
 				BFBDB7C3216EB1F000DC004B /* RemoteRecord.swift in Sources */,
 				BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */,
 				BFECF58121912203006DB8F5 /* UploadRecordsOperation.swift in Sources */,
