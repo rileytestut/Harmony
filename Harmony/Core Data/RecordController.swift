@@ -130,24 +130,52 @@ public extension RecordController
             self.updateLocalRecords(for: [managedObject.objectID], status: .updated, in: context)
         }
     }
-    
+}
+
+public extension RecordController
+{
     func fetchConflictedRecords() throws -> Set<Record<NSManagedObject>>
+    {
+        let predicate = NSPredicate(format: "%K == YES", #keyPath(ManagedRecord.isConflicted))
+        
+        let records = try self.fetchRecords(predicate: predicate, type: NSManagedObject.self)
+        return records
+    }
+    
+    func fetchRecords<RecordType: NSManagedObject, U: Collection>(for recordedObjects: U) throws -> Set<Record<RecordType>> where U.Element == RecordType
+    {
+        let predicates = recordedObjects.compactMap { (recordedObject) -> NSPredicate? in
+            guard let syncableManagedObject = recordedObject as? SyncableManagedObject, let identifier = syncableManagedObject.syncableIdentifier else { return nil }
+            
+            let predicate = NSPredicate(format: "%K == %@ AND %K == %@",
+                                        #keyPath(ManagedRecord.recordedObjectType), syncableManagedObject.syncableType,
+                                        #keyPath(ManagedRecord.recordedObjectIdentifier), identifier)
+            return predicate
+        }
+        
+        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+        
+        let records = try self.fetchRecords(predicate: predicate, type: RecordType.self)
+        return records
+    }
+    
+    private func fetchRecords<RecordType: NSManagedObject>(predicate: NSPredicate, type: RecordType.Type) throws -> Set<Record<RecordType>>
     {
         let context = self.newBackgroundContext()
         context.automaticallyMergesChangesFromParent = false
         
-        let result = context.performAndWait { () -> Result<Set<Record<NSManagedObject>>> in
+        let result = context.performAndWait { () -> Result<Set<Record<RecordType>>> in
             do
             {
                 try context.setQueryGenerationFrom(.current)
                 
                 let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
-                fetchRequest.predicate = NSPredicate(format: "%K == YES", #keyPath(ManagedRecord.isConflicted))
+                fetchRequest.predicate = predicate
                 fetchRequest.returnsObjectsAsFaults = false
                 
                 let managedRecords = try context.fetch(fetchRequest)
                 
-                let records = Set(managedRecords.lazy.map(Record.init))
+                let records = Set(managedRecords.lazy.map(Record<RecordType>.init))
                 return .success(records)
             }
             catch
