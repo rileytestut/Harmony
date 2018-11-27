@@ -55,6 +55,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                 do
                                 {
                                     let operation = try OperationType(record: record, service: self.service, context: saveContext)
+                                    operation.isBatchOperation = true
                                     operation.resultHandler = { (result) in
                                         let contextRecord = saveContext.object(with: record.objectID) as! ManagedRecord
                                         contextRecord.shouldLockWhenUploading = record.shouldLockWhenUploading

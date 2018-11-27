@@ -1,108 +1,126 @@
 //
-//  DownloadRecordsOperation.swift
+//  FinishRecordDownloadsOperation.swift
 //  Harmony
 //
-//  Created by Riley Testut on 11/5/18.
+//  Created by Riley Testut on 11/26/18.
 //  Copyright © 2018 Riley Testut. All rights reserved.
 //
 
 import Foundation
 import CoreData
 
-class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecordOperation, DownloadError, BatchDownloadError>
+class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalRecord>]>
 {
-    init(service: Service, recordController: RecordController)
-    {
-        super.init(predicate: ManagedRecord.downloadRecordsPredicate, service: service, recordController: recordController)
+    let results: [ManagedRecord: Result<LocalRecord>]
+    
+    private let managedObjectContext: NSManagedObjectContext
+    
+    override var isAsynchronous: Bool {
+        return true
     }
     
-    override func process(_ results: [ManagedRecord : Result<LocalRecord>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[ManagedRecord : Result<LocalRecord>]>) -> Void)
+    init(results: [ManagedRecord: Result<LocalRecord>], service: Service, context: NSManagedObjectContext)
     {
-        var results = results
+        self.results = results
+        self.managedObjectContext = context
         
-        let predicates = results.values.flatMap { (result) -> [NSPredicate] in
-            guard let localRecord = try? result.value(), let relationships = localRecord.remoteRelationships else { return [] }
-            
-            let predicates = relationships.values.compactMap {
-                return NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(LocalRecord.recordedObjectType), $0.type, #keyPath(LocalRecord.recordedObjectIdentifier), $0.identifier)
-            }
-            
-            return predicates
-        }
+        super.init(service: service)
+    }
+    
+    override func main()
+    {
+        super.main()
         
-        // Use temporary context to prevent fetching objects that may conflict with temporary objects when saving context.
-        let temporaryContext = self.recordController.newBackgroundContext(withParent: context)
-        temporaryContext.perform {
+        self.managedObjectContext.perform {
+            var results = self.results
             
-            let fetchRequest = LocalRecord.fetchRequest() as NSFetchRequest<LocalRecord>
-            fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
-            fetchRequest.propertiesToFetch = [#keyPath(LocalRecord.recordedObjectType), #keyPath(LocalRecord.recordedObjectIdentifier)]
-            
-            do
-            {
-                let localRecords = try temporaryContext.fetch(fetchRequest)
+            let predicates = results.values.flatMap { (result) -> [NSPredicate] in
+                guard let localRecord = try? result.value(), let relationships = localRecord.remoteRelationships else { return [] }
                 
-                let keyValuePairs = localRecords.lazy.compactMap { (localRecord) -> (Reference, SyncableManagedObject)? in
-                    guard let recordedObject = localRecord.recordedObject else { return nil }
-                    
-                    let reference = Reference(type: localRecord.recordedObjectType, identifier: localRecord.recordedObjectIdentifier)
-                    return (reference, recordedObject)
+                let predicates = relationships.values.compactMap {
+                    return NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(LocalRecord.recordedObjectType), $0.type, #keyPath(LocalRecord.recordedObjectIdentifier), $0.identifier)
                 }
                 
-                // Prefer temporary objects to persisted ones for establishing relationships.
-                // This prevents the persisted objects from registering with context and potentially causing conflicts.
-                let relationshipObjects = Dictionary(keyValuePairs, uniquingKeysWith: { return $0.objectID.isTemporaryID ? $0 : $1 })
+                return predicates
+            }
+            
+            // Use temporary context to prevent fetching objects that may conflict with temporary objects when saving context.
+            let temporaryContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+            temporaryContext.parent = self.managedObjectContext
+            temporaryContext.perform {
                 
-                context.perform {
-                    // Switch back to context so we can modify objects.
+                let fetchRequest = LocalRecord.fetchRequest() as NSFetchRequest<LocalRecord>
+                fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+                fetchRequest.propertiesToFetch = [#keyPath(LocalRecord.recordedObjectType), #keyPath(LocalRecord.recordedObjectIdentifier)]
+                
+                do
+                {
+                    let localRecords = try temporaryContext.fetch(fetchRequest)
                     
-                    for (managedRecord, result) in results
-                    {
-                        do
+                    let keyValuePairs = localRecords.lazy.compactMap { (localRecord) -> (Reference, SyncableManagedObject)? in
+                        guard let recordedObject = localRecord.recordedObject else { return nil }
+                        
+                        let reference = Reference(type: localRecord.recordedObjectType, identifier: localRecord.recordedObjectIdentifier)
+                        return (reference, recordedObject)
+                    }
+                    
+                    // Prefer temporary objects to persisted ones for establishing relationships.
+                    // This prevents the persisted objects from registering with context and potentially causing conflicts.
+                    let relationshipObjects = Dictionary(keyValuePairs, uniquingKeysWith: { return $0.objectID.isTemporaryID ? $0 : $1 })
+                    
+                    self.managedObjectContext.perform {
+                        // Switch back to context so we can modify objects.
+                        
+                        for (managedRecord, result) in results
                         {
-                            let localRecord = try result.value()
-                            
                             do
                             {
-                                try self.updateRelationships(for: localRecord, managedRecord: managedRecord, relationshipObjects: relationshipObjects, context: context)
+                                let localRecord = try result.value()
                                 
-                                // Update files after updating relationships (to prevent replacing files prematurely).
-                                try self.updateFiles(for: localRecord, managedRecord: managedRecord)
+                                do
+                                {
+                                    try self.updateRelationships(for: localRecord, managedRecord: managedRecord, relationshipObjects: relationshipObjects)
+                                    
+                                    // Update files after updating relationships (to prevent replacing files prematurely).
+                                    try self.updateFiles(for: localRecord, managedRecord: managedRecord)
+                                }
+                                catch
+                                {
+                                    localRecord.removeFromContext()
+                                    
+                                    throw error
+                                }
                             }
                             catch
                             {
-                                localRecord.removeFromContext()
+                                results[managedRecord] = .failure(error)
                                 
-                                throw error
+                                if let remoteRecordObjectID = managedRecord.managedObjectContext?.performAndWait({ managedRecord.remoteRecord?.objectID })
+                                {
+                                    // Reset remoteRecord status to make us retry the download again in the future.
+                                    let remoteRecord = self.managedObjectContext.object(with: remoteRecordObjectID) as! RemoteRecord
+                                    remoteRecord.status = .updated
+                                }
                             }
                         }
-                        catch
-                        {
-                            results[managedRecord] = .failure(error)
-                            
-                            if let remoteRecordObjectID = managedRecord.managedObjectContext?.performAndWait({ managedRecord.remoteRecord?.objectID })
-                            {
-                                // Reset remoteRecord status to make us retry the download again in the future.
-                                let remoteRecord = context.object(with: remoteRecordObjectID) as! RemoteRecord
-                                remoteRecord.status = .updated
-                            }
-                        }
+                        
+                        self.result = .success(results)
+                        self.finish()
                     }
-                    
-                    completionHandler(.success(results))
                 }
-            }
-            catch
-            {
-                completionHandler(.failure(BatchDownloadError(code: .any(error))))
+                catch
+                {
+                    self.result = .failure(BatchDownloadError(code: .any(error)))
+                    self.finish()
+                }
             }
         }
     }
 }
 
-private extension DownloadRecordsOperation
+private extension FinishDownloadingRecordsOperation
 {
-    func updateRelationships(for localRecord: LocalRecord, managedRecord: ManagedRecord, relationshipObjects: [Reference: SyncableManagedObject], context: NSManagedObjectContext) throws
+    func updateRelationships(for localRecord: LocalRecord, managedRecord: ManagedRecord, relationshipObjects: [Reference: SyncableManagedObject]) throws
     {
         guard let recordedObject = localRecord.recordedObject else { throw DownloadError(record: managedRecord, code: .nilRecordedObject) }
         
@@ -112,7 +130,7 @@ private extension DownloadRecordsOperation
         {
             if let relationshipObject = relationshipObjects[reference]
             {
-                let relationshipObject = relationshipObject.in(context)
+                let relationshipObject = relationshipObject.in(self.managedObjectContext)
                 recordedObject.setValue(relationshipObject, forKey: key)
             }
             else
@@ -126,7 +144,7 @@ private extension DownloadRecordsOperation
     {
         guard let recordedObject = localRecord.recordedObject else { throw DownloadError(record: managedRecord, code: .nilRecordedObject) }
         
-        guard let files = localRecord.downloadedFiles else { return }        
+        guard let files = localRecord.downloadedFiles else { return }
         
         let temporaryURLsByFile = Dictionary(uniqueKeysWithValues: recordedObject.syncableFiles.lazy.map { ($0, FileManager.default.uniqueTemporaryURL()) })
         let filesByIdentifier = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
@@ -234,4 +252,3 @@ private extension DownloadRecordsOperation
         }
     }
 }
-

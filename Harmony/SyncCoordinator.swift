@@ -103,4 +103,46 @@ public extension SyncCoordinator
         return progress
     }
     
+    @discardableResult func restore<T: NSManagedObject>(_ record: Record<T>, to version: Version, completionHandler: @escaping (Result<Record<T>>) -> Void) -> Progress
+    {
+        let progress = Progress.discreteProgress(totalUnitCount: 1)
+        
+        let context = self.recordController.newBackgroundContext()
+        
+        record.managedRecord.managedObjectContext?.perform {
+            do
+            {
+                let operation = try DownloadRecordOperation(record: record.managedRecord, service: self.service, context: context)
+                operation.version = version
+                operation.resultHandler = { (result) in
+                    do
+                    {
+                        _ = try result.value()
+                        
+                        self.recordController.performBackgroundTask { (context) in
+                            let managedRecord = record.managedRecord.in(context)
+                            
+                            let record = Record(managedRecord) as! Record<T>
+                            completionHandler(.success(record))
+                        }
+                    }
+                    catch
+                    {
+                        completionHandler(.failure(error))
+                    }
+                }
+                
+                progress.addChild(operation.progress, withPendingUnitCount: 1)
+                
+                self.operationQueue.addOperation(operation)
+            }
+            catch
+            {
+                completionHandler(.failure(error))
+            }
+        }
+        
+        return progress
+    }
+    
 }

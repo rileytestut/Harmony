@@ -14,6 +14,8 @@ class RecordOperation<ResultType, ErrorType: RecordError>: Operation<ResultType>
     let record: ManagedRecord
     let managedObjectContext: NSManagedObjectContext
     
+    var isBatchOperation = false
+    
     // Keep strong reference to recordContext.
     private let recordContext: NSManagedObjectContext
     

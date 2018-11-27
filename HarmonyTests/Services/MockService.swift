@@ -82,7 +82,7 @@ extension MockService: Service
         fatalError()
     }
     
-    func download(_ record: RemoteRecord, version: ManagedVersion, context: NSManagedObjectContext, completionHandler: @escaping (Result<LocalRecord>) -> Void) -> Progress
+    func download(_ record: RemoteRecord, version: Version, context: NSManagedObjectContext, completionHandler: @escaping (Result<LocalRecord>) -> Void) -> Progress
     {
         fatalError()
     }

@@ -35,38 +35,105 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
     {
         super.main()
         
-        self.uploadFiles() { (result) in
-            do
-            {
-                let remoteFiles = try result.value()
-                
-                let localRecord = self.localRecord.in(self.managedObjectContext)
-                let localRecordRemoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
-                
-                for remoteFile in remoteFiles
+        func upload(_ record: ManagedRecord)
+        {
+            self.uploadFiles() { (result) in
+                do
                 {
-                    if let cachedFile = localRecordRemoteFilesByIdentifier[remoteFile.identifier]
+                    let remoteFiles = try result.value()
+                    
+                    let localRecord = self.localRecord.in(self.managedObjectContext)
+                    let localRecordRemoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
+                    
+                    for remoteFile in remoteFiles
                     {
-                        localRecord.remoteFiles.remove(cachedFile)
+                        if let cachedFile = localRecordRemoteFilesByIdentifier[remoteFile.identifier]
+                        {
+                            localRecord.remoteFiles.remove(cachedFile)
+                        }
+                        
+                        localRecord.remoteFiles.insert(remoteFile)
                     }
                     
-                    localRecord.remoteFiles.insert(remoteFile)
+                    self.upload(localRecord) { (result) in
+                        self.result = result
+                        self.finishUpload()
+                    }
                 }
-                                
-                self.upload(localRecord) { (result) in
-                    self.result = result
-                    self.finish()
+                catch
+                {
+                    self.result = .failure(error)
+                    self.finishUpload()
                 }
             }
-            catch
-            {
-                self.result = .failure(error)
+        }
+        
+        if self.isBatchOperation
+        {
+            upload(self.record)
+        }
+        else
+        {
+            let prepareUploadingRecordsOperation = PrepareUploadingRecordsOperation(records: [self.record], service: self.service, context: self.managedObjectContext)
+            prepareUploadingRecordsOperation.resultHandler = { (result) in
+                do
+                {
+                    let records = try result.value()
+                    
+                    guard let record = records.first else { throw self.recordError(code: .unknown) }
+                    
+                    self.record.managedObjectContext?.perform {
+                        upload(record)
+                    }
+                }
+                catch
+                {
+                    self.result = .failure(error)
+                    self.finishUpload()
+                }
+            }
+            
+            self.operationQueue.addOperation(prepareUploadingRecordsOperation)
+        }
+    }
+}
+
+private extension UploadRecordOperation
+{
+    func finishUpload()
+    {
+        if self.isBatchOperation
+        {
+            self.finish()
+        }
+        else
+        {
+            let operation = FinishUploadingRecordsOperation(results: [self.record: self.result!], service: self.service, context: self.managedObjectContext)
+            operation.resultHandler = { (result) in
+                do
+                {
+                    let results = try result.value()
+                    
+                    guard let result = results.values.first else { throw self.recordError(code: .unknown) }
+                    
+                    let remoteRecord = try result.value()
+                    self.result = .success(remoteRecord)
+                    
+                    try self.managedObjectContext.save()
+                }
+                catch
+                {
+                    self.result = .failure(error)
+                }
+                
                 self.finish()
             }
+            
+            self.operationQueue.addOperation(operation)
         }
     }
     
-    private func uploadFiles(completionHandler: @escaping (Result<Set<RemoteFile>>) -> Void)
+    func uploadFiles(completionHandler: @escaping (Result<Set<RemoteFile>>) -> Void)
     {
         guard let localRecord = self.record.localRecord else { return completionHandler(.failure(self.recordError(code: .nilLocalRecord))) }
         guard let recordedObject = localRecord.recordedObject else { return completionHandler(.failure(self.recordError(code: .nilRecordedObject))) }
@@ -151,10 +218,11 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
         }
     }
     
-    private func upload(_ localRecord: LocalRecord, completionHandler: @escaping (Result<RemoteRecord>) -> Void)
+    func upload(_ localRecord: LocalRecord, completionHandler: @escaping (Result<RemoteRecord>) -> Void)
     {
         var metadata: [HarmonyMetadataKey: Any] = [.recordedObjectType: localRecord.recordedObjectType,
-                                                   .recordedObjectIdentifier: localRecord.recordedObjectIdentifier]
+                                                   .recordedObjectIdentifier: localRecord.recordedObjectIdentifier,
+                                                   .author: UIDevice.current.name]
         
         if self.record.shouldLockWhenUploading
         {

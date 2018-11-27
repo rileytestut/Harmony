@@ -13,6 +13,8 @@ import Roxas
 
 class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
 {
+    var version: Version?
+    
     override func main()
     {
         super.main()
@@ -38,15 +40,51 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
                             localRecord.removeFromContext()
                         }
                         
-                        self.finish()
+                        self.finishDownload()
                     }
                 }
             }
             catch
             {
                 self.result = .failure(error)
+                self.finishDownload()
+            }
+        }
+    }
+}
+
+private extension DownloadRecordOperation
+{
+    func finishDownload()
+    {
+        if self.isBatchOperation
+        {
+            self.finish()
+        }
+        else
+        {
+            let operation = FinishDownloadingRecordsOperation(results: [self.record: self.result!], service: self.service, context: self.managedObjectContext)
+            operation.resultHandler = { (result) in
+                do
+                {
+                    let results = try result.value()
+                    
+                    guard let result = results.values.first else { throw self.recordError(code: .unknown) }
+                    
+                    let localRecord = try result.value()
+                    self.result = .success(localRecord)
+                    
+                    try self.managedObjectContext.save()
+                }
+                catch
+                {
+                    self.result = .failure(error)
+                }
+                
                 self.finish()
             }
+            
+            self.operationQueue.addOperation(operation)
         }
     }
     
@@ -54,32 +92,40 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
     {
         guard let remoteRecord = self.record.remoteRecord else { return completionHandler(.failure(self.recordError(code: .nilRemoteRecord))) }
         
-        let version: ManagedVersion
+        let version: Version
         
-        if remoteRecord.isLocked
+        if let recordVersion = self.version
+        {
+            version = recordVersion
+        }
+        else if remoteRecord.isLocked
         {
             guard let previousVersion = remoteRecord.previousUnlockedVersion else {
                 return completionHandler(.failure(self.recordError(code: .recordLocked)))
             }
             
-            version = previousVersion
+            version = Version(previousVersion)
         }
         else
         {
-            version = remoteRecord.version
-        }
+            version = Version(remoteRecord.version)
+        }        
         
         let progress = self.service.download(remoteRecord, version: version, context: self.managedObjectContext) { (result) in
             do
             {
                 let localRecord = try result.value()
                 localRecord.status = .normal
+                localRecord.modificationDate = version.date
                 
                 let remoteRecord = remoteRecord.in(self.managedObjectContext)
                 remoteRecord.status = .normal
                 
-                let version = version.in(self.managedObjectContext)
-                localRecord.version = version
+                // Create new managed version (in case we were downloading a specified version that wasn't the most recent version).
+                let managedVersion = ManagedVersion(context: self.managedObjectContext)
+                managedVersion.identifier = version.identifier
+                managedVersion.date = version.date
+                localRecord.version = managedVersion
                 
                 completionHandler(.success(localRecord))
             }

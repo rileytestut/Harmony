@@ -22,6 +22,10 @@
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
 		BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */; };
 		BF3915E121812F0200AF74E5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
+		BF4EE59421AC901500FA648D /* FinishDownloadingRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59321AC901500FA648D /* FinishDownloadingRecordsOperation.swift */; };
+		BF4EE59821AC968600FA648D /* FinishUploadingRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59721AC968600FA648D /* FinishUploadingRecordsOperation.swift */; };
+		BF4EE59A21AC97D700FA648D /* PrepareUploadingRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59921AC97D700FA648D /* PrepareUploadingRecordsOperation.swift */; };
+		BF4EE59C21AC997A00FA648D /* ManagedRecord+Uploading.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */; };
 		BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63A1A421A4B53100EE8F61 /* Version.swift */; };
 		BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */; };
 		BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */; };
@@ -260,6 +264,10 @@
 		BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCAssert+Harmony.swift"; sourceTree = "<group>"; };
 		BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Generics.swift"; sourceTree = "<group>"; };
 		BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConflictRecordOperation.swift; sourceTree = "<group>"; };
+		BF4EE59321AC901500FA648D /* FinishDownloadingRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishDownloadingRecordsOperation.swift; sourceTree = "<group>"; };
+		BF4EE59721AC968600FA648D /* FinishUploadingRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishUploadingRecordsOperation.swift; sourceTree = "<group>"; };
+		BF4EE59921AC97D700FA648D /* PrepareUploadingRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrepareUploadingRecordsOperation.swift; sourceTree = "<group>"; };
+		BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagedRecord+Uploading.swift"; sourceTree = "<group>"; };
 		BF63A1A421A4B53100EE8F61 /* Version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Version.swift; sourceTree = "<group>"; };
 		BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyTestCase.swift; sourceTree = "<group>"; };
@@ -432,6 +440,45 @@
 			path = "Core Data";
 			sourceTree = "<group>";
 		};
+		BF4EE58321AC8FF000FA648D /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */,
+				BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */,
+				BF4EE59921AC97D700FA648D /* PrepareUploadingRecordsOperation.swift */,
+				BF4EE59721AC968600FA648D /* FinishUploadingRecordsOperation.swift */,
+			);
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		BF4EE59221AC8FF500FA648D /* Download */ = {
+			isa = PBXGroup;
+			children = (
+				BF95137521657437007EF10C /* DownloadRecordOperation.swift */,
+				BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */,
+				BF4EE59321AC901500FA648D /* FinishDownloadingRecordsOperation.swift */,
+			);
+			path = Download;
+			sourceTree = "<group>";
+		};
+		BF4EE59521AC960700FA648D /* Conflict */ = {
+			isa = PBXGroup;
+			children = (
+				BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */,
+				BFDDC10B2194F337009732B7 /* ConflictRecordsOperation.swift */,
+			);
+			path = Conflict;
+			sourceTree = "<group>";
+		};
+		BF4EE59621AC963300FA648D /* Misc. */ = {
+			isa = PBXGroup;
+			children = (
+				BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */,
+				BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */,
+			);
+			path = Misc.;
+			sourceTree = "<group>";
+		};
 		BF5784001FB17B9200BD043C /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -493,6 +540,7 @@
 				BFA4134A2194CDA90001D71A /* Dictionary+Sequence.swift */,
 				BFDDC10D219504AA009732B7 /* UserDefaults+Harmony.swift */,
 				BFAB9F9F219B7DDF0080EC7D /* NSManagedObjectContext+Caching.swift */,
+				BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -524,29 +572,22 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BF9A367921630F2B00F8EE91 /* Batch Operations */ = {
-			isa = PBXGroup;
-			children = (
-				BF95137721657632007EF10C /* BatchRecordOperation.swift */,
-				BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */,
-				BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */,
-				BFDDC0FB2194F065009732B7 /* DeleteRecordsOperation.swift */,
-				BFDDC10B2194F337009732B7 /* ConflictRecordsOperation.swift */,
-			);
-			path = "Batch Operations";
-			sourceTree = "<group>";
-		};
-		BF9A367A21630F3600F8EE91 /* Record Operations */ = {
+		BF9A367921630F2B00F8EE91 /* Parent Operations */ = {
 			isa = PBXGroup;
 			children = (
 				BFD0E2E4217FD02B006945CF /* RecordOperation.swift */,
-				BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */,
-				BF95137521657437007EF10C /* DownloadRecordOperation.swift */,
-				BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */,
-				BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */,
-				BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */,
+				BF95137721657632007EF10C /* BatchRecordOperation.swift */,
 			);
-			path = "Record Operations";
+			path = "Parent Operations";
+			sourceTree = "<group>";
+		};
+		BF9A367A21630F3600F8EE91 /* Delete */ = {
+			isa = PBXGroup;
+			children = (
+				BFD0E2E2217FCED3006945CF /* DeleteRecordOperation.swift */,
+				BFDDC0FB2194F065009732B7 /* DeleteRecordsOperation.swift */,
+			);
+			path = Delete;
 			sourceTree = "<group>";
 		};
 		BFA1C8CA1ECD01C100DEA99D = {
@@ -676,9 +717,12 @@
 			children = (
 				BFFB9B17200ED72E00A8F673 /* Operation.swift */,
 				BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */,
-				BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */,
-				BF9A367921630F2B00F8EE91 /* Batch Operations */,
-				BF9A367A21630F3600F8EE91 /* Record Operations */,
+				BF9A367921630F2B00F8EE91 /* Parent Operations */,
+				BF4EE58321AC8FF000FA648D /* Upload */,
+				BF4EE59221AC8FF500FA648D /* Download */,
+				BF9A367A21630F3600F8EE91 /* Delete */,
+				BF4EE59521AC960700FA648D /* Conflict */,
+				BF4EE59621AC963300FA648D /* Misc. */,
 			);
 			path = Operations;
 			sourceTree = "<group>";
@@ -1007,10 +1051,13 @@
 				BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */,
 				BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */,
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
+				BF4EE59821AC968600FA648D /* FinishUploadingRecordsOperation.swift in Sources */,
 				BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */,
+				BF4EE59421AC901500FA648D /* FinishDownloadingRecordsOperation.swift in Sources */,
 				BFDDC10C2194F337009732B7 /* ConflictRecordsOperation.swift in Sources */,
 				BFAB9FA0219B7DDF0080EC7D /* NSManagedObjectContext+Caching.swift in Sources */,
 				BFA4134B2194CDA90001D71A /* Dictionary+Sequence.swift in Sources */,
+				BF4EE59A21AC97D700FA648D /* PrepareUploadingRecordsOperation.swift in Sources */,
 				BFECF58321912559006DB8F5 /* DownloadRecordsOperation.swift in Sources */,
 				BF84220C21936E950035340B /* RemoteFile.swift in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
@@ -1031,6 +1078,7 @@
 				BFFDBA9F216D74FC00AED109 /* File.swift in Sources */,
 				BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */,
 				BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */,
+				BF4EE59C21AC997A00FA648D /* ManagedRecord+Uploading.swift in Sources */,
 				BFECF57D219100DB006DB8F5 /* Reference.swift in Sources */,
 				BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */,
 				BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */,
