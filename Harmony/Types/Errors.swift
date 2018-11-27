@@ -350,6 +350,25 @@ public struct ConflictError: RecordError
     }
 }
 
+public struct FetchVersionsError: RecordError
+{
+    public var record: ManagedRecord
+    public var code: HarmonyError.Code
+    
+    private var recordContext: NSManagedObjectContext?
+    
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to fetch record versions.", comment: "")
+    }
+    
+    public init(record: ManagedRecord, code: HarmonyError.Code)
+    {
+        self.record = record
+        self.code = code
+        
+        self.recordContext = self.record.managedObjectContext
+    }
+}
 /* File Errors */
 
 public struct UploadFileError: HarmonyError

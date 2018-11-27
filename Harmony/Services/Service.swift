@@ -31,6 +31,8 @@ public protocol Service
     func delete(_ remoteFile: RemoteFile, completionHandler: @escaping (Result<Void>) -> Void) -> Progress
     
     func updateMetadata(_ metadata: [HarmonyMetadataKey: Any], for record: RemoteRecord, completionHandler: @escaping (Result<Void>) -> Void) -> Progress
+    
+    func fetchVersions(for record: RemoteRecord, completionHandler: @escaping (Result<[Version]>) -> Void) -> Progress
 }
 
 public func ==(lhs: Service, rhs: Service) -> Bool

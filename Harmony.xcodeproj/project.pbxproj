@@ -22,6 +22,7 @@
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
 		BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */; };
 		BF3915E121812F0200AF74E5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
+		BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63A1A421A4B53100EE8F61 /* Version.swift */; };
 		BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */; };
 		BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */; };
 		BF6C9EF21F9BF441001B3F37 /* HarmonyTests.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF01F9BF441001B3F37 /* HarmonyTests.xcdatamodeld */; };
@@ -259,6 +260,7 @@
 		BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCAssert+Harmony.swift"; sourceTree = "<group>"; };
 		BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Generics.swift"; sourceTree = "<group>"; };
 		BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConflictRecordOperation.swift; sourceTree = "<group>"; };
+		BF63A1A421A4B53100EE8F61 /* Version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Version.swift; sourceTree = "<group>"; };
 		BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyTestCase.swift; sourceTree = "<group>"; };
 		BF6C9EF11F9BF441001B3F37 /* HarmonyTests.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HarmonyTests.xcdatamodel; sourceTree = "<group>"; };
@@ -381,6 +383,7 @@
 			isa = PBXGroup;
 			children = (
 				BF8A333521A4872300A42FD4 /* Record.swift */,
+				BF63A1A421A4B53100EE8F61 /* Version.swift */,
 				BFB3396B1FD3A4DF006FACAD /* File.swift */,
 				BFECF57C219100DB006DB8F5 /* Reference.swift */,
 				BF30432F1FD3A0260053E884 /* Core Data */,
@@ -989,6 +992,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */,
+				BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */,
 				BFFB9B1E200ED96700A8F673 /* Result.swift in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,

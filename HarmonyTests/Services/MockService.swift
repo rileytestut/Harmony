@@ -111,4 +111,9 @@ extension MockService: Service
     {
         fatalError()
     }
+    
+    func fetchVersions(for record: RemoteRecord, completionHandler: @escaping (Result<[Version]>) -> Void) -> Progress
+    {
+        fatalError()
+    }
 }

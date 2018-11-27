@@ -86,3 +86,21 @@ public extension SyncCoordinator
         return syncRecordsOperation
     }
 }
+
+public extension SyncCoordinator
+{
+    @discardableResult func fetchVersions<T: NSManagedObject>(for record: Record<T>, completionHandler: @escaping (Result<[Version]>) -> Void) -> Progress
+    {
+        let progress = Progress.discreteProgress(totalUnitCount: 1)
+        
+        record.managedRecord.managedObjectContext?.perform {
+            guard let remoteRecord = record.managedRecord.remoteRecord else { return completionHandler(.success([])) }
+            
+            let fetchProgress = self.service.fetchVersions(for: remoteRecord, completionHandler: completionHandler)
+            progress.addChild(fetchProgress, withPendingUnitCount: 1)
+        }
+        
+        return progress
+    }
+    
+}
