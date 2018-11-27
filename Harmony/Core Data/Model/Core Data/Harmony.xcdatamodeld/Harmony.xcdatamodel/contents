@@ -49,6 +49,7 @@
         <relationship name="localRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LocalRecord" inverseName="remoteFiles" inverseEntity="LocalRecord" syncable="YES"/>
     </entity>
     <entity name="RemoteRecord" representedClassName="RemoteRecord" syncable="YES">
+        <attribute name="author" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <attribute name="isLocked" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
@@ -79,7 +80,7 @@
         <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="165"/>
         <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
         <element name="ManagedVersion" positionX="298.94921875" positionY="439.0625" width="128" height="120"/>
-        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="165"/>
-        <element name="RemoteFile" positionX="288" positionY="378" width="128" height="120"/>
+        <element name="RemoteFile" positionX="288" positionY="378" width="128" height="135"/>
+        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="180"/>
     </elements>
 </model>

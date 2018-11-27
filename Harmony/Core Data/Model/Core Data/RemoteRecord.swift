@@ -14,6 +14,7 @@ public class RemoteRecord: RecordRepresentation
     /* Properties */
     @NSManaged public var identifier: String
     @NSManaged public var isLocked: Bool
+    @NSManaged public var author: String?
     
     @NSManaged var previousUnlockedVersion: ManagedVersion?
     
@@ -49,6 +50,11 @@ public class RemoteRecord: RecordRepresentation
         {
             let date = Date(timeIntervalSinceReferenceDate: timeInterval)
             self.previousUnlockedVersion = ManagedVersion(identifier: identifier, date: date, context: context)
+        }
+        
+        if let author = metadata[.author]
+        {
+            self.author = author
         }
     }
     
