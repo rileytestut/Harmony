@@ -61,5 +61,29 @@ public struct Record<T: NSManagedObject>: Hashable
     }
 }
 
+public extension Record
+{
+    mutating func setSyncingEnabled(_ syncingEnabled: Bool) throws
+    {
+        let managedRecord = self.managedRecord
+        
+        let result = self.managedRecordContext.performAndWait { () -> Result<Void> in
+            do
+            {
+                managedRecord.isSyncingEnabled = syncingEnabled
+                
+                try managedRecord.managedObjectContext?.save()
+                
+                return .success
+            }
+            catch
+            {
+                return .failure(error)
+            }
+        }
+        
+        try result.verify()
+        
+        self.isSyncingEnabled = syncingEnabled
     }
 }
