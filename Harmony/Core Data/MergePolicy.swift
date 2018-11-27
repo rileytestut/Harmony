@@ -43,7 +43,7 @@ class MergePolicy: RSTRelationshipPreservingMergePolicy
                 guard
                     let snapshot = conflict.snapshots.object(forKey: conflict.databaseObject),
                     let previousStatusValue = snapshot[#keyPath(RemoteRecord.status)] as? Int16,
-                    let previousStatus = RecordRepresentation.Status(rawValue: previousStatusValue),
+                    let previousStatus = RecordStatus(rawValue: previousStatusValue),
                     let previousVersion = snapshot[#keyPath(RemoteRecord.version)] as? ManagedVersion
                 else { continue }
                 

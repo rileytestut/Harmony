@@ -8,16 +8,6 @@
 
 import CoreData
 
-extension RecordRepresentation
-{
-    @objc public enum Status: Int16, CaseIterable
-    {
-        case normal
-        case updated
-        case deleted
-    }
-}
-
 public class RecordRepresentation: NSManagedObject
 {
     @NSManaged public var recordedObjectType: String
@@ -25,13 +15,13 @@ public class RecordRepresentation: NSManagedObject
     
     @NSManaged public var managedRecord: ManagedRecord?
     
-    @objc public var status: RecordRepresentation.Status {
+    @objc public var status: RecordStatus {
         get {
             self.willAccessValue(forKey: #keyPath(RecordRepresentation.status))
             defer { self.didAccessValue(forKey: #keyPath(RecordRepresentation.status)) }
             
             let rawValue = (self.primitiveValue(forKey: #keyPath(RecordRepresentation.status)) as? Int16) ?? 0
-            let status = RecordRepresentation.Status(rawValue: rawValue) ?? .updated
+            let status = RecordStatus(rawValue: rawValue) ?? .updated
             return status
         }
         set {

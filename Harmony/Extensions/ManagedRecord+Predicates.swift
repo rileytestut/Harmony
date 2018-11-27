@@ -18,7 +18,7 @@ extension ManagedRecord
         case delete
         case conflict
         
-        init(localStatus: RecordRepresentation.Status?, remoteStatus: RecordRepresentation.Status?)
+        init(localStatus: RecordStatus?, remoteStatus: RecordStatus?)
         {
             switch (localStatus, remoteStatus)
             {
@@ -104,11 +104,11 @@ private extension ManagedRecord
         return predicate
     }
     
-    class func statuses(for syncAction: SyncAction) -> [(RecordRepresentation.Status?, RecordRepresentation.Status?)]
+    class func statuses(for syncAction: SyncAction) -> [(RecordStatus?, RecordStatus?)]
     {
         // "Hack" to allow compiler to tell us if we miss any potential cases.
         // We make an array of all possible combinations of statues, then filter out all combinations that don't result in the sync action we want.
-        let allCases: [RecordRepresentation.Status?] = RecordRepresentation.Status.allCases + [nil]
+        let allCases: [RecordStatus?] = RecordStatus.allCases + [nil]
         let statuses = allCases.flatMap { (localStatus) in allCases.map { (localStatus, $0) } }
         
         let filteredStatuses = statuses.filter { (localStatus, remoteStatus) in
@@ -119,7 +119,7 @@ private extension ManagedRecord
         return filteredStatuses
     }
     
-    class func predicate(statuses: [(localStatus: RecordRepresentation.Status?, remoteStatus: RecordRepresentation.Status?)]) -> NSPredicate
+    class func predicate(statuses: [(localStatus: RecordStatus?, remoteStatus: RecordStatus?)]) -> NSPredicate
     {
         let predicates = statuses.map { (localStatus, remoteStatus) -> NSPredicate in
             let predicate: NSPredicate

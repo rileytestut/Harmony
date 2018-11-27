@@ -8,18 +8,28 @@
 
 import CoreData
 
+@objc public enum RecordStatus: Int16, CaseIterable
+{
+    case normal
+    case updated
+    case deleted
+}
+
 public struct Record<T: NSManagedObject>: Hashable
 {
-    private let managedRecord: ManagedRecord
+    let managedRecord: ManagedRecord
     private let managedRecordContext: NSManagedObjectContext
     
-    public var isConflicted: Bool {
-        return self.managedRecordContext.performAndWait { self.managedRecord.isConflicted }
-    }
+    public let isConflicted: Bool
+    public private(set) var isSyncingEnabled: Bool
     
-    public var isSyncingEnabled: Bool {
-        return self.managedRecordContext.performAndWait { self.managedRecord.isSyncingEnabled }
-    }
+    public let localStatus: RecordStatus?
+    public let remoteStatus: RecordStatus?
+    
+    public let remoteVersion: Version?
+    
+    public let remoteAuthor: String?
+    public let localModificationDate: Date?
     
     public var recordedObject: T? {
         return self.managedRecordContext.performAndWait { self.managedRecord.localRecord?.recordedObject as? T }
@@ -29,5 +39,27 @@ public struct Record<T: NSManagedObject>: Hashable
     {
         self.managedRecord = managedRecord
         self.managedRecordContext = managedRecord.managedObjectContext!
+        
+        self.isConflicted = self.managedRecord.isConflicted
+        self.isSyncingEnabled = self.managedRecord.isSyncingEnabled
+        
+        self.localStatus = self.managedRecord.localRecord?.status
+        self.remoteStatus = self.managedRecord.remoteRecord?.status
+        
+        if let version = self.managedRecord.remoteRecord?.version
+        {
+            self.remoteVersion = Version(version)
+        }
+        else
+        {
+            self.remoteVersion = nil
+        }
+        
+        self.remoteAuthor = self.managedRecord.remoteRecord?.author
+        
+        self.localModificationDate = self.managedRecord.localRecord?.modificationDate
+    }
+}
+
     }
 }

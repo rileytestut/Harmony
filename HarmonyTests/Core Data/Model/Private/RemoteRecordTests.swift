@@ -24,7 +24,7 @@ extension RemoteRecordTests
         let versionDate = Date()
         let recordedObjectType = "type"
         let recordedObjectIdentifier = "recordedObjectIdentifier"
-        let status = RecordRepresentation.Status.deleted
+        let status = RecordStatus.deleted
         
         let metadata: [HarmonyMetadataKey: String] = [.recordedObjectType: recordedObjectType, .recordedObjectIdentifier: recordedObjectIdentifier]
         
@@ -43,7 +43,7 @@ extension RemoteRecordTests
         let identifier = "identifier"
         let versionIdentifier = "versionIdentifier"
         let versionDate = Date()
-        let status = RecordRepresentation.Status.deleted
+        let status = RecordStatus.deleted
         
         let metadata: [HarmonyMetadataKey: String] = [:]
         
@@ -58,7 +58,7 @@ extension RemoteRecordTests
         // KVO
         let record = RemoteRecord.make()
         
-        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: RecordRepresentation.Status.updated.rawValue)
+        let expectation = self.keyValueObservingExpectation(for: record, keyPath: #keyPath(LocalRecord.status), expectedValue: RecordStatus.updated.rawValue)
         record.status = .updated
         
         XCTAssertEqual(record.status, .updated)

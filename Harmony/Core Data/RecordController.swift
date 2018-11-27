@@ -332,9 +332,9 @@ private extension RecordController
         }
     }
     
-    func updateLocalRecords<T: Collection>(for recordedObjectIDs: T, status: RecordRepresentation.Status, in context: NSManagedObjectContext) where T.Element == NSManagedObjectID
+    func updateLocalRecords<T: Collection>(for recordedObjectIDs: T, status: RecordStatus, in context: NSManagedObjectContext) where T.Element == NSManagedObjectID
     {
-        func configure(_ localRecord: LocalRecord, with status: RecordRepresentation.Status)
+        func configure(_ localRecord: LocalRecord, with status: RecordStatus)
         {
             guard localRecord.status != status else { return }
             
