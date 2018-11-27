@@ -42,6 +42,7 @@ public class LocalRecord: RecordRepresentation, Codable
 {
     /* Properties */
     @NSManaged var recordedObjectURI: URL
+    @NSManaged var modificationDate: Date
     
     /* Relationships */
     @NSManaged var version: ManagedVersion?
@@ -191,6 +192,13 @@ public class LocalRecord: RecordRepresentation, Codable
         try container.encode(relationships, forKey: .relationships)
         
         try container.encode(self.remoteFiles, forKey: .files)
+    }
+    
+    public override func awakeFromInsert()
+    {
+        super.awakeFromInsert()
+        
+        self.modificationDate = Date()
     }
 }
 

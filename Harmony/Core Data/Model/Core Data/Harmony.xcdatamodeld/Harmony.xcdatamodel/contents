@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="18A391" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="LocalRecord" representedClassName="LocalRecord" syncable="YES">
+        <attribute name="modificationDate" attributeType="Date" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectURI" attributeType="URI" syncable="YES"/>
@@ -75,7 +76,7 @@
         <memberEntity name="RemoteFile"/>
     </configuration>
     <elements>
-        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="150"/>
+        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="165"/>
         <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
         <element name="ManagedVersion" positionX="298.94921875" positionY="439.0625" width="128" height="120"/>
         <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="165"/>

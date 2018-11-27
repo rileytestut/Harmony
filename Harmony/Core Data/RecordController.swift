@@ -339,6 +339,7 @@ private extension RecordController
             guard localRecord.status != status else { return }
             
             localRecord.status = status
+            localRecord.modificationDate = Date()
         }
         
         do
