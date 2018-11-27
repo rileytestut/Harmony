@@ -13,26 +13,7 @@ import CoreData
 public class ManagedRecord: NSManagedObject
 {
     /* Properties */
-    @objc var isConflicted: Bool {
-        get {
-            self.willAccessValue(forKey: #keyPath(ManagedRecord.isConflicted))
-            defer { self.didAccessValue(forKey: #keyPath(ManagedRecord.isConflicted)) }
-            
-            let isConflicted = self.primitiveValue(forKey: #keyPath(ManagedRecord.isConflicted)) as? Bool ?? false
-            return isConflicted
-        }
-        set {
-            self.willChangeValue(for: \.isConflicted)
-            defer { self.didChangeValue(for: \.isConflicted) }
-            
-            self.setPrimitiveValue(newValue, forKey: #keyPath(ManagedRecord.isConflicted))
-            
-            if newValue
-            {
-                self.isSyncingEnabled = false
-            }
-        }
-    }
+    @NSManaged var isConflicted: Bool
     
     @NSManaged var isSyncingEnabled: Bool
     

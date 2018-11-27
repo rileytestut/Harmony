@@ -17,6 +17,15 @@ public extension SyncCoordinator
     static let syncResultKey = "syncResult"
 }
 
+extension SyncCoordinator
+{
+    public enum ConflictResolution
+    {
+        case local
+        case remote(Version)
+    }
+}
+
 public final class SyncCoordinator
 {
     public let service: Service
@@ -103,6 +112,47 @@ public extension SyncCoordinator
         return progress
     }
     
+    @discardableResult func upload<T: NSManagedObject>(_ record: Record<T>, completionHandler: @escaping (Result<Record<T>>) -> Void) -> Progress
+    {
+        let progress = Progress.discreteProgress(totalUnitCount: 1)
+        
+        let context = self.recordController.newBackgroundContext()
+        
+        record.managedRecord.managedObjectContext?.perform {
+            do
+            {
+                let operation = try UploadRecordOperation(record: record.managedRecord, service: self.service, context: context)
+                operation.resultHandler = { (result) in
+                    do
+                    {
+                        _ = try result.value()
+                        
+                        self.recordController.performBackgroundTask { (context) in
+                            let managedRecord = record.managedRecord.in(context)
+                            
+                            let record = Record(managedRecord) as! Record<T>
+                            completionHandler(.success(record))
+                        }
+                    }
+                    catch
+                    {
+                        completionHandler(.failure(error))
+                    }
+                }
+                
+                progress.addChild(operation.progress, withPendingUnitCount: 1)
+                
+                self.operationQueue.addOperation(operation)
+            }
+            catch
+            {
+                completionHandler(.failure(error))
+            }
+        }
+        
+        return progress
+    }
+    
     @discardableResult func restore<T: NSManagedObject>(_ record: Record<T>, to version: Version, completionHandler: @escaping (Result<Record<T>>) -> Void) -> Progress
     {
         let progress = Progress.discreteProgress(totalUnitCount: 1)
@@ -145,4 +195,41 @@ public extension SyncCoordinator
         return progress
     }
     
+    @discardableResult func resolveConflictedRecord<T: NSManagedObject>(_ record: Record<T>, resolution: ConflictResolution, completionHandler: @escaping (Result<Record<T>>) -> Void) -> Progress
+    {
+        let progress: Progress
+        
+        func finish(_ result: Result<Record<T>>)
+        {
+            do
+            {
+                let record = try result.value()
+                record.managedRecord.isConflicted = false
+                
+                try record.managedRecord.managedObjectContext?.save()
+                
+                let resolvedRecord = Record<T>(record.managedRecord)
+                completionHandler(.success(resolvedRecord))
+            }
+            catch
+            {
+                completionHandler(.failure(ResolveConflictError(record: record.managedRecord, code: .any(error))))
+            }
+        }
+            
+        switch resolution
+        {
+        case .local:
+            progress = self.upload(record) { (result) in
+                finish(result)
+            }
+            
+        case .remote(let version):
+            progress = self.restore(record, to: version) { (result) in
+                finish(result)
+            }
+        }
+        
+        return progress
+    }
 }
