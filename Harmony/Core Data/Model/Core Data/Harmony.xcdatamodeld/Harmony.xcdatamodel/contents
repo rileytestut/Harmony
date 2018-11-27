@@ -45,6 +45,7 @@
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <attribute name="remoteIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="sha1Hash" attributeType="String" syncable="YES"/>
+        <attribute name="size" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
         <relationship name="localRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LocalRecord" inverseName="remoteFiles" inverseEntity="LocalRecord" syncable="YES"/>
     </entity>

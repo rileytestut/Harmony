@@ -17,6 +17,7 @@ extension RemoteFile
         case sha1Hash
         case remoteIdentifier
         case versionIdentifier
+        case size
     }
 }
 
@@ -25,6 +26,7 @@ public class RemoteFile: NSManagedObject, Codable
 {
     @NSManaged public var identifier: String
     @NSManaged public var sha1Hash: String
+    @NSManaged public var size: Int32
     
     @NSManaged public var remoteIdentifier: String
     @NSManaged public var versionIdentifier: String
@@ -36,7 +38,7 @@ public class RemoteFile: NSManagedObject, Codable
         super.init(entity: entity, insertInto: context)
     }
     
-    public init(remoteIdentifier: String, versionIdentifier: String, metadata: [HarmonyMetadataKey: String], context: NSManagedObjectContext) throws
+    public init(remoteIdentifier: String, versionIdentifier: String, size: Int, metadata: [HarmonyMetadataKey: String], context: NSManagedObjectContext) throws
     {
         guard let identifier = metadata[.relationshipIdentifier], let sha1Hash = metadata[.sha1Hash] else { throw RemoteFileError(code: .invalidMetadata) }
         
@@ -46,6 +48,7 @@ public class RemoteFile: NSManagedObject, Codable
         self.sha1Hash = sha1Hash
         self.remoteIdentifier = remoteIdentifier
         self.versionIdentifier = versionIdentifier
+        self.size = Int32(size)
     }
         
     public required init(from decoder: Decoder) throws
@@ -60,6 +63,7 @@ public class RemoteFile: NSManagedObject, Codable
         self.sha1Hash = try container.decode(String.self, forKey: .sha1Hash)
         self.remoteIdentifier = try container.decode(String.self, forKey: .remoteIdentifier)
         self.versionIdentifier = try container.decode(String.self, forKey: .versionIdentifier)
+        self.size = try container.decode(Int32.self, forKey: .size)
         
         context.insert(self)
     }
@@ -71,6 +75,7 @@ public class RemoteFile: NSManagedObject, Codable
         try container.encode(self.sha1Hash, forKey: .sha1Hash)
         try container.encode(self.remoteIdentifier, forKey: .remoteIdentifier)
         try container.encode(self.versionIdentifier, forKey: .versionIdentifier)
+        try container.encode(self.size, forKey: .size)
     }
     
     public override func willSave()
