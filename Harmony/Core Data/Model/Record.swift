@@ -53,44 +53,64 @@ public class Record<T: NSManagedObject>
     public let remoteStatus: RecordStatus?
     
     public let remoteVersion: Version?
-    
     public let remoteAuthor: String?
-    public let localModificationDate: Date?
     
-    public var recordedObject: T? {
-        return self.managedRecordContext.performAndWait { self.managedRecord.localRecord?.recordedObject as? T }
-    }
+    public let localModificationDate: Date?
     
     init(_ managedRecord: ManagedRecord)
     {
         self.managedRecord = managedRecord
         self.managedRecordContext = managedRecord.managedObjectContext!
         
-        self.isConflicted = self.managedRecord.isConflicted
-        self.isSyncingEnabled = self.managedRecord.isSyncingEnabled
-        
-        self.localStatus = self.managedRecord.localRecord?.status
-        self.remoteStatus = self.managedRecord.remoteRecord?.status
-        self.recordID = managedRecord.recordID
-        
-        if let version = self.managedRecord.remoteRecord?.version
-        {
-            self.remoteVersion = Version(version)
+        let (recordID, isConflicted, isSyncingEnabled, localStatus, remoteStatus, remoteVersion, remoteAuthor, localModificationDate) =
+            self.managedRecordContext.performAndWait { () -> (RecordID, Bool, Bool, RecordStatus?, RecordStatus?, Version?, String?, Date?) in
+                let remoteVersion: Version?
+                
+                if let version = managedRecord.remoteRecord?.version
+                {
+                    remoteVersion = Version(version)
+                }
+                else
+                {
+                    remoteVersion = nil
+                }
+                
+                return (managedRecord.recordID, managedRecord.isConflicted, managedRecord.isSyncingEnabled, managedRecord.localRecord?.status,
+                        managedRecord.remoteRecord?.status, remoteVersion, managedRecord.remoteRecord?.author, managedRecord.localRecord?.modificationDate)
         }
-        else
-        {
-            self.remoteVersion = nil
-        }
         
-        self.remoteAuthor = self.managedRecord.remoteRecord?.author
+        self.recordID = recordID
         
-        self.localModificationDate = self.managedRecord.localRecord?.modificationDate
+        self.isConflicted = isConflicted
+        self.isSyncingEnabled = isSyncingEnabled
+        
+        self.localStatus = localStatus
+        self.remoteStatus = remoteStatus
+        
+        self.remoteVersion = remoteVersion
+        
+        self.remoteAuthor = remoteAuthor
+        self.localModificationDate = localModificationDate
+    }
+}
+
+public extension Record where T == NSManagedObject
+{
+    public var recordedObject: SyncableManagedObject? {
+        return self.managedRecordContext.performAndWait { self.managedRecord.localRecord?.recordedObject }
+    }
+}
+
+public extension Record where T: NSManagedObject, T: Syncable
+{
+    public var recordedObject: T? {
+        return self.managedRecordContext.performAndWait { self.managedRecord.localRecord?.recordedObject as? T }
     }
 }
 
 public extension Record
 {
-    mutating func setSyncingEnabled(_ syncingEnabled: Bool) throws
+    func setSyncingEnabled(_ syncingEnabled: Bool) throws
     {
         let managedRecord = self.managedRecord
         
