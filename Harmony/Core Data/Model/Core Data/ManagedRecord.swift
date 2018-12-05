@@ -24,7 +24,7 @@ public class ManagedRecord: NSManagedObject
     @NSManaged public var localRecord: LocalRecord?
     @NSManaged public var remoteRecord: RemoteRecord?
     
-    var recordID: RecordID {
+    public var recordID: RecordID {
         let recordID = RecordID(type: self.recordedObjectType, identifier: self.recordedObjectIdentifier)
         return recordID
     }
