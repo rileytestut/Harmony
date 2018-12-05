@@ -10,20 +10,21 @@ import Foundation
 
 extension HarmonyMetadataKey
 {
-    static let recordedObjectType = HarmonyMetadataKey("recordedObjectType")
-    static let recordedObjectIdentifier = HarmonyMetadataKey("recordedObjectIdentifier")
+    static let recordedObjectType = HarmonyMetadataKey("harmony_recordedObjectType")
+    static let recordedObjectIdentifier = HarmonyMetadataKey("harmony_recordedObjectIdentifier")
     
-    static let relationshipIdentifier = HarmonyMetadataKey("relationshipIdentifier")
+    static let relationshipIdentifier = HarmonyMetadataKey("harmony_relationshipIdentifier")
     
-    static let isLocked = HarmonyMetadataKey("locked")
+    static let isLocked = HarmonyMetadataKey("harmony_locked")
     
-    static let previousVersionIdentifier = HarmonyMetadataKey("previousVersionIdentifier")
-    static let previousVersionDate = HarmonyMetadataKey("previousVersionDate")
+    static let previousVersionIdentifier = HarmonyMetadataKey("harmony_previousVersionIdentifier")
+    static let previousVersionDate = HarmonyMetadataKey("harmony_previousVersionDate")
     
-    static let sha1Hash = HarmonyMetadataKey("sha1Hash")
-    static let localizedName = HarmonyMetadataKey("localizedName")
+    static let sha1Hash = HarmonyMetadataKey("harmony_sha1Hash")
     
-    static let author = HarmonyMetadataKey("author")
+    static let author = HarmonyMetadataKey("harmony_author")
+    static let localizedName = HarmonyMetadataKey("harmony_localizedName")
+    
     static var allHarmonyKeys: Set<HarmonyMetadataKey> {
         return [.recordedObjectType, .recordedObjectIdentifier, .relationshipIdentifier,
                 .isLocked, .previousVersionIdentifier, .previousVersionDate,
