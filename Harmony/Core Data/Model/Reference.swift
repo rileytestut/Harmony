@@ -1,5 +1,5 @@
 //
-//  Relationship.swift
+//  RecordID.swift
 //  Harmony
 //
 //  Created by Riley Testut on 11/5/18.
@@ -8,13 +8,13 @@
 
 import Foundation
 
-struct Reference: Hashable, Codable
+struct RecordID: Hashable, Codable
 {
     var type: String
     var identifier: String
 }
 
-extension Reference
+extension RecordID
 {
     init<T: RecordRepresentation>(record: T)
     {

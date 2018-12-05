@@ -11,26 +11,28 @@ import CoreData
 
 extension ManagedRecord
 {
-    func isMissingRelationships(in references: Set<Reference>) -> Bool
+    func missingRelationships(in recordIDs: Set<RecordID>) -> [String: RecordID]
     {
-        guard let localRecord = self.localRecord, let recordedObject = localRecord.recordedObject else { return false }
+        var missingRelationships = [String: RecordID]()
         
-        for (_, relationshipObject) in recordedObject.syncableRelationshipObjects
+        guard let localRecord = self.localRecord, let recordedObject = localRecord.recordedObject else { return missingRelationships }
+        
+        for (key, relationshipObject) in recordedObject.syncableRelationshipObjects
         {
             guard let identifier = relationshipObject.syncableIdentifier else { continue }
             
-            let reference = Reference(type: relationshipObject.syncableType, identifier: identifier)
+            let recordID = RecordID(type: relationshipObject.syncableType, identifier: identifier)
             
-            if !references.contains(reference)
+            if !recordIDs.contains(recordID)
             {
-                return true
+                missingRelationships[key] = recordID
             }
         }
         
-        return false
+        return missingRelationships
     }
     
-    class func remoteRelationshipReferences(for records: [ManagedRecord], in context: NSManagedObjectContext) throws -> Set<Reference>
+    class func remoteRelationshipRecordIDs(for records: [ManagedRecord], in context: NSManagedObjectContext) throws -> Set<RecordID>
     {
         let predicates: [NSPredicate]
         
@@ -65,8 +67,8 @@ extension ManagedRecord
         {
             let remoteRecords = try context.fetch(fetchRequest)
             
-            let references = Set(remoteRecords.lazy.map { Reference(type: $0.recordedObjectType, identifier: $0.recordedObjectIdentifier) })
-            return references
+            let recordIDs = Set(remoteRecords.lazy.map { RecordID(type: $0.recordedObjectType, identifier: $0.recordedObjectIdentifier) })
+            return recordIDs
         }
         catch
         {

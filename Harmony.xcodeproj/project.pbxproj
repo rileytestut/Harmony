@@ -81,7 +81,6 @@
 		BFE4EAC71FDBB00600855951 /* FileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC61FDBB00600855951 /* FileTests.swift */; };
 		BFECF5772190DCB9006DB8F5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
 		BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */; };
-		BFECF57D219100DB006DB8F5 /* Reference.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF57C219100DB006DB8F5 /* Reference.swift */; };
 		BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */; };
 		BFECF58121912203006DB8F5 /* UploadRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */; };
 		BFECF58321912559006DB8F5 /* DownloadRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */; };
@@ -327,7 +326,6 @@
 		BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRecordTests.swift; sourceTree = "<group>"; };
 		BFE4EAC61FDBB00600855951 /* FileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTests.swift; sourceTree = "<group>"; };
 		BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HarmonyMetadataKey+Keys.swift"; sourceTree = "<group>"; };
-		BFECF57C219100DB006DB8F5 /* Reference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reference.swift; sourceTree = "<group>"; };
 		BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateRecordMetadataOperation.swift; sourceTree = "<group>"; };
 		BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadRecordsOperation.swift; sourceTree = "<group>"; };
 		BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadRecordsOperation.swift; sourceTree = "<group>"; };
@@ -393,7 +391,6 @@
 				BF8A333521A4872300A42FD4 /* Record.swift */,
 				BF63A1A421A4B53100EE8F61 /* Version.swift */,
 				BFB3396B1FD3A4DF006FACAD /* File.swift */,
-				BFECF57C219100DB006DB8F5 /* Reference.swift */,
 				BF30432F1FD3A0260053E884 /* Core Data */,
 			);
 			path = Model;
@@ -1079,7 +1076,6 @@
 				BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */,
 				BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */,
 				BF4EE59C21AC997A00FA648D /* ManagedRecord+Uploading.swift in Sources */,
-				BFECF57D219100DB006DB8F5 /* Reference.swift in Sources */,
 				BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */,
 				BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */,
 				BFFDBA99216D60EC00AED109 /* FetchRemoteRecordsOperation.swift in Sources */,

@@ -45,7 +45,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                         
                         if let recordIDs = deletedRecordIDs
                         {
-                            let updatedRecordsByReference = Dictionary(updatedRecords, keyedBy: { Reference(record: $0) })
+                            let updatedRecordsByRecordID = Dictionary(updatedRecords, keyedBy: \.recordID)
                             
                             let childContext = self.recordController.newBackgroundContext(withParent: context)
                             
@@ -62,9 +62,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                                     
                                     for record in fetchedRecords
                                     {
-                                        let reference = Reference(record: record)
-                                        
-                                        if let updatedRecord = updatedRecordsByReference[reference]
+                                        if let updatedRecord = updatedRecordsByRecordID[record.recordID]
                                         {
                                             // Record has been deleted _and_ updated.
                                             

@@ -57,11 +57,9 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
                 {
                     let localRecords = try temporaryContext.fetch(fetchRequest)
                     
-                    let keyValuePairs = localRecords.lazy.compactMap { (localRecord) -> (Reference, SyncableManagedObject)? in
+                    let keyValuePairs = localRecords.lazy.compactMap { (localRecord) -> (RecordID, SyncableManagedObject)? in
                         guard let recordedObject = localRecord.recordedObject else { return nil }
-                        
-                        let reference = Reference(type: localRecord.recordedObjectType, identifier: localRecord.recordedObjectIdentifier)
-                        return (reference, recordedObject)
+                        return (localRecord.recordID, recordedObject)
                     }
                     
                     // Prefer temporary objects to persisted ones for establishing relationships.
@@ -120,15 +118,15 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
 
 private extension FinishDownloadingRecordsOperation
 {
-    func updateRelationships(for localRecord: LocalRecord, managedRecord: ManagedRecord, relationshipObjects: [Reference: SyncableManagedObject]) throws
+    func updateRelationships(for localRecord: LocalRecord, managedRecord: ManagedRecord, relationshipObjects: [RecordID: SyncableManagedObject]) throws
     {
         guard let recordedObject = localRecord.recordedObject else { throw DownloadError(record: managedRecord, code: .nilRecordedObject) }
         
         guard let relationships = localRecord.remoteRelationships else { return }
         
-        for (key, reference) in relationships
+        for (key, recordID) in relationships
         {
-            if let relationshipObject = relationshipObjects[reference]
+            if let relationshipObject = relationshipObjects[recordID]
             {
                 let relationshipObject = relationshipObject.in(self.managedObjectContext)
                 recordedObject.setValue(relationshipObject, forKey: key)

@@ -45,13 +45,14 @@ class FinishUploadingRecordsOperation: Operation<[ManagedRecord: Result<RemoteRe
                     return record
                 }
                 
-                let references = try ManagedRecord.remoteRelationshipReferences(for: records, in: self.managedObjectContext)
+                let recordIDs = try ManagedRecord.remoteRelationshipRecordIDs(for: records, in: self.managedObjectContext)
                 
                 var recordsToUnlock = Set<ManagedRecord>()
                 
                 for record in records
                 {
-                    if record.isMissingRelationships(in: references)
+                    let missingRelationships = record.missingRelationships(in: recordIDs)
+                    if !missingRelationships.isEmpty
                     {
                         results[record] = .failure(UploadError(record: record, code: .nilRelationshipObject))
                     }

@@ -24,6 +24,11 @@ public class ManagedRecord: NSManagedObject
     @NSManaged public var localRecord: LocalRecord?
     @NSManaged public var remoteRecord: RemoteRecord?
     
+    var recordID: RecordID {
+        let recordID = RecordID(type: self.recordedObjectType, identifier: self.recordedObjectIdentifier)
+        return recordID
+    }
+    
     var shouldLockWhenUploading = false
         
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)

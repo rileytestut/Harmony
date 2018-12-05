@@ -35,13 +35,14 @@ class PrepareUploadingRecordsOperation: Operation<[ManagedRecord]>
             // Lock records that have relationships which have not yet been uploaded.
             do
             {
-                let references = try ManagedRecord.remoteRelationshipReferences(for: self.records, in: self.managedObjectContext)
+                let recordIDs = try ManagedRecord.remoteRelationshipRecordIDs(for: self.records, in: self.managedObjectContext)
                 
                 for record in self.records
                 {
                     let record = record.in(self.managedObjectContext)
                     
-                    if record.isMissingRelationships(in: references)
+                    let missingRelationships = record.missingRelationships(in: recordIDs)
+                    if !missingRelationships.isEmpty
                     {
                         record.shouldLockWhenUploading = true
                     }

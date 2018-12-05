@@ -15,10 +15,28 @@ import CoreData
     case deleted
 }
 
-public struct Record<T: NSManagedObject>: Hashable
+public struct RecordID: Hashable, Codable, CustomStringConvertible
+{
+    public var type: String
+    public var identifier: String
+    
+    public var description: String {
+        return self.type + "-" + self.identifier
+    }
+    
+    public init(type: String, identifier: String)
+    {
+        self.type = type
+        self.identifier = identifier
+    }
+}
+
+public class Record<T: NSManagedObject>
 {
     let managedRecord: ManagedRecord
     private let managedRecordContext: NSManagedObjectContext
+    
+    public let recordID: RecordID
     
     public let isConflicted: Bool
     public private(set) var isSyncingEnabled: Bool
@@ -45,6 +63,7 @@ public struct Record<T: NSManagedObject>: Hashable
         
         self.localStatus = self.managedRecord.localRecord?.status
         self.remoteStatus = self.managedRecord.remoteRecord?.status
+        self.recordID = managedRecord.recordID
         
         if let version = self.managedRecord.remoteRecord?.version
         {
@@ -85,5 +104,18 @@ public extension Record
         try result.verify()
         
         self.isSyncingEnabled = syncingEnabled
+    }
+}
+
+extension Record: Hashable
+{
+    public static func ==(lhs: Record, rhs: Record) -> Bool
+    {
+        return lhs.recordID == rhs.recordID
+    }
+    
+    public func hash(into hasher: inout Hasher)
+    {
+        hasher.combine(self.recordID)
     }
 }
