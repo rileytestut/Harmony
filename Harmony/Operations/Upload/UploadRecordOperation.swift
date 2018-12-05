@@ -224,6 +224,7 @@ private extension UploadRecordOperation
         metadata[.recordedObjectType] = localRecord.recordedObjectType
         metadata[.recordedObjectIdentifier] = localRecord.recordedObjectIdentifier
         metadata[.author] = UIDevice.current.name
+        metadata[.localizedName] = localRecord.recordedObject?.syncableLocalizedName as Any
         
         if self.record.shouldLockWhenUploading
         {

@@ -36,6 +36,10 @@ public class Record<T: NSManagedObject>
     let managedRecord: ManagedRecord
     private let managedRecordContext: NSManagedObjectContext
     
+    public lazy var localizedName: String? = {
+        return self.managedRecordContext.performAndWait { self.managedRecord.localRecord?.recordedObject?.syncableLocalizedName ?? self.managedRecord.remoteRecord?.localizedName }
+    }()
+    
     public lazy var metadata: [HarmonyMetadataKey: String]? = {
         return self.managedRecordContext.performAndWait { self.managedRecord.localRecord?.recordedObject?.syncableMetadata ?? self.managedRecord.remoteRecord?.metadata }
     }()

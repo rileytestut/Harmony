@@ -21,11 +21,12 @@ extension HarmonyMetadataKey
     static let previousVersionDate = HarmonyMetadataKey("previousVersionDate")
     
     static let sha1Hash = HarmonyMetadataKey("sha1Hash")
+    static let localizedName = HarmonyMetadataKey("localizedName")
     
     static let author = HarmonyMetadataKey("author")
     static var allHarmonyKeys: Set<HarmonyMetadataKey> {
         return [.recordedObjectType, .recordedObjectIdentifier, .relationshipIdentifier,
                 .isLocked, .previousVersionIdentifier, .previousVersionDate,
-                .sha1Hash, .author]
+                .sha1Hash, .author, .localizedName]
     }
 }

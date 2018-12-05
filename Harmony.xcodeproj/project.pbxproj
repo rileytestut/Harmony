@@ -26,6 +26,7 @@
 		BF4EE59821AC968600FA648D /* FinishUploadingRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59721AC968600FA648D /* FinishUploadingRecordsOperation.swift */; };
 		BF4EE59A21AC97D700FA648D /* PrepareUploadingRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59921AC97D700FA648D /* PrepareUploadingRecordsOperation.swift */; };
 		BF4EE59C21AC997A00FA648D /* ManagedRecord+Uploading.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */; };
+		BF5D2E6F21B5B895007FACFA /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5D2E6E21B5B895007FACFA /* Errors.swift */; };
 		BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63A1A421A4B53100EE8F61 /* Version.swift */; };
 		BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */; };
 		BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */; };
@@ -41,7 +42,7 @@
 		BF84220C21936E950035340B /* RemoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF84220B21936E950035340B /* RemoteFile.swift */; };
 		BF8A333621A4872300A42FD4 /* Record.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8A333521A4872300A42FD4 /* Record.swift */; };
 		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
-		BF91BA6A201FB8FC004498F3 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA69201FB8FC004498F3 /* Errors.swift */; };
+		BF91BA6A201FB8FC004498F3 /* PrivateErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA69201FB8FC004498F3 /* PrivateErrors.swift */; };
 		BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */; };
 		BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */; };
 		BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */; };
@@ -267,6 +268,7 @@
 		BF4EE59721AC968600FA648D /* FinishUploadingRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishUploadingRecordsOperation.swift; sourceTree = "<group>"; };
 		BF4EE59921AC97D700FA648D /* PrepareUploadingRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrepareUploadingRecordsOperation.swift; sourceTree = "<group>"; };
 		BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagedRecord+Uploading.swift"; sourceTree = "<group>"; };
+		BF5D2E6E21B5B895007FACFA /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		BF63A1A421A4B53100EE8F61 /* Version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Version.swift; sourceTree = "<group>"; };
 		BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyTestCase.swift; sourceTree = "<group>"; };
@@ -281,7 +283,7 @@
 		BF84220B21936E950035340B /* RemoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteFile.swift; sourceTree = "<group>"; };
 		BF8A333521A4872300A42FD4 /* Record.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Record.swift; sourceTree = "<group>"; };
 		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
-		BF91BA69201FB8FC004498F3 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		BF91BA69201FB8FC004498F3 /* PrivateErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateErrors.swift; sourceTree = "<group>"; };
 		BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+ManagedObjectContext.swift"; sourceTree = "<group>"; };
 		BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagedRecord+Predicates.swift"; sourceTree = "<group>"; };
 		BF95137521657437007EF10C /* DownloadRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadRecordOperation.swift; sourceTree = "<group>"; };
@@ -736,7 +738,8 @@
 			isa = PBXGroup;
 			children = (
 				BFFB9B1D200ED96700A8F673 /* Result.swift */,
-				BF91BA69201FB8FC004498F3 /* Errors.swift */,
+				BF5D2E6E21B5B895007FACFA /* Errors.swift */,
+				BF91BA69201FB8FC004498F3 /* PrivateErrors.swift */,
 			);
 			path = Types;
 			sourceTree = "<group>";
@@ -1070,7 +1073,7 @@
 				BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */,
 				BFFB9B1B200ED7EA00A8F673 /* Service.swift in Sources */,
 				BFAA23B91F9C14CC00969993 /* RecordController.swift in Sources */,
-				BF91BA6A201FB8FC004498F3 /* Errors.swift in Sources */,
+				BF91BA6A201FB8FC004498F3 /* PrivateErrors.swift in Sources */,
 				BFDA96F72164176000AF12F8 /* MergePolicy.swift in Sources */,
 				BFFDBA9F216D74FC00AED109 /* File.swift in Sources */,
 				BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */,
@@ -1080,6 +1083,7 @@
 				BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */,
 				BFFDBA99216D60EC00AED109 /* FetchRemoteRecordsOperation.swift in Sources */,
 				BFFDBA9B216D649B00AED109 /* UploadRecordOperation.swift in Sources */,
+				BF5D2E6F21B5B895007FACFA /* Errors.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

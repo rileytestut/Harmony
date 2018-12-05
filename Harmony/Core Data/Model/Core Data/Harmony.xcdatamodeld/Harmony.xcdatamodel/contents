@@ -53,6 +53,7 @@
         <attribute name="author" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <attribute name="isLocked" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="localizedName" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="metadata" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
@@ -83,6 +84,6 @@
         <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
         <element name="ManagedVersion" positionX="298.94921875" positionY="439.0625" width="128" height="120"/>
         <element name="RemoteFile" positionX="288" positionY="378" width="128" height="135"/>
-        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="180"/>
+        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="210"/>
     </elements>
 </model>

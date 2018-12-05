@@ -14,7 +14,9 @@ public class RemoteRecord: RecordRepresentation
     /* Properties */
     @NSManaged public var identifier: String
     @NSManaged public var isLocked: Bool
+    
     @NSManaged public var author: String?
+    @NSManaged public var localizedName: String?
     
     @NSManaged var metadata: [HarmonyMetadataKey: String]
     
@@ -58,6 +60,12 @@ public class RemoteRecord: RecordRepresentation
         {
             self.author = author
         }
+        
+        if let localizedName = metadata[.localizedName]
+        {
+            self.localizedName = localizedName
+        }
+                
         let filteredMetadata = metadata.filter { !HarmonyMetadataKey.allHarmonyKeys.contains($0.key) }
         self.metadata = filteredMetadata
     }

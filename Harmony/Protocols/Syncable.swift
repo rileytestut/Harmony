@@ -18,11 +18,12 @@ public protocol Syncable: NSObjectProtocol
     var syncableType: String { get }
     
     var syncableKeys: Set<AnyKeyPath> { get }
+    var syncableRelationships: Set<AnyKeyPath> { get }
     
     var syncableFiles: Set<File> { get }
     var syncableMetadata: [HarmonyMetadataKey: String] { get }
     
-    var syncableRelationships: Set<AnyKeyPath> { get }
+    var syncableLocalizedName: String? { get }
     
     var isSyncingEnabled: Bool { get }
 }
@@ -45,6 +46,11 @@ public extension Syncable where Self: NSManagedObject
     var isSyncingEnabled: Bool {
         return true
     }
+    
+    var syncableLocalizedName: String? {
+        return nil
+    }
+    
     var syncableMetadata: [HarmonyMetadataKey: String] {
         return [:]
     }
