@@ -108,7 +108,7 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
                 }
                 catch
                 {
-                    self.result = .failure(BatchDownloadError(code: .any(error)))
+                    self.result = .failure(_AnyError(code: .any(error)))
                     self.finish()
                 }
             }
@@ -120,9 +120,11 @@ private extension FinishDownloadingRecordsOperation
 {
     func updateRelationships(for localRecord: LocalRecord, managedRecord: ManagedRecord, relationshipObjects: [RecordID: SyncableManagedObject]) throws
     {
-        guard let recordedObject = localRecord.recordedObject else { throw DownloadError(record: managedRecord, code: .nilRecordedObject) }
+        guard let recordedObject = localRecord.recordedObject else { throw _DownloadError(record: managedRecord, code: .nilRecordedObject) }
         
         guard let relationships = localRecord.remoteRelationships else { return }
+        
+        var missingRelationshipKeys = Set<String>()
         
         for (key, recordID) in relationships
         {
@@ -133,14 +135,19 @@ private extension FinishDownloadingRecordsOperation
             }
             else
             {
-                throw DownloadError(record: managedRecord, code: .nilRelationshipObject)
+                missingRelationshipKeys.insert(key)
             }
+        }
+        
+        if !missingRelationshipKeys.isEmpty
+        {
+            throw _DownloadError(record: managedRecord, code: .nilRelationshipObjects(missingRelationshipKeys))
         }
     }
     
     func updateFiles(for localRecord: LocalRecord, managedRecord: ManagedRecord) throws
     {
-        guard let recordedObject = localRecord.recordedObject else { throw DownloadError(record: managedRecord, code: .nilRecordedObject) }
+        guard let recordedObject = localRecord.recordedObject else { throw _DownloadError(record: managedRecord, code: .nilRecordedObject) }
         
         guard let files = localRecord.downloadedFiles else { return }
         
@@ -165,11 +172,11 @@ private extension FinishDownloadingRecordsOperation
             // Grab any remote file whose identifier matches that of an unknown file.
             if let remoteFile = localRecord.remoteFiles.first(where: { (remoteFile) in unknownFiles.contains { $0.identifier == remoteFile.identifier } })
             {
-                throw DownloadFileError(file: remoteFile, code: .unknownFile)
+                throw _DownloadFileError(file: remoteFile, code: .unknownFile)
             }
             else
             {
-                throw AnyError(code: .unknownFile)
+                throw _AnyError(code: .unknownFile)
             }
         }
         
@@ -186,7 +193,7 @@ private extension FinishDownloadingRecordsOperation
             }
             catch
             {
-                throw DownloadError(record: managedRecord, code: .any(error))
+                throw _DownloadError(record: managedRecord, code: .any(error))
             }
         }
         
@@ -230,7 +237,7 @@ private extension FinishDownloadingRecordsOperation
                     }
                 }
                 
-                throw DownloadError(record: managedRecord, code: .any(error))
+                throw _DownloadError(record: managedRecord, code: .any(error))
             }
         }
         

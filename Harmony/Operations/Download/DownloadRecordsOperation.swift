@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecordOperation, DownloadError, BatchDownloadError>
+class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecordOperation, _DownloadError>
 {
     init(service: Service, recordController: RecordController)
     {

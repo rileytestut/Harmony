@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation, UploadError, BatchUploadError>
+class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation, _UploadError>
 {
     init(service: Service, recordController: RecordController)
     {

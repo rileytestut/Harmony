@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation, DeleteError, BatchDeleteError>
+class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation, _DeleteError>
 {
     private var syncableFiles = [NSManagedObjectID: Set<File>]()
     

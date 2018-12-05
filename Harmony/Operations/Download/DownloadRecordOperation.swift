@@ -11,7 +11,7 @@ import CoreData
 
 import Roxas
 
-class DownloadRecordOperation: RecordOperation<LocalRecord, DownloadError>
+class DownloadRecordOperation: RecordOperation<LocalRecord, _DownloadError>
 {
     var version: Version?
     
@@ -167,7 +167,7 @@ private extension DownloadRecordOperation
                 if let filesByIdentifier = filesByIdentifier
                 {
                     guard let localFile = filesByIdentifier[remoteFile.identifier] else {
-                        throw DownloadFileError(file: remoteFile, code: .unknownFile)
+                        throw _DownloadFileError(file: remoteFile, code: .unknownFile)
                     }
                     
                     do

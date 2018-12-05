@@ -11,12 +11,14 @@ import CoreData
 
 import Roxas
 
-class SyncRecordsOperation: Operation<([Result<Void>], Data)>
+class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void>], Data)>
 {
     let changeToken: Data?
     let recordController: RecordController
         
     private var updatedChangeToken: Data?
+    
+    private var recordResults = [Record<NSManagedObject>: Result<Void>]()
     
     override var isAsynchronous: Bool {
         return true
@@ -43,12 +45,45 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
         
         func finish<T>(_ result: Result<T>, debugTitle: String)
         {
+            do
+            {
+                try result.verify()
+            }
+            catch
+            {
+                self.result = .failure(SyncError(error))
+                self.finish()
+            }
+            
+            dispatchGroup.leave()
+        }
+        
+        func finishRecordOperation<T>(_ result: Result<[ManagedRecord: Result<T>]>, debugTitle: String)
+        {
+            // Map result to use Record<NSManagedObject> and Result<Void>.
+            let result = result.map { (results) -> [Record<NSManagedObject>: Result<Void>] in
+                let keyValues = results.compactMap { (record, result) in
+                    return (Record<NSManagedObject>(record), result.map { _ in () })
+                }
+                
+                return Dictionary(keyValues, uniquingKeysWith: { (a, b) in return b })
+            }
+            
             print(debugTitle, result)
             
-            switch result
+            do
             {
-            case .success: break
-            case .failure: self.finish()
+                let value = try result.value()
+                
+                for (record, result) in value
+                {
+                    self.recordResults[record] = result
+                }
+            }
+            catch
+            {
+                self.result = .failure(SyncError(syncResults: self.recordResults))
+                self.finish()
             }
             
             dispatchGroup.leave()
@@ -68,22 +103,22 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
         
         let conflictRecordsOperation = ConflictRecordsOperation(service: self.service, recordController: self.recordController)
         conflictRecordsOperation.resultHandler = { (result) in
-            finish(result, debugTitle: "Conflict Result:")
+            finishRecordOperation(result, debugTitle: "Conflict Result:")
         }
         
         let uploadRecordsOperation = UploadRecordsOperation(service: self.service, recordController: self.recordController)
         uploadRecordsOperation.resultHandler = { (result) in
-            finish(result, debugTitle: "Upload Result:")
+            finishRecordOperation(result, debugTitle: "Upload Result:")
         }
         
         let downloadRecordsOperation = DownloadRecordsOperation(service: self.service, recordController: self.recordController)
         downloadRecordsOperation.resultHandler = { (result) in
-            finish(result, debugTitle: "Download Result:")
+            finishRecordOperation(result, debugTitle: "Download Result:")
         }
         
         let deleteRecordsOperation = DeleteRecordsOperation(service: self.service, recordController: self.recordController)
         deleteRecordsOperation.resultHandler = { (result) in
-            finish(result, debugTitle: "Delete Result:")
+            finishRecordOperation(result, debugTitle: "Delete Result:")
         }
         
         let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
@@ -102,7 +137,47 @@ class SyncRecordsOperation: Operation<([Result<Void>], Data)>
         dispatchGroup.notify(queue: .global()) {
             guard let updatedChangeToken = self.updatedChangeToken else { return }
             
-            self.result = .success(([], updatedChangeToken))
+            // Fetch all conflicted records and add conflicted errors for them all to recordResults.
+            let context = self.recordController.newBackgroundContext()
+            context.performAndWait {
+                let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
+                fetchRequest.predicate = ManagedRecord.conflictedRecordsPredicate
+                
+                do
+                {
+                    let records = try context.fetch(fetchRequest)
+                    
+                    for record in records
+                    {
+                        let record = Record<NSManagedObject>(record)
+                        self.recordResults[record] = .failure(RecordError.conflicted(record))
+                    }
+                }
+                catch
+                {
+                    print(error)
+                }
+            }
+            
+            let results = SyncError.mapRecordErrors(self.recordResults)
+            
+            let didFail = results.values.contains(where: { (result) in
+                switch result
+                {
+                case .success: return false
+                case .failure: return true
+                }
+            })
+            
+            if didFail
+            {
+                self.result = .failure(SyncError.partial(results))
+            }
+            else
+            {
+                self.result = .success((results, updatedChangeToken))
+            }            
+            
             self.finish()
             
             self.recordController.printRecords()

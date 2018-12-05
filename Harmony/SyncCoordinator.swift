@@ -26,6 +26,8 @@ extension SyncCoordinator
     }
 }
 
+public typealias SyncResult = Result<[Record<NSManagedObject>: Result<Void>]>
+
 public final class SyncCoordinator
 {
     public let service: Service
@@ -55,7 +57,7 @@ public extension SyncCoordinator
         self.recordController.start { (result) in
             if let error = result.values.first
             {
-                completionHandler(.failure(SyncError(code: .databaseCorrupted(error))))
+                completionHandler(.failure(DatabaseError.corrupted(error)))
             }
             else
             {
@@ -74,18 +76,22 @@ public extension SyncCoordinator
         
         let syncRecordsOperation = SyncRecordsOperation(changeToken: UserDefaults.standard.harmonyChangeToken, service: self.service, recordController: self.recordController)
         syncRecordsOperation.resultHandler = { (result) in
-            let syncResult: Result<[Result<Void>]>
+            let syncResult: SyncResult
             
             do
             {
-                let (_, changeToken) = try result.value()
+                let (results, changeToken) = try result.value()
                 UserDefaults.standard.harmonyChangeToken = changeToken
                 
-                syncResult = .success([])
+                syncResult = .success(results)
+            }
+            catch let error as SyncError
+            {
+                syncResult = .failure(error)
             }
             catch
             {
-                syncResult = .failure(error)
+                syncResult = .failure(SyncError(error))
             }
             
             NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: syncResult])
@@ -130,7 +136,7 @@ public extension SyncCoordinator
                         self.recordController.performBackgroundTask { (context) in
                             let managedRecord = record.managedRecord.in(context)
                             
-                            let record = Record(managedRecord) as! Record<T>
+                            let record = Record(managedRecord) as Record<T>
                             completionHandler(.success(record))
                         }
                     }
@@ -172,7 +178,7 @@ public extension SyncCoordinator
                         self.recordController.performBackgroundTask { (context) in
                             let managedRecord = record.managedRecord.in(context)
                             
-                            let record = Record(managedRecord) as! Record<T>
+                            let record = Record(managedRecord) as Record<T>
                             completionHandler(.success(record))
                         }
                     }
@@ -213,7 +219,7 @@ public extension SyncCoordinator
             }
             catch
             {
-                completionHandler(.failure(ResolveConflictError(record: record.managedRecord, code: .any(error))))
+                completionHandler(.failure(_ResolveConflictError(record: record.managedRecord, code: .any(error))))
             }
         }
             

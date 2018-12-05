@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class ConflictRecordOperation: RecordOperation<Void, ConflictError>
+class ConflictRecordOperation: RecordOperation<Void, _ConflictError>
 {
     override func main()
     {

@@ -9,10 +9,12 @@
 import Foundation
 import CoreData
 
-class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType, RecordErrorType>, RecordErrorType: RecordError, BatchErrorType: BatchError>: Operation<[ManagedRecord: Result<ResultType>]>
+class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType, RecordErrorType>, RecordErrorType: _RecordError>: Operation<[ManagedRecord: Result<ResultType>]>
 {
     let predicate: NSPredicate
     let recordController: RecordController
+    
+    private(set) var recordResults = [ManagedRecord: Result<ResultType>]()
     
     override var isAsynchronous: Bool {
         return true
@@ -36,20 +38,22 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         
         let dispatchGroup = DispatchGroup()
         
-        var results = [ManagedRecord: Result<ResultType>]()
-        
         self.recordController.performBackgroundTask { (fetchContext) in
             let saveContext = self.recordController.newBackgroundContext()
             
             do
             {
                 let records = try fetchContext.fetch(fetchRequest)
+                records.forEach { self.recordResults[$0] = .failure(RecordError.other(Record<NSManagedObject>($0), SyncError.unknown)) }
                 
                 self.process(records, in: fetchContext) { (result) in
                     fetchContext.perform {
                         do
                         {
                             let records = try result.value()
+                            
+                            // We can remove all the temporary SyncError.unknown errors, and we'll now use just the results of the record operations.
+                            self.recordResults.removeAll()
                             
                             let operations = records.compactMap { (record) -> OperationType? in
                                 do
@@ -59,7 +63,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                     operation.resultHandler = { (result) in
                                         let contextRecord = saveContext.object(with: record.objectID) as! ManagedRecord
                                         contextRecord.shouldLockWhenUploading = record.shouldLockWhenUploading
-                                        results[contextRecord] = result
+                                        self.recordResults[contextRecord] = result
                                         
                                         dispatchGroup.leave()
                                     }
@@ -73,7 +77,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                     saveContext.performAndWait {
                                         let contextRecord = saveContext.object(with: record.objectID) as! ManagedRecord
                                         contextRecord.shouldLockWhenUploading = record.shouldLockWhenUploading
-                                        results[contextRecord] = .failure(error)
+                                        self.recordResults[contextRecord] = .failure(error)
                                     }
                                 }
                                 
@@ -87,23 +91,20 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                             
                             dispatchGroup.notify(queue: .global()) {
                                 saveContext.perform {
-                                    self.process(results, in: saveContext) { (result) in
+                                    self.process(self.recordResults, in: saveContext) { (result) in
                                         saveContext.perform {
                                             do
                                             {
-                                                let results = try result.value()
+                                                self.recordResults = try result.value()
                                                 
                                                 try saveContext.save()
                                                 
-                                                self.result = .success(results)
-                                            }
-                                            catch let error as HarmonyError
-                                            {
-                                                self.result = .failure(error)
+                                                self.result = .success(self.recordResults)
                                             }
                                             catch
                                             {
-                                                self.result = .failure(BatchErrorType(code: .any(error)))
+                                                self.result = .failure(error)
+                                                self.propagateFailure(error: error)
                                             }
                                             
                                             self.process(self.result!, in: saveContext) {
@@ -119,6 +120,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                         catch
                         {
                             self.result = .failure(error)
+                            self.propagateFailure(error: error)
                             
                             saveContext.perform {
                                 self.finish()
@@ -129,7 +131,8 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
             }
             catch
             {
-                self.result = .failure(BatchErrorType(code: .any(error)))
+                self.result = .failure(error)
+                self.propagateFailure(error: error)
                 
                 saveContext.perform {
                     self.finish()
@@ -158,5 +161,16 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         self.recordController.processPendingUpdates()
         
         super.finish()
+    }
+}
+
+private extension BatchRecordOperation
+{
+    func propagateFailure(error: Error)
+    {
+        for (record, _) in self.recordResults
+        {
+            self.recordResults[record] = .failure(error)
+        }
     }
 }

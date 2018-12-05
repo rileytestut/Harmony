@@ -48,6 +48,11 @@ extension ManagedRecord
 
 extension ManagedRecord
 {
+    class var conflictedRecordsPredicate: NSPredicate {
+        let predicate = NSPredicate(format: "%K == YES", #keyPath(ManagedRecord.isConflicted))
+        return predicate
+    }
+    
     class var syncableRecordsPredicate: NSPredicate {
         let predicate = NSPredicate(format: "%K == NO AND %K == YES", #keyPath(ManagedRecord.isConflicted), #keyPath(ManagedRecord.isSyncingEnabled))
         return predicate

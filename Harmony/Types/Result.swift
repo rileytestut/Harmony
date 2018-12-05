@@ -30,6 +30,15 @@ public enum Result<ValueType>
         case .failure(let error): throw error
         }
     }
+    
+    public func map<T>(_ transform: (ValueType) -> T) -> Result<T>
+    {
+        switch self
+        {
+        case .success(let value): return .success(transform(value))
+        case .failure(let error): return .failure(error)
+        }
+    }
 }
 
 public extension Result where ValueType == Void

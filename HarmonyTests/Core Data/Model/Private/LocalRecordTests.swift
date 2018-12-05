@@ -97,6 +97,8 @@ extension LocalRecordTests
     
     func testCreatingDuplicatesSimultaneously()
     {
+        self.performSaveInTearDown = false
+        
         let course = Course.make()
         
         _ = try! LocalRecord(recordedObject: course, context: self.recordController.viewContext)
@@ -107,7 +109,7 @@ extension LocalRecordTests
         
         let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
         let records = try! self.recordController.viewContext.fetch(fetchRequest)
-        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records.count, 2)
     }
 }
 

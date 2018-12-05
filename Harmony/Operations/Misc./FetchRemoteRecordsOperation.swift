@@ -108,7 +108,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                     }
                     catch
                     {
-                        self.result = .failure(FetchError(code: .any(error)))
+                        self.result = .failure(_FetchError(code: .any(error)))
                     }
                     
                     self.finish()

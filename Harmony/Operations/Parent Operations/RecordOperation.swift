@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class RecordOperation<ResultType, ErrorType: RecordError>: Operation<ResultType>
+class RecordOperation<ResultType, ErrorType: _RecordError>: Operation<ResultType>
 {
     let record: ManagedRecord
     let managedObjectContext: NSManagedObjectContext
@@ -26,6 +26,7 @@ class RecordOperation<ResultType, ErrorType: RecordError>: Operation<ResultType>
     required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext) throws
     {
         guard let recordContext = record.managedObjectContext else { throw ErrorType(record: record, code: .nilManagedObjectContext) }
+        guard !record.isConflicted else { throw ErrorType(record: record, code: .conflicted) }
         
         self.record = record
         self.recordContext = recordContext
@@ -53,10 +54,10 @@ class RecordOperation<ResultType, ErrorType: RecordError>: Operation<ResultType>
                 {
                     try result.verify()
                 }
-                catch let error as ErrorType where error.record.managedObjectContext != self.managedObjectContext
+                catch let error as ErrorType where error.record.managedRecord.managedObjectContext != self.managedObjectContext
                 {
                     // Ensure RecordErrors' record is in self.managedObjectContext.
-                    let record = error.record.in(self.managedObjectContext)
+                    let record = error.record.managedRecord.in(self.managedObjectContext)
                     
                     let recordError = ErrorType(record: record, code: error.code)
                     self.result = .failure(recordError)
@@ -71,7 +72,7 @@ class RecordOperation<ResultType, ErrorType: RecordError>: Operation<ResultType>
 
 extension RecordOperation
 {
-    func recordError(code: HarmonyError.Code) -> ErrorType
+    func recordError(code: _HarmonyError.Code) -> ErrorType
     {
         let record = self.managedObjectContext.performAndWait { self.record.in(self.managedObjectContext) }
         

@@ -72,7 +72,7 @@ extension ManagedRecord
         }
         catch
         {
-            throw BatchUploadError(code: .any(error))
+            throw error
         }
     }
 }

@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class UpdateRecordMetadataOperation: RecordOperation<Void, UploadError>
+class UpdateRecordMetadataOperation: RecordOperation<Void, _UploadError>
 {
     var metadata = [HarmonyMetadataKey: Any]()
     
@@ -26,7 +26,7 @@ class UpdateRecordMetadataOperation: RecordOperation<Void, UploadError>
         super.main()
         
         guard let remoteRecord = self.record.remoteRecord else {
-            self.result = .failure(UploadError(record: self.record, code: .nilRemoteRecord))
+            self.result = .failure(_UploadError(record: self.record, code: .nilRemoteRecord))
             self.finish()
             
             return

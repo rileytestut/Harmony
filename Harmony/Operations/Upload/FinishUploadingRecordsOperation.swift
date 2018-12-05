@@ -54,7 +54,7 @@ class FinishUploadingRecordsOperation: Operation<[ManagedRecord: Result<RemoteRe
                     let missingRelationships = record.missingRelationships(in: recordIDs)
                     if !missingRelationships.isEmpty
                     {
-                        results[record] = .failure(UploadError(record: record, code: .nilRelationshipObject))
+                        results[record] = .failure(_UploadError(record: record, code: .nilRelationshipObjects(Set(missingRelationships.keys))))
                     }
                     else
                     {

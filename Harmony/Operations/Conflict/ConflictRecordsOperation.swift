@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class ConflictRecordsOperation: BatchRecordOperation<Void, ConflictRecordOperation, ConflictError, BatchConflictError>
+class ConflictRecordsOperation: BatchRecordOperation<Void, ConflictRecordOperation, _ConflictError>
 {
     init(service: Service, recordController: RecordController)
     {

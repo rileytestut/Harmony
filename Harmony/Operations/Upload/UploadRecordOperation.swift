@@ -10,7 +10,7 @@ import CoreData
 
 import Roxas
 
-class UploadRecordOperation: RecordOperation<RemoteRecord, UploadError>
+class UploadRecordOperation: RecordOperation<RemoteRecord, _UploadError>
 {
     private var localRecord: LocalRecord!
     

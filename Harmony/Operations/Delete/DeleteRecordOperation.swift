@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class DeleteRecordOperation: RecordOperation<Void, DeleteError>
+class DeleteRecordOperation: RecordOperation<Void, _DeleteError>
 {
     override func main()
     {
@@ -74,7 +74,7 @@ private extension DeleteRecordOperation
                     {
                         try result.verify()
                     }
-                    catch let error as HarmonyError
+                    catch let error as _HarmonyError
                     {
                         switch error.code
                         {
@@ -119,7 +119,7 @@ private extension DeleteRecordOperation
                 
                 completionHandler(.success)
             }
-            catch let error as HarmonyError
+            catch let error as _HarmonyError
             {
                 switch error.code
                 {
