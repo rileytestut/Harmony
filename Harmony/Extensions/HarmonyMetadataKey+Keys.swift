@@ -23,4 +23,9 @@ extension HarmonyMetadataKey
     static let sha1Hash = HarmonyMetadataKey("sha1Hash")
     
     static let author = HarmonyMetadataKey("author")
+    static var allHarmonyKeys: Set<HarmonyMetadataKey> {
+        return [.recordedObjectType, .recordedObjectIdentifier, .relationshipIdentifier,
+                .isLocked, .previousVersionIdentifier, .previousVersionDate,
+                .sha1Hash, .author]
+    }
 }

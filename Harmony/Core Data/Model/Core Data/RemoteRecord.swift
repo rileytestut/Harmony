@@ -16,6 +16,8 @@ public class RemoteRecord: RecordRepresentation
     @NSManaged public var isLocked: Bool
     @NSManaged public var author: String?
     
+    @NSManaged var metadata: [HarmonyMetadataKey: String]
+    
     @NSManaged var previousUnlockedVersion: ManagedVersion?
     
     /* Relationships */
@@ -56,11 +58,20 @@ public class RemoteRecord: RecordRepresentation
         {
             self.author = author
         }
+        let filteredMetadata = metadata.filter { !HarmonyMetadataKey.allHarmonyKeys.contains($0.key) }
+        self.metadata = filteredMetadata
     }
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
         super.init(entity: entity, insertInto: context)
+    }
+    
+    public override func awakeFromInsert()
+    {
+        super.awakeFromInsert()
+        
+        self.metadata = [:]
     }
 }
 

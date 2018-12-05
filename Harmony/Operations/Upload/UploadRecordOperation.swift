@@ -220,9 +220,10 @@ private extension UploadRecordOperation
     
     func upload(_ localRecord: LocalRecord, completionHandler: @escaping (Result<RemoteRecord>) -> Void)
     {
-        var metadata: [HarmonyMetadataKey: Any] = [.recordedObjectType: localRecord.recordedObjectType,
-                                                   .recordedObjectIdentifier: localRecord.recordedObjectIdentifier,
-                                                   .author: UIDevice.current.name]
+        var metadata = localRecord.recordedObject?.syncableMetadata.mapValues { $0 as Any } ?? [:]
+        metadata[.recordedObjectType] = localRecord.recordedObjectType
+        metadata[.recordedObjectIdentifier] = localRecord.recordedObjectIdentifier
+        metadata[.author] = UIDevice.current.name
         
         if self.record.shouldLockWhenUploading
         {

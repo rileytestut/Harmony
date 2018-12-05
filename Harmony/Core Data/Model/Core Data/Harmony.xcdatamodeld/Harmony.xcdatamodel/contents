@@ -53,6 +53,7 @@
         <attribute name="author" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <attribute name="isLocked" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="metadata" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
