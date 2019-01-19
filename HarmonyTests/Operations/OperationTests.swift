@@ -19,7 +19,7 @@ class OperationTests: HarmonyTestCase
     
     var operationExpectation: XCTestExpectation!
     
-    var operation: Harmony.Operation<Any>!
+    var operation: Harmony.Operation<Any, AnyError>!
     
     override func setUp()
     {
@@ -45,7 +45,7 @@ extension OperationTests
     {
         guard type(of: self) == OperationTests.self else { fatalError("OperationTests subclasses must override prepareTestOperation.") }
         
-        let operation = Harmony.Operation<Any>(service: self.service)
+        let operation = Harmony.Operation<Any, AnyError>(service: self.service)
         return operation
     }
 }
