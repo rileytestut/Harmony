@@ -198,6 +198,11 @@ public extension SyncCoordinator
     {
         let progress: Progress
         
+        record.perform { (managedRecord) in
+            // Mark as not conflicted to prevent operations from throwing "record conflicted" errors.
+            managedRecord.isConflicted = false
+        }
+        
         func finish(_ result: Result<Record<T>, RecordError>)
         {
             do
@@ -215,6 +220,10 @@ public extension SyncCoordinator
             }
             catch
             {
+                record.perform { (managedRecord) in
+                    managedRecord.isConflicted = true
+                }
+                
                 completionHandler(.failure(RecordError(AnyRecord(record), error)))
             }
         }

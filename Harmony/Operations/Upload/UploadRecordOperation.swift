@@ -18,21 +18,17 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
     {
         try super.init(record: record, service: service, context: context)
         
-        let (localRecord, recordedObject) = try self.record.perform { (managedRecord) -> (LocalRecord, SyncableManagedObject) in
+        try self.record.perform { (managedRecord) in
             guard let localRecord = managedRecord.localRecord else {
                 throw RecordError(self.record, ValidationError.nilLocalRecord)
             }
+            self.localRecord = localRecord
             
             guard  let recordedObject = localRecord.recordedObject else {
                 throw RecordError(self.record, ValidationError.nilRecordedObject)
             }
-            
-            return (localRecord, recordedObject)
+            self.progress.totalUnitCount = Int64(recordedObject.syncableFiles.count) + 1
         }
-        
-        self.localRecord = localRecord
-        
-        self.progress.totalUnitCount = Int64(recordedObject.syncableFiles.count) + 1
     }
     
     override func main()
