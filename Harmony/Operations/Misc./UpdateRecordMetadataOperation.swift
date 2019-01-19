@@ -9,14 +9,14 @@
 import Foundation
 import CoreData
 
-class UpdateRecordMetadataOperation: RecordOperation<Void, _UploadError>
+class UpdateRecordMetadataOperation: RecordOperation<Void>
 {
     var metadata = [HarmonyMetadataKey: Any]()
     
-    required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, service: Service, context: NSManagedObjectContext) throws
     {
-        self.metadata[.recordedObjectType] = record.recordedObjectType
-        self.metadata[.recordedObjectIdentifier] = record.recordedObjectIdentifier
+        self.metadata[.recordedObjectType] = record.recordID.type
+        self.metadata[.recordedObjectIdentifier] = record.recordID.identifier
         
         try super.init(record: record, service: service, context: context)
     }
@@ -25,14 +25,7 @@ class UpdateRecordMetadataOperation: RecordOperation<Void, _UploadError>
     {
         super.main()
         
-        guard let remoteRecord = self.record.remoteRecord else {
-            self.result = .failure(_UploadError(record: self.record, code: .nilRemoteRecord))
-            self.finish()
-            
-            return
-        }
-        
-        let progress = self.service.updateMetadata(self.metadata, for: remoteRecord) { (result) in
+        let progress = self.service.updateMetadata(self.metadata, for: self.record) { (result) in
             do
             {
                 try result.verify()
@@ -41,12 +34,12 @@ class UpdateRecordMetadataOperation: RecordOperation<Void, _UploadError>
             }
             catch
             {
-                self.result = .failure(error)
+                self.result = .failure(RecordError(self.record, error))
             }
             
             self.finish()
         }
-
+        
         self.progress.addChild(progress, withPendingUnitCount: 1)
     }
 }

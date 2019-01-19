@@ -19,6 +19,7 @@
 		BF1D94891F9C1C38004216B9 /* Roxas.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; };
 		BF1D94921F9C24DC004216B9 /* XCAssert+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */; };
 		BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */; };
+		BF37289B21B9DE1B008BFB5B /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B1D200ED96700A8F673 /* Result.swift */; };
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
 		BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */; };
 		BF3915E121812F0200AF74E5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
@@ -42,7 +43,6 @@
 		BF84220C21936E950035340B /* RemoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF84220B21936E950035340B /* RemoteFile.swift */; };
 		BF8A333621A4872300A42FD4 /* Record.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8A333521A4872300A42FD4 /* Record.swift */; };
 		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
-		BF91BA6A201FB8FC004498F3 /* PrivateErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA69201FB8FC004498F3 /* PrivateErrors.swift */; };
 		BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */; };
 		BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */; };
 		BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */; };
@@ -90,7 +90,6 @@
 		BFFAA65020059C5400C4E475 /* Harmony+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */; };
 		BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B17200ED72E00A8F673 /* Operation.swift */; };
 		BFFB9B1B200ED7EA00A8F673 /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B1A200ED7EA00A8F673 /* Service.swift */; };
-		BFFB9B1E200ED96700A8F673 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B1D200ED96700A8F673 /* Result.swift */; };
 		BFFB9B24200EDF2200A8F673 /* MockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B23200EDF2200A8F673 /* MockService.swift */; };
 		BFFDBA99216D60EC00AED109 /* FetchRemoteRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */; };
 		BFFDBA9A216D642500AED109 /* BatchRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95137721657632007EF10C /* BatchRecordOperation.swift */; };
@@ -283,7 +282,6 @@
 		BF84220B21936E950035340B /* RemoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteFile.swift; sourceTree = "<group>"; };
 		BF8A333521A4872300A42FD4 /* Record.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Record.swift; sourceTree = "<group>"; };
 		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
-		BF91BA69201FB8FC004498F3 /* PrivateErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateErrors.swift; sourceTree = "<group>"; };
 		BF95135E21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+ManagedObjectContext.swift"; sourceTree = "<group>"; };
 		BF951373216559C6007EF10C /* ManagedRecord+Predicates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagedRecord+Predicates.swift"; sourceTree = "<group>"; };
 		BF95137521657437007EF10C /* DownloadRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadRecordOperation.swift; sourceTree = "<group>"; };
@@ -739,7 +737,6 @@
 			children = (
 				BFFB9B1D200ED96700A8F673 /* Result.swift */,
 				BF5D2E6E21B5B895007FACFA /* Errors.swift */,
-				BF91BA69201FB8FC004498F3 /* PrivateErrors.swift */,
 			);
 			path = Types;
 			sourceTree = "<group>";
@@ -779,9 +776,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BFA1C8E81ECD01C100DEA99D /* Build configuration list for PBXNativeTarget "Harmony" */;
 			buildPhases = (
+				BFA1C8D11ECD01C100DEA99D /* Headers */,
 				BFA1C8CF1ECD01C100DEA99D /* Sources */,
 				BFA1C8D01ECD01C100DEA99D /* Frameworks */,
-				BFA1C8D11ECD01C100DEA99D /* Headers */,
 				BFA1C8D21ECD01C100DEA99D /* Resources */,
 			);
 			buildRules = (
@@ -1037,11 +1034,11 @@
 			files = (
 				BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */,
 				BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */,
-				BFFB9B1E200ED96700A8F673 /* Result.swift in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,
 				BFBC13A221827D15001A321F /* KeyedContainers+ManagedValues.swift in Sources */,
 				BFDDC10E219504AA009732B7 /* UserDefaults+Harmony.swift in Sources */,
+				BF37289B21B9DE1B008BFB5B /* Result.swift in Sources */,
 				BF8A333621A4872300A42FD4 /* Record.swift in Sources */,
 				BFBDB7C3216EB1F000DC004B /* RemoteRecord.swift in Sources */,
 				BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */,
@@ -1073,7 +1070,6 @@
 				BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */,
 				BFFB9B1B200ED7EA00A8F673 /* Service.swift in Sources */,
 				BFAA23B91F9C14CC00969993 /* RecordController.swift in Sources */,
-				BF91BA6A201FB8FC004498F3 /* PrivateErrors.swift in Sources */,
 				BFDA96F72164176000AF12F8 /* MergePolicy.swift in Sources */,
 				BFFDBA9F216D74FC00AED109 /* File.swift in Sources */,
 				BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */,

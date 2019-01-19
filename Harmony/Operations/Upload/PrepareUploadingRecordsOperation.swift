@@ -9,9 +9,9 @@
 import Foundation
 import CoreData
 
-class PrepareUploadingRecordsOperation: Operation<[ManagedRecord]>
+class PrepareUploadingRecordsOperation: Operation<[AnyRecord], AnyError>
 {
-    let records: [ManagedRecord]
+    let records: [AnyRecord]
     
     private let managedObjectContext: NSManagedObjectContext
     
@@ -19,7 +19,7 @@ class PrepareUploadingRecordsOperation: Operation<[ManagedRecord]>
         return true
     }
     
-    init(records: [ManagedRecord], service: Service, context: NSManagedObjectContext)
+    init(records: [AnyRecord], service: Service, context: NSManagedObjectContext)
     {
         self.records = records
         self.managedObjectContext = context
@@ -35,12 +35,10 @@ class PrepareUploadingRecordsOperation: Operation<[ManagedRecord]>
             // Lock records that have relationships which have not yet been uploaded.
             do
             {
-                let recordIDs = try ManagedRecord.remoteRelationshipRecordIDs(for: self.records, in: self.managedObjectContext)
+                let recordIDs = try Record.remoteRelationshipRecordIDs(for: self.records, in: self.managedObjectContext)
                 
                 for record in self.records
                 {
-                    let record = record.in(self.managedObjectContext)
-                    
                     let missingRelationships = record.missingRelationships(in: recordIDs)
                     if !missingRelationships.isEmpty
                     {
@@ -52,7 +50,7 @@ class PrepareUploadingRecordsOperation: Operation<[ManagedRecord]>
             }
             catch
             {
-                self.result = .failure(error)
+                self.result = .failure(AnyError(error))
             }
             
             self.finish()

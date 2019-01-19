@@ -10,23 +10,27 @@ import CoreData
 
 import Roxas
 
-class UploadRecordOperation: RecordOperation<RemoteRecord, _UploadError>
+class UploadRecordOperation: RecordOperation<RemoteRecord>
 {
     private var localRecord: LocalRecord!
     
-    required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, service: Service, context: NSManagedObjectContext) throws
     {
         try super.init(record: record, service: service, context: context)
         
-        guard let localRecord = self.record.localRecord else {
-            throw self.recordError(code: .nilLocalRecord)
+        let (localRecord, recordedObject) = try self.record.perform { (managedRecord) -> (LocalRecord, SyncableManagedObject) in
+            guard let localRecord = managedRecord.localRecord else {
+                throw RecordError(self.record, ValidationError.nilLocalRecord)
+            }
+            
+            guard  let recordedObject = localRecord.recordedObject else {
+                throw RecordError(self.record, ValidationError.nilRecordedObject)
+            }
+            
+            return (localRecord, recordedObject)
         }
         
         self.localRecord = localRecord
-        
-        guard let recordedObject = localRecord.recordedObject else {
-            throw self.recordError(code: .nilRecordedObject)
-        }
         
         self.progress.totalUnitCount = Int64(recordedObject.syncableFiles.count) + 1
     }
@@ -35,7 +39,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, _UploadError>
     {
         super.main()
         
-        func upload(_ record: ManagedRecord)
+        func upload()
         {
             self.uploadFiles() { (result) in
                 do
@@ -62,7 +66,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, _UploadError>
                 }
                 catch
                 {
-                    self.result = .failure(error)
+                    self.result = .failure(RecordError(self.record, error))
                     self.finishUpload()
                 }
             }
@@ -70,7 +74,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, _UploadError>
         
         if self.isBatchOperation
         {
-            upload(self.record)
+            upload()
         }
         else
         {
@@ -80,15 +84,13 @@ class UploadRecordOperation: RecordOperation<RemoteRecord, _UploadError>
                 {
                     let records = try result.value()
                     
-                    guard let record = records.first else { throw self.recordError(code: .unknown) }
+                    guard !records.isEmpty else { throw RecordError.other(self.record, .unknown) }
                     
-                    self.record.managedObjectContext?.perform {
-                        upload(record)
-                    }
+                    upload()
                 }
                 catch
                 {
-                    self.result = .failure(error)
+                    self.result = .failure(RecordError(self.record, error))
                     self.finishUpload()
                 }
             }
@@ -114,7 +116,7 @@ private extension UploadRecordOperation
                 {
                     let results = try result.value()
                     
-                    guard let result = results.values.first else { throw self.recordError(code: .unknown) }
+                    guard let result = results.values.first else { throw RecordError.other(self.record, .unknown) }
                     
                     let remoteRecord = try result.value()
                     self.result = .success(remoteRecord)
@@ -123,7 +125,7 @@ private extension UploadRecordOperation
                 }
                 catch
                 {
-                    self.result = .failure(error)
+                    self.result = .failure(RecordError(self.record, error))
                 }
                 
                 self.finish()
@@ -133,92 +135,98 @@ private extension UploadRecordOperation
         }
     }
     
-    func uploadFiles(completionHandler: @escaping (Result<Set<RemoteFile>>) -> Void)
+    func uploadFiles(completionHandler: @escaping (Result<Set<RemoteFile>, RecordError>) -> Void)
     {
-        guard let localRecord = self.record.localRecord else { return completionHandler(.failure(self.recordError(code: .nilLocalRecord))) }
-        guard let recordedObject = localRecord.recordedObject else { return completionHandler(.failure(self.recordError(code: .nilRecordedObject))) }
-                
-        let remoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
-        
-        // Suspend operation queue to prevent upload operations from starting automatically.
-        self.operationQueue.isSuspended = true
-        
-        var remoteFiles = Set<RemoteFile>()
-        var errors = [Error]()
-        
-        let dispatchGroup = DispatchGroup()
-
-        for file in recordedObject.syncableFiles
-        {
-            do
+        self.record.perform { (managedRecord) -> Void in
+            guard let localRecord = managedRecord.localRecord else { return completionHandler(.failure(RecordError(self.record, ValidationError.nilLocalRecord))) }
+            guard let recordedObject = localRecord.recordedObject else { return completionHandler(.failure(RecordError(self.record, ValidationError.nilRecordedObject))) }
+            
+            let remoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
+            
+            // Suspend operation queue to prevent upload operations from starting automatically.
+            self.operationQueue.isSuspended = true
+            
+            var remoteFiles = Set<RemoteFile>()
+            var errors = [FileError]()
+            
+            let dispatchGroup = DispatchGroup()
+            
+            for file in recordedObject.syncableFiles
             {
-                let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
-                
-                let remoteFile = remoteFilesByIdentifier[file.identifier]
-                guard remoteFile?.sha1Hash != hash else {
-                    // Hash is the same, so don't upload file.
-                    self.progress.completedUnitCount += 1
-                    continue
-                }
-                
-                // Hash is either different or file hasn't yet been uploaded, so upload file.
-
-                let operation = RSTAsyncBlockOperation { (operation) in
-                    localRecord.managedObjectContext?.perform {
-                        let metadata: [HarmonyMetadataKey: Any] = [.relationshipIdentifier: file.identifier, .sha1Hash: hash]
-                        
-                        let progress = self.service.upload(file, for: localRecord, metadata: metadata, context: self.managedObjectContext) { (result) in
-                            do
-                            {
-                                let remoteFile = try result.value()
-                                remoteFiles.insert(remoteFile)
-                            }
-                            catch
-                            {
-                                errors.append(error)
-                            }
-                            
-                            dispatchGroup.leave()
-                            
-                            operation.finish()
-                        }
-                        
-                        self.progress.addChild(progress, withPendingUnitCount: 1)
+                do
+                {
+                    let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
+                    
+                    let remoteFile = remoteFilesByIdentifier[file.identifier]
+                    guard remoteFile?.sha1Hash != hash else {
+                        // Hash is the same, so don't upload file.
+                        self.progress.completedUnitCount += 1
+                        continue
                     }
+                    
+                    // Hash is either different or file hasn't yet been uploaded, so upload file.
+                    
+                    let operation = RSTAsyncBlockOperation { (operation) in
+                        localRecord.managedObjectContext?.perform {
+                            let metadata: [HarmonyMetadataKey: Any] = [.relationshipIdentifier: file.identifier, .sha1Hash: hash]
+                            
+                            let progress = self.service.upload(file, for: self.record, metadata: metadata, context: self.managedObjectContext) { (result) in
+                                do
+                                {
+                                    let remoteFile = try result.value()
+                                    remoteFiles.insert(remoteFile)
+                                }
+                                catch let error as FileError
+                                {
+                                    errors.append(error)
+                                }
+                                catch
+                                {
+                                    errors.append(FileError(file.identifier, error))
+                                }
+                                
+                                dispatchGroup.leave()
+                                
+                                operation.finish()
+                            }
+                            
+                            self.progress.addChild(progress, withPendingUnitCount: 1)
+                        }
+                    }
+                    self.operationQueue.addOperation(operation)
                 }
-                self.operationQueue.addOperation(operation)
-            }
-            catch CocoaError.fileNoSuchFile
-            {
-                // File doesn't exist (which is valid), so just continue along.
-            }
-            catch
-            {
-                errors.append(error)
-            }
-        }
-        
-        if errors.isEmpty
-        {
-            self.operationQueue.operations.forEach { _ in dispatchGroup.enter() }
-            self.operationQueue.isSuspended = false
-        }
-
-        dispatchGroup.notify(queue: .global()) {
-            self.managedObjectContext.perform {                
-                if !errors.isEmpty
+                catch CocoaError.fileNoSuchFile
                 {
-                    completionHandler(.failure(self.recordError(code: .fileUploadsFailed(errors))))
+                    // File doesn't exist (which is valid), so just continue along.
                 }
-                else
+                catch
                 {
-                    completionHandler(.success(remoteFiles))
+                    errors.append(FileError(file.identifier, error))
+                }
+            }
+            
+            if errors.isEmpty
+            {
+                self.operationQueue.operations.forEach { _ in dispatchGroup.enter() }
+                self.operationQueue.isSuspended = false
+            }
+            
+            dispatchGroup.notify(queue: .global()) {
+                self.managedObjectContext.perform {
+                    if !errors.isEmpty
+                    {
+                        completionHandler(.failure(RecordError.filesFailed(self.record, errors)))
+                    }
+                    else
+                    {
+                        completionHandler(.success(remoteFiles))
+                    }
                 }
             }
         }
     }
     
-    func upload(_ localRecord: LocalRecord, completionHandler: @escaping (Result<RemoteRecord>) -> Void)
+    func upload(_ localRecord: LocalRecord, completionHandler: @escaping (Result<RemoteRecord, RecordError>) -> Void)
     {
         var metadata = localRecord.recordedObject?.syncableMetadata.mapValues { $0 as Any } ?? [:]
         metadata[.recordedObjectType] = localRecord.recordedObjectType
@@ -238,24 +246,33 @@ private extension UploadRecordOperation
             metadata[.previousVersionDate] = String(remoteRecord.version.date.timeIntervalSinceReferenceDate)
         }
         
-        let progress = self.service.upload(localRecord, metadata: metadata, context: self.managedObjectContext) { (result) in
-            do
-            {
-                let remoteRecord = try result.value()
-                remoteRecord.status = .normal
-                
-                let localRecord = localRecord.in(self.managedObjectContext)
-                localRecord.version = remoteRecord.version
-                localRecord.status = .normal
-                
-                completionHandler(.success(remoteRecord))
-            }
-            catch
-            {
-                completionHandler(.failure(error))
-            }
-        }
+        let temporaryContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        temporaryContext.parent = self.managedObjectContext
         
-        self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
+        self.record.perform(in: temporaryContext) { (managedRecord) in
+            let temporaryLocalRecord = localRecord.in(temporaryContext)
+            managedRecord.localRecord = temporaryLocalRecord
+            
+            let record = Record(managedRecord)            
+            let progress = self.service.upload(record, metadata: metadata, context: self.managedObjectContext) { (result) in
+                do
+                {
+                    let remoteRecord = try result.value()
+                    remoteRecord.status = .normal
+                    
+                    let localRecord = localRecord.in(self.managedObjectContext)
+                    localRecord.version = remoteRecord.version
+                    localRecord.status = .normal
+                    
+                    completionHandler(.success(remoteRecord))
+                }
+                catch
+                {
+                    completionHandler(.failure(RecordError(self.record, error)))
+                }
+            }
+            
+            self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
+        }
     }
 }

@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
+class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchError>
 {
     let changeToken: Data?
     let recordController: RecordController
@@ -32,7 +32,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
         
         let context = self.recordController.newBackgroundContext()
         
-        func finish(result: Result<(Set<RemoteRecord>, Set<String>?, Data)>)
+        func finish(result: Result<(Set<RemoteRecord>, Set<String>?, Data), FetchError>)
         {
             do
             {
@@ -49,7 +49,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                             
                             let childContext = self.recordController.newBackgroundContext(withParent: context)
                             
-                            let result = childContext.performAndWait { () -> Result<Set<RemoteRecord>> in
+                            let result = childContext.performAndWait { () -> Result<Set<RemoteRecord>, AnyError> in
                                 do
                                 {
                                     let fetchRequest = RemoteRecord.fetchRequest() as NSFetchRequest<RemoteRecord>
@@ -94,7 +94,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                                 }
                                 catch
                                 {
-                                    return .failure(error)
+                                    return .failure(AnyError(error))
                                 }
                             }
                             
@@ -108,7 +108,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                     }
                     catch
                     {
-                        self.result = .failure(_FetchError(code: .any(error)))
+                        self.result = .failure(FetchError(error))
                     }
                     
                     self.finish()
@@ -116,7 +116,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
             }
             catch
             {
-                self.result = .failure(error)
+                self.result = .failure(FetchError(error))
                 
                 self.finish()
             }
@@ -134,7 +134,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                 }
                 catch
                 {
-                    finish(result: .failure(error))
+                    finish(result: .failure(FetchError(error)))
                 }
             }
         }
@@ -148,7 +148,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data)>
                 }
                 catch
                 {
-                    finish(result: .failure(error))
+                    finish(result: .failure(FetchError(error)))
                 }
             }
         }

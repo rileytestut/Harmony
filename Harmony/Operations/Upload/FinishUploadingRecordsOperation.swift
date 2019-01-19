@@ -9,9 +9,9 @@
 import Foundation
 import CoreData
 
-class FinishUploadingRecordsOperation: Operation<[ManagedRecord: Result<RemoteRecord>]>
+class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord, RecordError>], AnyError>
 {
-    let results: [ManagedRecord: Result<RemoteRecord>]
+    let results: [AnyRecord: Result<RemoteRecord, RecordError>]
     
     private let managedObjectContext: NSManagedObjectContext
     
@@ -19,7 +19,7 @@ class FinishUploadingRecordsOperation: Operation<[ManagedRecord: Result<RemoteRe
         return true
     }
     
-    init(results: [ManagedRecord: Result<RemoteRecord>], service: Service, context: NSManagedObjectContext)
+    init(results: [AnyRecord: Result<RemoteRecord, RecordError>], service: Service, context: NSManagedObjectContext)
     {
         self.results = results
         self.managedObjectContext = context
@@ -38,23 +38,23 @@ class FinishUploadingRecordsOperation: Operation<[ManagedRecord: Result<RemoteRe
             
             do
             {
-                let records = results.compactMap { (record, result) -> ManagedRecord? in
+                let records = results.compactMap { (record, result) -> AnyRecord? in
                     guard record.shouldLockWhenUploading else { return nil }
                     guard let _ = try? result.value() else { return nil }
                     
                     return record
                 }
                 
-                let recordIDs = try ManagedRecord.remoteRelationshipRecordIDs(for: records, in: self.managedObjectContext)
+                let recordIDs = try Record.remoteRelationshipRecordIDs(for: records, in: self.managedObjectContext)
                 
-                var recordsToUnlock = Set<ManagedRecord>()
+                var recordsToUnlock = Set<AnyRecord>()
                 
                 for record in records
                 {
                     let missingRelationships = record.missingRelationships(in: recordIDs)
                     if !missingRelationships.isEmpty
                     {
-                        results[record] = .failure(_UploadError(record: record, code: .nilRelationshipObjects(Set(missingRelationships.keys))))
+                        results[record] = .failure(RecordError(record, ValidationError.nilRelationshipObjects(keys: Set(missingRelationships.keys))))
                     }
                     else
                     {
@@ -65,41 +65,44 @@ class FinishUploadingRecordsOperation: Operation<[ManagedRecord: Result<RemoteRe
                 let dispatchGroup = DispatchGroup()
                 
                 let operations = recordsToUnlock.compactMap { (record) -> UpdateRecordMetadataOperation? in
-                    do
-                    {
-                        if record.remoteRecord == nil, let result = results[record], let remoteRecord = try? result.value()
+                    record.perform(in: self.managedObjectContext) { (managedRecord) in
+                        do
                         {
-                            record.remoteRecord = remoteRecord
-                        }
-                        
-                        let operation = try UpdateRecordMetadataOperation(record: record, service: self.service, context: self.managedObjectContext)
-                        
-                        operation.metadata[.isLocked] = NSNull()
-                        operation.resultHandler = { (result) in
-                            do
+                            if managedRecord.remoteRecord == nil, let result = results[record], let remoteRecord = try? result.value()
                             {
-                                try result.verify()
-                            }
-                            catch
-                            {
-                                // Mark record for re-uploading later to unlock remote record.
-                                record.localRecord?.status = .updated
-                                
-                                results[record] = .failure(error)
+                                managedRecord.remoteRecord = remoteRecord
                             }
                             
-                            dispatchGroup.leave()
+                            let record = AnyRecord(managedRecord)
+                            
+                            let operation = try UpdateRecordMetadataOperation(record: record, service: self.service, context: self.managedObjectContext)
+                            operation.metadata[.isLocked] = NSNull()
+                            operation.resultHandler = { (result) in
+                                do
+                                {
+                                    try result.verify()
+                                }
+                                catch
+                                {
+                                    // Mark record for re-uploading later to unlock remote record.
+                                    managedRecord.localRecord?.status = .updated
+                                    
+                                    results[record] = .failure(RecordError(record, error))
+                                }
+                                
+                                dispatchGroup.leave()
+                            }
+                            
+                            dispatchGroup.enter()
+                            
+                            return operation
                         }
-                        
-                        dispatchGroup.enter()
-                        
-                        return operation
-                    }
-                    catch
-                    {
-                        results[record] = .failure(error)
-                        
-                        return nil
+                        catch
+                        {
+                            results[record] = .failure(RecordError(record, error))
+                            
+                            return nil
+                        }
                     }
                 }
                 
@@ -115,7 +118,7 @@ class FinishUploadingRecordsOperation: Operation<[ManagedRecord: Result<RemoteRe
             catch
             {
                 self.managedObjectContext.perform {
-                    self.result = .failure(error)
+                    self.result = .failure(AnyError(error))
                     self.finish()
                 }
             }

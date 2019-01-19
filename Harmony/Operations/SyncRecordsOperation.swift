@@ -11,14 +11,14 @@ import CoreData
 
 import Roxas
 
-class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void>], Data)>
+class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, RecordError>], Data), SyncError>
 {
     let changeToken: Data?
     let recordController: RecordController
         
     private var updatedChangeToken: Data?
     
-    private var recordResults = [Record<NSManagedObject>: Result<Void>]()
+    private var recordResults = [Record<NSManagedObject>: Result<Void, RecordError>]()
     
     override var isAsynchronous: Bool {
         return true
@@ -43,7 +43,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void>], 
         
         let dispatchGroup = DispatchGroup()
         
-        func finish<T>(_ result: Result<T>, debugTitle: String)
+        func finish<T, U>(_ result: Result<T, U>, debugTitle: String)
         {
             do
             {
@@ -58,15 +58,13 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void>], 
             dispatchGroup.leave()
         }
         
-        func finishRecordOperation<T>(_ result: Result<[ManagedRecord: Result<T>]>, debugTitle: String)
+        func finishRecordOperation<T>(_ result: Result<[AnyRecord: Result<T, RecordError>], AnyError>, debugTitle: String)
         {
-            // Map result to use Record<NSManagedObject> and Result<Void>.
-            let result = result.map { (results) -> [Record<NSManagedObject>: Result<Void>] in
-                let keyValues = results.compactMap { (record, result) in
-                    return (Record<NSManagedObject>(record), result.map { _ in () })
+            // Map result to use Result<Void, RecordError>.
+            let result = result.map { (results) -> [Record<NSManagedObject>: Result<Void, RecordError>] in
+                results.mapValues { (result) in
+                    result.map { _ in () }
                 }
-                
-                return Dictionary(keyValues, uniquingKeysWith: { (a, b) in return b })
             }
             
             print(debugTitle, result)
@@ -82,7 +80,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void>], 
             }
             catch
             {
-                self.result = .failure(SyncError(syncResults: self.recordResults))
+                self.result = .failure(SyncError.partial(self.recordResults))
                 self.finish()
             }
             
@@ -159,9 +157,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void>], 
                 }
             }
             
-            let results = SyncError.mapRecordErrors(self.recordResults)
-            
-            let didFail = results.values.contains(where: { (result) in
+            let didFail = self.recordResults.values.contains(where: { (result) in
                 switch result
                 {
                 case .success: return false
@@ -171,11 +167,11 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void>], 
             
             if didFail
             {
-                self.result = .failure(SyncError.partial(results))
+                self.result = .failure(SyncError.partial(self.recordResults))
             }
             else
             {
-                self.result = .success((results, updatedChangeToken))
+                self.result = .success((self.recordResults, updatedChangeToken))
             }            
             
             self.finish()

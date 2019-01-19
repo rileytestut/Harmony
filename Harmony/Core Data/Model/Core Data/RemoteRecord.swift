@@ -41,7 +41,7 @@ public class RemoteRecord: RecordRepresentation
     
     public convenience init(identifier: String, versionIdentifier: String, versionDate: Date, metadata: [HarmonyMetadataKey: String], status: RecordStatus, context: NSManagedObjectContext) throws
     {
-        guard let recordedObjectType = metadata[.recordedObjectType], let recordedObjectIdentifier = metadata[.recordedObjectIdentifier] else { throw _RemoteRecordError(code: .invalidMetadata(metadata)) }
+        guard let recordedObjectType = metadata[.recordedObjectType], let recordedObjectIdentifier = metadata[.recordedObjectIdentifier] else { throw ValidationError.invalidMetadata(metadata) }
         
         self.init(identifier: identifier, versionIdentifier: versionIdentifier, versionDate: versionDate, recordedObjectType: recordedObjectType, recordedObjectIdentifier: recordedObjectIdentifier, status: status, context: context)
         

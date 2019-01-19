@@ -11,7 +11,7 @@ import CoreData
 
 import Roxas
 
-class Operation<ResultType>: RSTOperation, ProgressReporting
+class Operation<ResultType, ErrorType: Swift.Error>: RSTOperation, ProgressReporting
 {
     let service: Service
     
@@ -19,8 +19,8 @@ class Operation<ResultType>: RSTOperation, ProgressReporting
     
     let operationQueue: OperationQueue
     
-    var result: Result<ResultType>?
-    var resultHandler: ((Result<ResultType>) -> Void)?
+    var result: Result<ResultType, ErrorType>?
+    var resultHandler: ((Result<ResultType, ErrorType>) -> Void)?
     
     init(service: Service)
     {

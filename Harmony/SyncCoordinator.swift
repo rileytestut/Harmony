@@ -26,7 +26,7 @@ extension SyncCoordinator
     }
 }
 
-public typealias SyncResult = Result<[Record<NSManagedObject>: Result<Void>]>
+public typealias SyncResult = Result<[AnyRecord: Result<Void, RecordError>], SyncError>
 
 public final class SyncCoordinator
 {
@@ -52,12 +52,12 @@ public final class SyncCoordinator
 
 public extension SyncCoordinator
 {
-    func start(completionHandler: @escaping (Result<Void>) -> Void)
+    func start(completionHandler: @escaping (Result<Void, DatabaseError>) -> Void)
     {
         self.recordController.start { (result) in
             if let error = result.values.first
             {
-                completionHandler(.failure(DatabaseError.corrupted(error)))
+                completionHandler(.failure(.corrupted(error)))
             }
             else
             {
@@ -104,122 +104,118 @@ public extension SyncCoordinator
 
 public extension SyncCoordinator
 {
-    @discardableResult func fetchVersions<T: NSManagedObject>(for record: Record<T>, completionHandler: @escaping (Result<[Version]>) -> Void) -> Progress
+    @discardableResult func fetchVersions<T: NSManagedObject>(for record: Record<T>, completionHandler: @escaping (Result<[Version], RecordError>) -> Void) -> Progress
+    {
+        let progress = self.service.fetchVersions(for: AnyRecord(record)) { (result) in
+            switch result
+            {
+            case .success(let versions): completionHandler(.success(versions))
+            case .failure(let error): completionHandler(.failure(RecordError(Record(record), error)))
+            }
+        }
+
+        return progress
+    }
+    
+    @discardableResult func upload<T: NSManagedObject>(_ record: Record<T>, completionHandler: @escaping (Result<Record<T>, RecordError>) -> Void) -> Progress
     {
         let progress = Progress.discreteProgress(totalUnitCount: 1)
         
-        record.managedRecord.managedObjectContext?.perform {
-            guard let remoteRecord = record.managedRecord.remoteRecord else { return completionHandler(.success([])) }
+        let context = self.recordController.newBackgroundContext()
+        
+        do
+        {
+            let operation = try UploadRecordOperation(record: record, service: self.service, context: context)
+            operation.resultHandler = { (result) in
+                do
+                {
+                    _ = try result.value()
+                    
+                    let context = self.recordController.newBackgroundContext()
+                    record.perform(in: context) { (managedRecord) in
+                        let record = Record(managedRecord) as Record<T>
+                        completionHandler(.success(record))
+                    }
+                }
+                catch
+                {
+                    completionHandler(.failure(RecordError(Record(record), error)))
+                }
+            }
             
-            let fetchProgress = self.service.fetchVersions(for: remoteRecord, completionHandler: completionHandler)
-            progress.addChild(fetchProgress, withPendingUnitCount: 1)
+            progress.addChild(operation.progress, withPendingUnitCount: 1)
+            
+            self.operationQueue.addOperation(operation)
+        }
+        catch
+        {
+            completionHandler(.failure(RecordError(Record(record), error)))
         }
         
         return progress
     }
     
-    @discardableResult func upload<T: NSManagedObject>(_ record: Record<T>, completionHandler: @escaping (Result<Record<T>>) -> Void) -> Progress
+    @discardableResult func restore<T: NSManagedObject>(_ record: Record<T>, to version: Version, completionHandler: @escaping (Result<Record<T>, RecordError>) -> Void) -> Progress
     {
         let progress = Progress.discreteProgress(totalUnitCount: 1)
         
         let context = self.recordController.newBackgroundContext()
         
-        record.managedRecord.managedObjectContext?.perform {
-            do
-            {
-                let operation = try UploadRecordOperation(record: record.managedRecord, service: self.service, context: context)
-                operation.resultHandler = { (result) in
-                    do
-                    {
-                        _ = try result.value()
-                        
-                        self.recordController.performBackgroundTask { (context) in
-                            let managedRecord = record.managedRecord.in(context)
-                            
-                            let record = Record(managedRecord) as Record<T>
-                            completionHandler(.success(record))
-                        }
-                    }
-                    catch
-                    {
-                        completionHandler(.failure(error))
+        do
+        {
+            let operation = try DownloadRecordOperation(record: record, service: self.service, context: context)
+            operation.version = version
+            operation.resultHandler = { (result) in
+                do
+                {
+                    _ = try result.value()
+                    
+                    let context = self.recordController.newBackgroundContext()
+                    record.perform(in: context) { (managedRecord) in
+                        let record = Record(managedRecord) as Record<T>
+                        completionHandler(.success(record))
                     }
                 }
-                
-                progress.addChild(operation.progress, withPendingUnitCount: 1)
-                
-                self.operationQueue.addOperation(operation)
+                catch
+                {
+                    completionHandler(.failure(RecordError(Record(record), error)))
+                }
             }
-            catch
-            {
-                completionHandler(.failure(error))
-            }
+            
+            progress.addChild(operation.progress, withPendingUnitCount: 1)
+            
+            self.operationQueue.addOperation(operation)
+        }
+        catch
+        {
+            completionHandler(.failure(RecordError(Record(record), error)))
         }
         
         return progress
     }
     
-    @discardableResult func restore<T: NSManagedObject>(_ record: Record<T>, to version: Version, completionHandler: @escaping (Result<Record<T>>) -> Void) -> Progress
-    {
-        let progress = Progress.discreteProgress(totalUnitCount: 1)
-        
-        let context = self.recordController.newBackgroundContext()
-        
-        record.managedRecord.managedObjectContext?.perform {
-            do
-            {
-                let operation = try DownloadRecordOperation(record: record.managedRecord, service: self.service, context: context)
-                operation.version = version
-                operation.resultHandler = { (result) in
-                    do
-                    {
-                        _ = try result.value()
-                        
-                        self.recordController.performBackgroundTask { (context) in
-                            let managedRecord = record.managedRecord.in(context)
-                            
-                            let record = Record(managedRecord) as Record<T>
-                            completionHandler(.success(record))
-                        }
-                    }
-                    catch
-                    {
-                        completionHandler(.failure(error))
-                    }
-                }
-                
-                progress.addChild(operation.progress, withPendingUnitCount: 1)
-                
-                self.operationQueue.addOperation(operation)
-            }
-            catch
-            {
-                completionHandler(.failure(error))
-            }
-        }
-        
-        return progress
-    }
-    
-    @discardableResult func resolveConflictedRecord<T: NSManagedObject>(_ record: Record<T>, resolution: ConflictResolution, completionHandler: @escaping (Result<Record<T>>) -> Void) -> Progress
+    @discardableResult func resolveConflictedRecord<T: NSManagedObject>(_ record: Record<T>, resolution: ConflictResolution, completionHandler: @escaping (Result<Record<T>, RecordError>) -> Void) -> Progress
     {
         let progress: Progress
         
-        func finish(_ result: Result<Record<T>>)
+        func finish(_ result: Result<Record<T>, RecordError>)
         {
             do
             {
                 let record = try result.value()
-                record.managedRecord.isConflicted = false
                 
-                try record.managedRecord.managedObjectContext?.save()
-                
-                let resolvedRecord = Record<T>(record.managedRecord)
-                completionHandler(.success(resolvedRecord))
+                try record.perform { (managedRecord) in
+                    managedRecord.isConflicted = false
+                    
+                    try managedRecord.managedObjectContext?.save()
+                    
+                    let resolvedRecord = Record<T>(managedRecord)
+                    completionHandler(.success(resolvedRecord))
+                }
             }
             catch
             {
-                completionHandler(.failure(_ResolveConflictError(record: record.managedRecord, code: .any(error))))
+                completionHandler(.failure(RecordError(AnyRecord(record), error)))
             }
         }
             

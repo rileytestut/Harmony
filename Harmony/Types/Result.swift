@@ -8,10 +8,10 @@
 
 import Foundation
 
-public enum Result<ValueType>
+public enum Result<ValueType, ErrorType: Swift.Error>
 {
     case success(ValueType)
-    case failure(Error)
+    case failure(ErrorType)
     
     public func value() throws -> ValueType
     {
@@ -31,7 +31,7 @@ public enum Result<ValueType>
         }
     }
     
-    public func map<T>(_ transform: (ValueType) -> T) -> Result<T>
+    public func map<T>(_ transform: (ValueType) -> T) -> Result<T, ErrorType>
     {
         switch self
         {

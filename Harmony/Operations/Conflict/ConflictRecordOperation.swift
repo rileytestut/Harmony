@@ -9,15 +9,14 @@
 import Foundation
 import CoreData
 
-class ConflictRecordOperation: RecordOperation<Void, _ConflictError>
+class ConflictRecordOperation: RecordOperation<Void>
 {
     override func main()
     {
         super.main()
         
-        self.managedObjectContext.perform {
-            let record = self.record.in(self.managedObjectContext)
-            record.isConflicted = true
+        self.record.perform(in: self.managedObjectContext) { (managedRecord) in
+            managedRecord.isConflicted = true
             
             self.progress.completedUnitCount = 1
             

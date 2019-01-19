@@ -164,7 +164,7 @@ public extension RecordController
         let context = self.newBackgroundContext()
         context.automaticallyMergesChangesFromParent = false
         
-        let result = context.performAndWait { () -> Result<Set<Record<RecordType>>> in
+        let result = context.performAndWait { () -> Result<Set<Record<RecordType>>, AnyError> in
             do
             {
                 try context.setQueryGenerationFrom(.current)
@@ -180,7 +180,7 @@ public extension RecordController
             }
             catch
             {
-                return .failure(error)
+                return .failure(AnyError(error))
             }
         }
         

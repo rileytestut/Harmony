@@ -9,27 +9,29 @@
 import Foundation
 import CoreData
 
-class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation, _DeleteError>
+class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation>
 {
-    private var syncableFiles = [NSManagedObjectID: Set<File>]()
+    private var syncableFiles = [AnyRecord: Set<File>]()
     
     init(service: Service, recordController: RecordController)
     {
         super.init(predicate: ManagedRecord.deleteRecordsPredicate, service: service, recordController: recordController)
     }
     
-    override func process(_ records: [ManagedRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[ManagedRecord]>) -> Void)
+    override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], AnyError>) -> Void)
     {
         for record in records
         {
-            guard let syncableFiles = record.localRecord?.recordedObject?.syncableFiles else { continue }
-            self.syncableFiles[record.objectID] = syncableFiles
+            record.perform { (managedRecord) in
+                guard let syncableFiles = managedRecord.localRecord?.recordedObject?.syncableFiles else { return }
+                self.syncableFiles[record] = syncableFiles
+            }
         }
         
         completionHandler(.success(records))
     }
     
-    override func process(_ result: Result<[ManagedRecord : Result<Void>]>, in context: NSManagedObjectContext, completionHandler: @escaping () -> Void)
+    override func process(_ result: Result<[AnyRecord : Result<Void, RecordError>], AnyError>, in context: NSManagedObjectContext, completionHandler: @escaping () -> Void)
     {
         guard case .success(let results) = result else { return completionHandler() }
         
@@ -37,7 +39,7 @@ class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation, 
         {
             guard case .success = result else { continue }
             
-            guard let files = self.syncableFiles[record.objectID] else { continue }
+            guard let files = self.syncableFiles[record] else { continue }
             
             for file in files
             {

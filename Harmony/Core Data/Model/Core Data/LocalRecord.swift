@@ -77,7 +77,7 @@ public class LocalRecord: RecordRepresentation, Codable
     
     public required init(from decoder: Decoder) throws
     {
-        guard let context = decoder.managedObjectContext else { throw _LocalRecordError(code: .nilManagedObjectContext) }
+        guard let context = decoder.managedObjectContext else { throw ValidationError.nilManagedObjectContext }
         
         super.init(entity: LocalRecord.entity(), insertInto: context)
         
@@ -95,7 +95,7 @@ public class LocalRecord: RecordRepresentation, Codable
                 let entity = NSEntityDescription.entity(forEntityName: recordType, in: context),
                 let managedObjectClass = NSClassFromString(entity.managedObjectClassName) as? Syncable.Type,
                 let primaryKeyPath = managedObjectClass.syncablePrimaryKey.stringValue
-            else { throw _LocalRecordError(code: .unknownRecordType(self.recordedObjectType)) }
+            else { throw ValidationError.unknownRecordType(self.recordedObjectType) }
             
             let identifier = try container.decode(String.self, forKey: .identifier)
             
@@ -116,7 +116,7 @@ public class LocalRecord: RecordRepresentation, Codable
                 // Assign to tempRecordedObject immediately before checking if it is a SyncableManagedObject so we can remove it if not.
                 tempRecordedObject = managedObject
                 
-                guard let syncableManagedObject = managedObject as? SyncableManagedObject else { throw _LocalRecordError(code: .nonSyncableRecordType(recordType)) }
+                guard let syncableManagedObject = managedObject as? SyncableManagedObject else { throw ValidationError.nonSyncableRecordType(recordType) }
                 recordedObject = syncableManagedObject
             }
             
@@ -151,7 +151,7 @@ public class LocalRecord: RecordRepresentation, Codable
         try container.encode(self.recordedObjectType, forKey: .type)
         try container.encode(self.recordedObjectIdentifier, forKey: .identifier)
         
-        guard let recordedObject = self.recordedObject else { throw _LocalRecordError(code: .nilRecordedObject) }
+        guard let recordedObject = self.recordedObject else { throw ValidationError.nilRecordedObject }
         
         var recordContainer = container.nestedContainer(keyedBy: AnyKey.self, forKey: .record)
         for key in recordedObject.syncableKeys
@@ -211,13 +211,13 @@ extension LocalRecord
     
     func configure(with recordedObject: SyncableManagedObject) throws
     {
-        guard recordedObject.isSyncingEnabled else { throw _LocalRecordError(code: .recordSyncingDisabled) }
+        guard recordedObject.isSyncingEnabled else { throw ValidationError.nonSyncableRecordedObject(recordedObject) }
         
-        guard let recordedObjectIdentifier = recordedObject.syncableIdentifier else { throw _LocalRecordError(code: .invalidSyncableIdentifier) }
+        guard let recordedObjectIdentifier = recordedObject.syncableIdentifier else { throw ValidationError.invalidSyncableIdentifier }
         
         if recordedObject.objectID.isTemporaryID
         {
-            guard let context = recordedObject.managedObjectContext else { throw _LocalRecordError(code: .nilManagedObjectContext) }
+            guard let context = recordedObject.managedObjectContext else { throw ValidationError.nilManagedObjectContext }
             try context.obtainPermanentIDs(for: [recordedObject])
         }
         

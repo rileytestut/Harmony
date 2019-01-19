@@ -40,7 +40,7 @@ public class RemoteFile: NSManagedObject, Codable
     
     public init(remoteIdentifier: String, versionIdentifier: String, size: Int, metadata: [HarmonyMetadataKey: String], context: NSManagedObjectContext) throws
     {
-        guard let identifier = metadata[.relationshipIdentifier], let sha1Hash = metadata[.sha1Hash] else { throw _RemoteFileError(code: .invalidMetadata(metadata)) }
+        guard let identifier = metadata[.relationshipIdentifier], let sha1Hash = metadata[.sha1Hash] else { throw ValidationError.invalidMetadata(metadata) }
         
         super.init(entity: RemoteFile.entity(), insertInto: context)
         
@@ -53,7 +53,7 @@ public class RemoteFile: NSManagedObject, Codable
         
     public required init(from decoder: Decoder) throws
     {
-        guard let context = decoder.managedObjectContext else { throw _RemoteFileError(code: .nilManagedObjectContext) }
+        guard let context = decoder.managedObjectContext else { throw ValidationError.nilManagedObjectContext }
         
         super.init(entity: RemoteFile.entity(), insertInto: nil)
         

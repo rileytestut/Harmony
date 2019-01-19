@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class DeleteRecordOperation: RecordOperation<Void, _DeleteError>
+class DeleteRecordOperation: RecordOperation<Void>
 {
     override func main()
     {
@@ -50,17 +50,13 @@ class DeleteRecordOperation: RecordOperation<Void, _DeleteError>
 
 private extension DeleteRecordOperation
 {
-    func deleteRemoteFiles(completionHandler: @escaping (Result<Void>) -> Void)
+    func deleteRemoteFiles(completionHandler: @escaping (Result<Void, RecordError>) -> Void)
     {
-        // If local record doesn't exist, we don't treat it as an error and just say it succeeded.
-        guard let localRecord = self.record.localRecord else { return completionHandler(.success) }
-        
-        self.managedObjectContext.perform {
-            // Perform on managedObjectContext queue to ensure remote files returned in errors are in managedObjectContext.
-            let localRecord = localRecord.in(self.managedObjectContext)
+        self.record.perform { (managedRecord) -> Void in
+            // If local record doesn't exist, we don't treat it as an error and just say it succeeded.
+            guard let localRecord = managedRecord.localRecord else { return completionHandler(.success) }
             
-            var errors = [Error]()
-            
+            var errors = [FileError]()
             let dispatchGroup = DispatchGroup()
             
             for remoteFile in localRecord.remoteFiles
@@ -74,79 +70,71 @@ private extension DeleteRecordOperation
                     {
                         try result.verify()
                     }
-                    catch let error as _HarmonyError
+                    catch FileError.doesNotExist
                     {
-                        switch error.code
-                        {
-                        case .fileDoesNotExist: break
-                        default: errors.append(error)
-                        }
+                        // Ignore
+                    }
+                    catch let error as FileError
+                    {
+                        errors.append(error)
                     }
                     catch
                     {
-                        errors.append(error)
+                        errors.append(FileError(remoteFile.identifier, error))
                     }
                     
                     dispatchGroup.leave()
                 }
                 
                 self.progress.addChild(progress, withPendingUnitCount: 1)
-            }
-            
-            dispatchGroup.notify(queue: .global()) {
-                self.record.managedObjectContext?.perform {
-                    if !errors.isEmpty
-                    {
-                        completionHandler(.failure(self.recordError(code: .fileDeletionsFailed(errors))))
-                    }
-                    else
-                    {
-                        completionHandler(.success)
+                
+                dispatchGroup.notify(queue: .global()) {
+                    self.managedObjectContext.perform {
+                        if !errors.isEmpty
+                        {
+                            completionHandler(.failure(.filesFailed(self.record, errors)))
+                        }
+                        else
+                        {
+                            completionHandler(.success)
+                        }
                     }
                 }
             }
         }
     }
     
-    func deleteRemoteRecord(completionHandler: @escaping (Result<Void>) -> Void)
+    func deleteRemoteRecord(completionHandler: @escaping (Result<Void, RecordError>) -> Void)
     {
-        guard let remoteRecord = self.record.remoteRecord, remoteRecord.status != .deleted else { return completionHandler(.success) }
-        
-        let progress = self.service.delete(remoteRecord) { (result) in
+        let progress = self.service.delete(self.record) { (result) in
             do
             {
                 try result.verify()
                 
                 completionHandler(.success)
             }
-            catch let error as _HarmonyError
+            catch RecordError.doesNotExist
             {
-                switch error.code
-                {
-                case .recordDoesNotExist: completionHandler(.success)
-                default: completionHandler(.failure(error))
-                }
+                completionHandler(.success)
             }
             catch
             {
-                completionHandler(.failure(error))
+                completionHandler(.failure(RecordError(self.record, error)))
             }
         }
         
         self.progress.addChild(progress, withPendingUnitCount: 1)
     }
     
-    func deleteManagedRecord(completionHandler: @escaping (Result<Void>) -> Void)
+    func deleteManagedRecord(completionHandler: @escaping (Result<Void, RecordError>) -> Void)
     {
-        self.managedObjectContext.perform {
-            let record = self.record.in(self.managedObjectContext)
-            
-            if let recordedObject = record.localRecord?.recordedObject
+        self.record.perform(in: self.managedObjectContext) { (managedRecord) in
+            if let recordedObject = managedRecord.localRecord?.recordedObject
             {
                 self.managedObjectContext.delete(recordedObject)
             }
             
-            self.managedObjectContext.delete(record)
+            self.managedObjectContext.delete(managedRecord)
             
             self.progress.completedUnitCount += 1
             

@@ -28,9 +28,7 @@ public class ManagedRecord: NSManagedObject
         let recordID = RecordID(type: self.recordedObjectType, identifier: self.recordedObjectIdentifier)
         return recordID
     }
-    
-    var shouldLockWhenUploading = false
-        
+            
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
         super.init(entity: entity, insertInto: context)

@@ -9,9 +9,9 @@
 import Foundation
 import CoreData
 
-class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalRecord>]>
+class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecord, RecordError>], AnyError>
 {
-    let results: [ManagedRecord: Result<LocalRecord>]
+    let results: [AnyRecord: Result<LocalRecord, RecordError>]
     
     private let managedObjectContext: NSManagedObjectContext
     
@@ -19,7 +19,7 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
         return true
     }
     
-    init(results: [ManagedRecord: Result<LocalRecord>], service: Service, context: NSManagedObjectContext)
+    init(results: [AnyRecord: Result<LocalRecord, RecordError>], service: Service, context: NSManagedObjectContext)
     {
         self.results = results
         self.managedObjectContext = context
@@ -68,8 +68,7 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
                     
                     self.managedObjectContext.perform {
                         // Switch back to context so we can modify objects.
-                        
-                        for (managedRecord, result) in results
+                        for (record, result) in results
                         {
                             do
                             {
@@ -77,10 +76,10 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
                                 
                                 do
                                 {
-                                    try self.updateRelationships(for: localRecord, managedRecord: managedRecord, relationshipObjects: relationshipObjects)
+                                    try self.updateRelationships(for: localRecord, relationshipObjects: relationshipObjects)
                                     
                                     // Update files after updating relationships (to prevent replacing files prematurely).
-                                    try self.updateFiles(for: localRecord, managedRecord: managedRecord)
+                                    try self.updateFiles(for: localRecord, record: record)
                                 }
                                 catch
                                 {
@@ -91,9 +90,9 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
                             }
                             catch
                             {
-                                results[managedRecord] = .failure(error)
+                                results[record] = .failure(RecordError(record, error))
                                 
-                                if let remoteRecordObjectID = managedRecord.managedObjectContext?.performAndWait({ managedRecord.remoteRecord?.objectID })
+                                if let remoteRecordObjectID = record.perform(closure: { $0.remoteRecord?.objectID })
                                 {
                                     // Reset remoteRecord status to make us retry the download again in the future.
                                     let remoteRecord = self.managedObjectContext.object(with: remoteRecordObjectID) as! RemoteRecord
@@ -108,7 +107,7 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
                 }
                 catch
                 {
-                    self.result = .failure(_AnyError(code: .any(error)))
+                    self.result = .failure(AnyError(error))
                     self.finish()
                 }
             }
@@ -118,9 +117,9 @@ class FinishDownloadingRecordsOperation: Operation<[ManagedRecord: Result<LocalR
 
 private extension FinishDownloadingRecordsOperation
 {
-    func updateRelationships(for localRecord: LocalRecord, managedRecord: ManagedRecord, relationshipObjects: [RecordID: SyncableManagedObject]) throws
+    func updateRelationships(for localRecord: LocalRecord, relationshipObjects: [RecordID: SyncableManagedObject]) throws
     {
-        guard let recordedObject = localRecord.recordedObject else { throw _DownloadError(record: managedRecord, code: .nilRecordedObject) }
+        guard let recordedObject = localRecord.recordedObject else { throw ValidationError.nilRecordedObject }
         
         guard let relationships = localRecord.remoteRelationships else { return }
         
@@ -141,18 +140,20 @@ private extension FinishDownloadingRecordsOperation
         
         if !missingRelationshipKeys.isEmpty
         {
-            throw _DownloadError(record: managedRecord, code: .nilRelationshipObjects(missingRelationshipKeys))
+            throw ValidationError.nilRelationshipObjects(keys: missingRelationshipKeys)
         }
     }
     
-    func updateFiles(for localRecord: LocalRecord, managedRecord: ManagedRecord) throws
+    func updateFiles(for localRecord: LocalRecord, record: AnyRecord) throws
     {
-        guard let recordedObject = localRecord.recordedObject else { throw _DownloadError(record: managedRecord, code: .nilRecordedObject) }
+        guard let recordedObject = localRecord.recordedObject else { throw ValidationError.nilRecordedObject }
         
         guard let files = localRecord.downloadedFiles else { return }
         
         let temporaryURLsByFile = Dictionary(uniqueKeysWithValues: recordedObject.syncableFiles.lazy.map { ($0, FileManager.default.uniqueTemporaryURL()) })
         let filesByIdentifier = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
+        
+        var fileErrors = [FileError]()
         
         let unknownFiles = files.filter { !filesByIdentifier.keys.contains($0.identifier) }
         guard unknownFiles.isEmpty else {
@@ -167,17 +168,11 @@ private extension FinishDownloadingRecordsOperation
                 {
                     print(error)
                 }
+                
+                fileErrors.append(FileError.unknownFile(file.identifier))
             }
             
-            // Grab any remote file whose identifier matches that of an unknown file.
-            if let remoteFile = localRecord.remoteFiles.first(where: { (remoteFile) in unknownFiles.contains { $0.identifier == remoteFile.identifier } })
-            {
-                throw _DownloadFileError(file: remoteFile, code: .unknownFile)
-            }
-            else
-            {
-                throw _AnyError(code: .unknownFile)
-            }
+            throw RecordError.filesFailed(record, fileErrors)
         }
         
         // Copy existing files to a backup location in case something goes wrong.
@@ -193,9 +188,11 @@ private extension FinishDownloadingRecordsOperation
             }
             catch
             {
-                throw _DownloadError(record: managedRecord, code: .any(error))
+                fileErrors.append(FileError(file.identifier, error))
             }
         }
+        
+        guard fileErrors.isEmpty else { throw RecordError.filesFailed(record, fileErrors) }
         
         // Replace files.
         for file in files
@@ -237,9 +234,11 @@ private extension FinishDownloadingRecordsOperation
                     }
                 }
                 
-                throw _DownloadError(record: managedRecord, code: .any(error))
+                fileErrors.append(FileError(file.identifier, error))
             }
         }
+        
+        guard fileErrors.isEmpty else { throw RecordError.filesFailed(record, fileErrors) }
         
         // Delete backup files.
         for (_, temporaryURL) in temporaryURLsByFile

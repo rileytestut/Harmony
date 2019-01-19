@@ -11,7 +11,7 @@ import CoreData
 
 import Roxas
 
-class DownloadRecordOperation: RecordOperation<LocalRecord, _DownloadError>
+class DownloadRecordOperation: RecordOperation<LocalRecord>
 {
     var version: Version?
     
@@ -35,7 +35,7 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, _DownloadError>
                         }
                         catch
                         {
-                            self.result = .failure(error)
+                            self.result = .failure(RecordError(self.record, error))
                             
                             localRecord.removeFromContext()
                         }
@@ -46,7 +46,7 @@ class DownloadRecordOperation: RecordOperation<LocalRecord, _DownloadError>
             }
             catch
             {
-                self.result = .failure(error)
+                self.result = .failure(RecordError(self.record, error))
                 self.finishDownload()
             }
         }
@@ -69,7 +69,7 @@ private extension DownloadRecordOperation
                 {
                     let results = try result.value()
                     
-                    guard let result = results.values.first else { throw self.recordError(code: .unknown) }
+                    guard let result = results.values.first else { throw RecordError.other(self.record, .unknown) }
                     
                     let localRecord = try result.value()
                     self.result = .success(localRecord)
@@ -78,7 +78,7 @@ private extension DownloadRecordOperation
                 }
                 catch
                 {
-                    self.result = .failure(error)
+                    self.result = .failure(RecordError(self.record, error))
                 }
                 
                 self.finish()
@@ -88,64 +88,64 @@ private extension DownloadRecordOperation
         }
     }
     
-    func downloadRecord(completionHandler: @escaping (Result<LocalRecord>) -> Void)
+    func downloadRecord(completionHandler: @escaping (Result<LocalRecord, RecordError>) -> Void)
     {
-        guard let remoteRecord = self.record.remoteRecord else { return completionHandler(.failure(self.recordError(code: .nilRemoteRecord))) }
-        
-        let version: Version
-        
-        if let recordVersion = self.version
-        {
-            version = recordVersion
-        }
-        else if remoteRecord.isLocked
-        {
-            guard let previousVersion = remoteRecord.previousUnlockedVersion else {
-                return completionHandler(.failure(self.recordError(code: .recordLocked)))
+        self.record.perform { (managedRecord) -> Void in
+            guard let remoteRecord = managedRecord.remoteRecord else { return completionHandler(.failure(RecordError(self.record, ValidationError.nilRemoteRecord))) }
+            
+            let version: Version
+            
+            if let recordVersion = self.version
+            {
+                version = recordVersion
+            }
+            else if remoteRecord.isLocked
+            {
+                guard let previousVersion = remoteRecord.previousUnlockedVersion else {
+                    return completionHandler(.failure(RecordError.locked(self.record)))
+                }
+                
+                version = Version(previousVersion)
+            }
+            else
+            {
+                version = Version(remoteRecord.version)
             }
             
-            version = Version(previousVersion)
-        }
-        else
-        {
-            version = Version(remoteRecord.version)
-        }        
-        
-        let progress = self.service.download(remoteRecord, version: version, context: self.managedObjectContext) { (result) in
-            do
-            {
-                let localRecord = try result.value()
-                localRecord.status = .normal
-                localRecord.modificationDate = version.date
-                
-                let remoteRecord = remoteRecord.in(self.managedObjectContext)
-                remoteRecord.status = .normal
-                
-                // Create new managed version (in case we were downloading a specified version that wasn't the most recent version).
-                let managedVersion = ManagedVersion(context: self.managedObjectContext)
-                managedVersion.identifier = version.identifier
-                managedVersion.date = version.date
-                localRecord.version = managedVersion
-                
-                completionHandler(.success(localRecord))
+            let progress = self.service.download(self.record, version: version, context: self.managedObjectContext) { (result) in
+                do
+                {
+                    let localRecord = try result.value()
+                    localRecord.status = .normal
+                    localRecord.modificationDate = version.date
+                    
+                    let remoteRecord = remoteRecord.in(self.managedObjectContext)
+                    remoteRecord.status = .normal
+                    
+                    // Create new managed version (in case we were downloading a specified version that wasn't the most recent version).
+                    let managedVersion = ManagedVersion(context: self.managedObjectContext)
+                    managedVersion.identifier = version.identifier
+                    managedVersion.date = version.date
+                    localRecord.version = managedVersion
+                    
+                    completionHandler(.success(localRecord))
+                }
+                catch
+                {
+                    completionHandler(.failure(RecordError(self.record, error)))
+                }
             }
-            catch
-            {
-                completionHandler(.failure(error))
-            }
+            
+            self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
         }
-        
-        self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
     }
     
-    func downloadFiles(for localRecord: LocalRecord, completionHandler: @escaping (Result<Set<File>>) -> Void)
+    func downloadFiles(for localRecord: LocalRecord, completionHandler: @escaping (Result<Set<File>, RecordError>) -> Void)
     {
-        guard let context = self.record.managedObjectContext else { return completionHandler(.failure(self.recordError(code: .nilManagedObjectContext))) }
-        
         // Retrieve files from self.record.localRecord because file URLs may depend on relationships that haven't been downloaded yet.
         // If self.record.localRecord doesn't exist, we can just assume we should download all files.
-        let filesByIdentifier = context.performAndWait { () -> [String: File]? in
-            guard let recordedObject = self.record.localRecord?.recordedObject else { return nil }
+        let filesByIdentifier = self.record.perform { (managedRecord) -> [String: File]? in
+            guard let recordedObject = managedRecord.localRecord?.recordedObject else { return nil }
             
             let dictionary = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
             return dictionary
@@ -155,7 +155,7 @@ private extension DownloadRecordOperation
         self.operationQueue.isSuspended = true
         
         var files = Set<File>()
-        var errors = [Error]()
+        var errors = [FileError]()
         
         let dispatchGroup = DispatchGroup()
         
@@ -167,7 +167,7 @@ private extension DownloadRecordOperation
                 if let filesByIdentifier = filesByIdentifier
                 {
                     guard let localFile = filesByIdentifier[remoteFile.identifier] else {
-                        throw _DownloadFileError(file: remoteFile, code: .unknownFile)
+                        throw FileError.unknownFile(remoteFile.identifier)
                     }
                     
                     do
@@ -184,12 +184,18 @@ private extension DownloadRecordOperation
                     {
                         // Ignore
                     }
+                    catch
+                    {
+                        errors.append(FileError(remoteFile.identifier, error))
+                    }
                 }
                 
                 self.progress.totalUnitCount += 1
                 
                 let operation = RSTAsyncBlockOperation { (operation) in
                     remoteFile.managedObjectContext?.perform {
+                        let fileIdentifier = remoteFile.identifier
+                        
                         let progress = self.service.download(remoteFile) { (result) in
                             do
                             {
@@ -198,7 +204,7 @@ private extension DownloadRecordOperation
                             }
                             catch
                             {
-                                errors.append(error)
+                                errors.append(FileError(fileIdentifier, error))
                             }
                             
                             dispatchGroup.leave()
@@ -214,7 +220,7 @@ private extension DownloadRecordOperation
             }
             catch
             {
-                errors.append(error)
+                errors.append(FileError(remoteFile.identifier, error))
             }
         }
         
@@ -228,7 +234,7 @@ private extension DownloadRecordOperation
             self.managedObjectContext.perform {
                 if !errors.isEmpty
                 {
-                    completionHandler(.failure(self.recordError(code: .fileDownloadsFailed(errors))))
+                    completionHandler(.failure(.filesFailed(self.record, errors)))
                 }
                 else
                 {

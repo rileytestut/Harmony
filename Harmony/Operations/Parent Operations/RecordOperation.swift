@@ -9,27 +9,23 @@
 import Foundation
 import CoreData
 
-class RecordOperation<ResultType, ErrorType: _RecordError>: Operation<ResultType>
+class RecordOperation<ResultType>: Operation<ResultType, RecordError>
 {
-    let record: ManagedRecord
+    let record: AnyRecord
     let managedObjectContext: NSManagedObjectContext
     
     var isBatchOperation = false
-    
-    // Keep strong reference to recordContext.
-    private let recordContext: NSManagedObjectContext
     
     override var isAsynchronous: Bool {
         return true
     }
     
-    required init(record: ManagedRecord, service: Service, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, service: Service, context: NSManagedObjectContext) throws
     {
-        guard let recordContext = record.managedObjectContext else { throw ErrorType(record: record, code: .nilManagedObjectContext) }
-        guard !record.isConflicted else { throw ErrorType(record: record, code: .conflicted) }
+        let record = AnyRecord(record)
+        guard !record.isConflicted else { throw RecordError.conflicted(record) }
         
         self.record = record
-        self.recordContext = recordContext
         
         self.managedObjectContext = context
         
@@ -40,7 +36,7 @@ class RecordOperation<ResultType, ErrorType: _RecordError>: Operation<ResultType
     
     override func start()
     {
-        self.recordContext.perform {
+        self.record.perform { _ in
             super.start()
         }
     }
@@ -48,35 +44,7 @@ class RecordOperation<ResultType, ErrorType: _RecordError>: Operation<ResultType
     override func finish()
     {
         self.managedObjectContext.performAndWait {
-            if let result = self.result
-            {
-                do
-                {
-                    try result.verify()
-                }
-                catch let error as ErrorType where error.record.managedRecord.managedObjectContext != self.managedObjectContext
-                {
-                    // Ensure RecordErrors' record is in self.managedObjectContext.
-                    let record = error.record.managedRecord.in(self.managedObjectContext)
-                    
-                    let recordError = ErrorType(record: record, code: error.code)
-                    self.result = .failure(recordError)
-                }
-                catch {}
-            }
-            
             super.finish()
         }
-    }
-}
-
-extension RecordOperation
-{
-    func recordError(code: _HarmonyError.Code) -> ErrorType
-    {
-        let record = self.managedObjectContext.performAndWait { self.record.in(self.managedObjectContext) }
-        
-        let error = ErrorType(record: record, code: code)
-        return error
     }
 }

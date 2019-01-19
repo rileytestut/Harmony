@@ -1,5 +1,5 @@
 //
-//  ManagedRecord+Uploading.swift
+//  Record+Uploading.swift
 //  Harmony
 //
 //  Created by Riley Testut on 11/26/18.
@@ -9,54 +9,47 @@
 import Foundation
 import CoreData
 
-extension ManagedRecord
+extension Record
 {
     func missingRelationships(in recordIDs: Set<RecordID>) -> [String: RecordID]
     {
         var missingRelationships = [String: RecordID]()
         
-        guard let localRecord = self.localRecord, let recordedObject = localRecord.recordedObject else { return missingRelationships }
-        
-        for (key, relationshipObject) in recordedObject.syncableRelationshipObjects
-        {
-            guard let identifier = relationshipObject.syncableIdentifier else { continue }
+        self.perform { (managedRecord) in
+            guard let localRecord = managedRecord.localRecord, let recordedObject = localRecord.recordedObject else { return }
             
-            let recordID = RecordID(type: relationshipObject.syncableType, identifier: identifier)
-            
-            if !recordIDs.contains(recordID)
+            for (key, relationshipObject) in recordedObject.syncableRelationshipObjects
             {
-                missingRelationships[key] = recordID
-            }
-        }
-        
-        return missingRelationships
-    }
-    
-    class func remoteRelationshipRecordIDs(for records: [ManagedRecord], in context: NSManagedObjectContext) throws -> Set<RecordID>
-    {
-        let predicates: [NSPredicate]
-        
-        if let context = records.first?.managedObjectContext
-        {
-            predicates = context.performAndWait {
-                records.flatMap { (record) -> [NSPredicate] in
-                    guard let localRecord = record.localRecord, let recordedObject = localRecord.recordedObject else { return [] }
-                    
-                    let predicates = recordedObject.syncableRelationshipObjects.values.compactMap { (relationshipObject) -> NSPredicate? in
-                        guard let identifier = relationshipObject.syncableIdentifier else { return nil }
-                        
-                        return NSPredicate(format: "%K == %@ AND %K == %@",
-                                           #keyPath(RemoteRecord.recordedObjectType), relationshipObject.syncableType,
-                                           #keyPath(RemoteRecord.recordedObjectIdentifier), identifier)
-                    }
-                    
-                    return predicates
+                guard let identifier = relationshipObject.syncableIdentifier else { continue }
+                
+                let recordID = RecordID(type: relationshipObject.syncableType, identifier: identifier)
+                
+                if !recordIDs.contains(recordID)
+                {
+                    missingRelationships[key] = recordID
                 }
             }
         }
-        else
-        {
-            predicates = []
+                
+        return missingRelationships
+    }
+    
+    class func remoteRelationshipRecordIDs(for records: [Record<T>], in context: NSManagedObjectContext) throws -> Set<RecordID>
+    {
+        let predicates = records.flatMap { (record) -> [NSPredicate] in
+            record.perform { (managedRecord) in
+                guard let localRecord = managedRecord.localRecord, let recordedObject = localRecord.recordedObject else { return [] }
+                
+                let predicates = recordedObject.syncableRelationshipObjects.values.compactMap { (relationshipObject) -> NSPredicate? in
+                    guard let identifier = relationshipObject.syncableIdentifier else { return nil }
+                    
+                    return NSPredicate(format: "%K == %@ AND %K == %@",
+                                       #keyPath(RemoteRecord.recordedObjectType), relationshipObject.syncableType,
+                                       #keyPath(RemoteRecord.recordedObjectIdentifier), identifier)
+                }
+                
+                return predicates
+            }
         }
         
         let fetchRequest = RemoteRecord.fetchRequest() as NSFetchRequest<RemoteRecord>

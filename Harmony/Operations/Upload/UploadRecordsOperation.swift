@@ -9,14 +9,14 @@
 import Foundation
 import CoreData
 
-class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation, _UploadError>
+class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation>
 {
     init(service: Service, recordController: RecordController)
     {
         super.init(predicate: ManagedRecord.uploadRecordsPredicate, service: service, recordController: recordController)
     }
     
-    override func process(_ records: [ManagedRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[ManagedRecord]>) -> Void)
+    override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], AnyError>) -> Void)
     {
         let operation = PrepareUploadingRecordsOperation(records: records, service: self.service, context: context)
         operation.resultHandler = { (result) in
@@ -26,7 +26,7 @@ class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOpe
         self.operationQueue.addOperation(operation)
     }
     
-    override func process(_ results: [ManagedRecord : Result<RemoteRecord>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[ManagedRecord : Result<RemoteRecord>]>) -> Void)
+    override func process(_ results: [AnyRecord : Result<RemoteRecord, RecordError>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord : Result<RemoteRecord, RecordError>], AnyError>) -> Void)
     {
         let operation = FinishUploadingRecordsOperation(results: results, service: self.service, context: context)
         operation.resultHandler = { (result) in
