@@ -35,6 +35,14 @@ public final class SyncCoordinator
     
     public let recordController: RecordController
     
+    public private(set) var account: Account? {
+        didSet {
+            UserDefaults.standard.harmonyAccountName = self.account?.name
+        }
+    }
+    
+    public private(set) var isAuthenticated = false
+    
     private let operationQueue: OperationQueue
     
     public init(service: Service, persistentContainer: NSPersistentContainer)
@@ -47,27 +55,48 @@ public final class SyncCoordinator
         self.operationQueue.name = "com.rileytestut.Harmony.SyncCoordinator.operationQueue"
         self.operationQueue.qualityOfService = .utility
         self.operationQueue.maxConcurrentOperationCount = 1
+        
+        if let accountName = UserDefaults.standard.harmonyAccountName
+        {
+            self.account = Account(name: accountName)
+        }
     }
 }
 
 public extension SyncCoordinator
 {
-    func start(completionHandler: @escaping (Result<Void, DatabaseError>) -> Void)
+    func start(completionHandler: @escaping (Result<Account?, AnyError>) -> Void)
     {
         self.recordController.start { (result) in
             if let error = result.values.first
             {
-                completionHandler(.failure(.corrupted(error)))
+                completionHandler(.failure(AnyError(DatabaseError.corrupted(error))))
             }
             else
             {
-                completionHandler(.success)
+                self.authenticate() { (result) in
+                    do
+                    {
+                        let account = try result.value()
+                        completionHandler(.success(account))
+                    }
+                    catch AuthenticationError.noSavedCredentials
+                    {
+                        completionHandler(.success(nil))
+                    }
+                    catch
+                    {
+                        completionHandler(.failure(AnyError(error)))
+                    }
+                }
             }
         }
     }
     
-    @discardableResult func sync() -> (Foundation.Operation & ProgressReporting)
+    @discardableResult func sync() -> (Foundation.Operation & ProgressReporting)?
     {
+        guard self.isAuthenticated else { return nil }
+        
         // If there is already a sync operation waiting to execute, no use adding another one.
         if self.operationQueue.operationCount > 1, let operation = self.operationQueue.operations.last as? SyncRecordsOperation
         {
@@ -99,6 +128,51 @@ public extension SyncCoordinator
         self.operationQueue.addOperation(syncRecordsOperation)
         
         return syncRecordsOperation
+    }
+}
+
+public extension SyncCoordinator
+{
+    func authenticate(presentingViewController: UIViewController? = nil, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
+    {
+        func finish(result: Result<Account, AuthenticationError>)
+        {
+            switch result
+            {
+            case .success(let account):
+                self.account = account
+                self.isAuthenticated = true
+                
+            case .failure: break
+            }
+            
+            completionHandler(result)
+        }
+        
+        if let presentingViewController = presentingViewController
+        {
+            self.service.authenticate(withPresentingViewController: presentingViewController, completionHandler: finish)
+        }
+        else
+        {
+            self.service.authenticateInBackground(completionHandler: finish)
+        }
+    }
+    
+    func deauthenticate(completionHandler: @escaping (Result<Void, AuthenticationError>) -> Void)
+    {
+        self.service.deauthenticate { (result) in
+            switch result
+            {
+            case .success:
+                self.account = nil
+                self.isAuthenticated = false
+                
+            case .failure: break
+            }
+            
+            completionHandler(result)
+        }
     }
 }
 

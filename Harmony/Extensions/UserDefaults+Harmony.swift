@@ -11,4 +11,6 @@ import Foundation
 extension UserDefaults
 {
     @NSManaged var harmonyChangeToken: Data?
+    
+    @NSManaged var harmonyAccountName: String?
 }

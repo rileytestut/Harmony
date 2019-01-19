@@ -80,6 +80,7 @@
 		BFE029292006AE54004F70DC /* SyncableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE029282006AE54004F70DC /* SyncableTests.swift */; };
 		BFE4EAB51FDB8E6400855951 /* RemoteRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */; };
 		BFE4EAC71FDBB00600855951 /* FileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4EAC61FDBB00600855951 /* FileTests.swift */; };
+		BFE593C821F3D79A003412A6 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE593C721F3D79A003412A6 /* Account.swift */; };
 		BFECF5772190DCB9006DB8F5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
 		BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */; };
 		BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */; };
@@ -325,6 +326,7 @@
 		BFE029282006AE54004F70DC /* SyncableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncableTests.swift; sourceTree = "<group>"; };
 		BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRecordTests.swift; sourceTree = "<group>"; };
 		BFE4EAC61FDBB00600855951 /* FileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTests.swift; sourceTree = "<group>"; };
+		BFE593C721F3D79A003412A6 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		BFECF5782190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HarmonyMetadataKey+Keys.swift"; sourceTree = "<group>"; };
 		BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateRecordMetadataOperation.swift; sourceTree = "<group>"; };
 		BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadRecordsOperation.swift; sourceTree = "<group>"; };
@@ -380,7 +382,6 @@
 			children = (
 				BFAA23B81F9C14CC00969993 /* RecordController.swift */,
 				BFDA96F62164176000AF12F8 /* MergePolicy.swift */,
-				BF04998E1F9AEE9C00E0EFEE /* Model */,
 			);
 			path = "Core Data";
 			sourceTree = "<group>";
@@ -391,6 +392,7 @@
 				BF8A333521A4872300A42FD4 /* Record.swift */,
 				BF63A1A421A4B53100EE8F61 /* Version.swift */,
 				BFB3396B1FD3A4DF006FACAD /* File.swift */,
+				BFE593C721F3D79A003412A6 /* Account.swift */,
 				BF30432F1FD3A0260053E884 /* Core Data */,
 			);
 			path = Model;
@@ -399,6 +401,7 @@
 		BF0499911F9AEEE000E0EFEE /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
+				BFFB9B1A200ED7EA00A8F673 /* Service.swift */,
 				BF0499921F9AEEE900E0EFEE /* Syncable.swift */,
 			);
 			path = Protocols;
@@ -614,8 +617,8 @@
 			children = (
 				BFA1C8D71ECD01C100DEA99D /* Harmony.h */,
 				BF9A36652162EB3700F8EE91 /* SyncCoordinator.swift */,
-				BFFB9B19200ED7BF00A8F673 /* Services */,
 				BF0499821F9AE05100E0EFEE /* Core Data */,
+				BF04998E1F9AEE9C00E0EFEE /* Model */,
 				BFFB9B07200ED37F00A8F673 /* Operations */,
 				BFFB9B1C200ED93E00A8F673 /* Types */,
 				BF0499911F9AEEE000E0EFEE /* Protocols */,
@@ -722,14 +725,6 @@
 				BF4EE59621AC963300FA648D /* Misc. */,
 			);
 			path = Operations;
-			sourceTree = "<group>";
-		};
-		BFFB9B19200ED7BF00A8F673 /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				BFFB9B1A200ED7EA00A8F673 /* Service.swift */,
-			);
-			path = Services;
 			sourceTree = "<group>";
 		};
 		BFFB9B1C200ED93E00A8F673 /* Types */ = {
@@ -1059,6 +1054,7 @@
 				BF84220C21936E950035340B /* RemoteFile.swift in Sources */,
 				BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */,
 				BFBC1392218265CD001A321F /* NSManagedObject+Conveniences.swift in Sources */,
+				BFE593C821F3D79A003412A6 /* Account.swift in Sources */,
 				BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */,
 				BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */,
 				BFDDC0FC2194F065009732B7 /* DeleteRecordsOperation.swift in Sources */,

@@ -14,8 +14,8 @@ public protocol Service
     var localizedName: String { get }
     var identifier: String { get }
     
-    func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Void, AuthenticationError>) -> Void)
-    func authenticateInBackground(completionHandler: @escaping (Result<Void, AuthenticationError>) -> Void)
+    func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
+    func authenticateInBackground(completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
     
     func deauthenticate(completionHandler: @escaping (Result<Void, AuthenticationError>) -> Void)
     
