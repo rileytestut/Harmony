@@ -95,7 +95,7 @@ public class LocalRecord: RecordRepresentation, Codable
                 let entity = NSEntityDescription.entity(forEntityName: recordType, in: context),
                 let managedObjectClass = NSClassFromString(entity.managedObjectClassName) as? Syncable.Type,
                 let primaryKeyPath = managedObjectClass.syncablePrimaryKey.stringValue
-            else { throw ValidationError.unknownRecordType(self.recordedObjectType) }
+            else { throw ValidationError.unknownRecordType(recordType) }
             
             let identifier = try container.decode(String.self, forKey: .identifier)
             
@@ -229,11 +229,19 @@ extension LocalRecord
 
 private extension LocalRecord
 {
+    @NSManaged private var primitiveRecordedObjectURI: URL?
+    
     func resolveRecordedObjectID() -> NSManagedObjectID?
     {
         guard let persistentStoreCoordinator = self.managedObjectContext?.persistentStoreCoordinator else {
             fatalError("LocalRecord's associated NSPersistentStoreCoordinator must not be nil to retrieve external NSManagedObjectID.")
         }
+        
+        // Technically, recordedObjectURI may be nil if this is called from inside LocalRecord.init.
+        // To prevent edge-case crashes, we manually check if it is nil first.
+        // (We don't just turn it into optional via Optional(self.recordedObjectURI) because
+        // that crashes when bridging from ObjC).
+        guard self.primitiveRecordedObjectURI != nil else { return nil }
         
         // Nil objectID = persistent store does not exist.
         let objectID = persistentStoreCoordinator.managedObjectID(forURIRepresentation: self.recordedObjectURI)
