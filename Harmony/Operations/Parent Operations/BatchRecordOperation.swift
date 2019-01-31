@@ -26,6 +26,8 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         self.recordController = recordController
         
         super.init(service: service)
+        
+        self.operationQueue.maxConcurrentOperationCount = 5
     }
     
     override func main()
