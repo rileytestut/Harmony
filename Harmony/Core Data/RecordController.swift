@@ -11,15 +11,6 @@ import CoreData
 
 import Roxas
 
-extension ManagedRecord
-{
-    fileprivate struct RecordedObjectID: Hashable
-    {
-        var type: String
-        var identifier: String
-    }
-}
-
 extension Notification.Name
 {
     static let recordControllerDidProcessUpdates = Notification.Name("recordControllerDidProcessUpdates")
@@ -264,7 +255,7 @@ private extension RecordController
         
         do
         {
-            var recordRepresentationsByRecordedObjectID = [ManagedRecord.RecordedObjectID: RecordType]()
+            var recordRepresentationsByRecordID = [RecordID: RecordType]()
             
             
             // Fetch record representations.
@@ -274,13 +265,13 @@ private extension RecordController
             let recordRepresentations = try context.fetch(recordRepresentationsFetchRequest)
             for record in recordRepresentations
             {
-                let recordedObjectID = ManagedRecord.RecordedObjectID(type: record.recordedObjectType, identifier: record.recordedObjectIdentifier)
-                recordRepresentationsByRecordedObjectID[recordedObjectID] = record
+                let recordID = RecordID(type: record.recordedObjectType, identifier: record.recordedObjectIdentifier)
+                recordRepresentationsByRecordID[recordID] = record
             }
             
             
             // Fetch managed records for record representations.
-            let predicates = recordRepresentationsByRecordedObjectID.keys.map {
+            let predicates = recordRepresentationsByRecordID.keys.map {
                 return NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(ManagedRecord.recordedObjectType), $0.type, #keyPath(ManagedRecord.recordedObjectIdentifier), $0.identifier)
             }
             
@@ -293,8 +284,8 @@ private extension RecordController
             // Update existing managed records.
             for record in managedRecords
             {
-                let recordedObjectID = ManagedRecord.RecordedObjectID(type: record.recordedObjectType, identifier: record.recordedObjectIdentifier)
-                guard let recordRepresentation = recordRepresentationsByRecordedObjectID[recordedObjectID] else {
+                let recordID = RecordID(type: record.recordedObjectType, identifier: record.recordedObjectIdentifier)
+                guard let recordRepresentation = recordRepresentationsByRecordID[recordID] else {
                     continue
                 }
                 
@@ -307,16 +298,16 @@ private extension RecordController
                 }
                 
                 // Remove from recordRepresentationsByRecordedObjectID so we know which records we still need to create.
-                recordRepresentationsByRecordedObjectID[recordedObjectID] = nil
+                recordRepresentationsByRecordID[recordID] = nil
             }
             
             
             // Create missing managed records.
-            for (recordedObjectID, recordRepresentation) in recordRepresentationsByRecordedObjectID
+            for (recordID, recordRepresentation) in recordRepresentationsByRecordID
             {
                 let managedRecord = ManagedRecord(context: context)
-                managedRecord.recordedObjectType = recordedObjectID.type
-                managedRecord.recordedObjectIdentifier = recordedObjectID.identifier
+                managedRecord.recordedObjectType = recordID.type
+                managedRecord.recordedObjectIdentifier = recordID.identifier
                 
                 configure(managedRecord, with: recordRepresentation)
             }
