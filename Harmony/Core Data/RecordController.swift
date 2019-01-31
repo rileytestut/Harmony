@@ -48,10 +48,7 @@ public final class RecordController: RSTPersistentContainer
         }
         self.persistentStoreDescriptions.append(contentsOf: externalPersistentStoreDescriptions)
         
-        for description in self.persistentStoreDescriptions
-        {
-            description.shouldAddStoreAsynchronously = true
-        }
+        self.shouldAddStoresAsynchronously = true
     }
     
     public override class func defaultDirectoryURL() -> URL
