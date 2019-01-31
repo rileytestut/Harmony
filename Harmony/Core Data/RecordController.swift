@@ -16,8 +16,25 @@ extension Notification.Name
     static let recordControllerDidProcessUpdates = Notification.Name("recordControllerDidProcessUpdates")
 }
 
+extension RecordController
+{
+    public enum Error: Swift.Error
+    {
+        case noEntities
+    }
+}
+
 public final class RecordController: RSTPersistentContainer
 {
+    public private(set) var isSeeded: Bool {
+        get {
+            return UserDefaults.standard.harmonyIsRecordControllerSeeded
+        }
+        set {
+            UserDefaults.standard.harmonyIsRecordControllerSeeded = newValue
+        }
+    }
+    
     let persistentContainer: NSPersistentContainer
     
     var automaticallyRecordsManagedObjects = true
@@ -60,7 +77,7 @@ public final class RecordController: RSTPersistentContainer
 
 public extension RecordController
 {
-    func start(withCompletionHandler completionHandler: @escaping ([NSPersistentStoreDescription: Error]) -> Void)
+    func start(withCompletionHandler completionHandler: @escaping ([NSPersistentStoreDescription: Swift.Error]) -> Void)
     {
         do
         {
@@ -71,7 +88,7 @@ public extension RecordController
             print(error)
         }
         
-        var errors = [NSPersistentStoreDescription: Error]()
+        var errors = [NSPersistentStoreDescription: Swift.Error]()
         
         let dispatchGroup = DispatchGroup()
         self.persistentStoreDescriptions.forEach { _ in dispatchGroup.enter() }
@@ -105,6 +122,48 @@ public extension RecordController
             dispatchGroup.wait()
             finish()
         }
+    }
+    
+    @discardableResult func seedFromPersistentContainer(completionHandler: @escaping (Result<Void, AnyError>) -> Void) -> Progress
+    {
+        let progress = Progress(totalUnitCount: 0)
+        
+        guard let entities = self.managedObjectModel.entities(forConfigurationName: NSManagedObjectModel.Configuration.external.rawValue) else {
+            completionHandler(.failure(AnyError(Error.noEntities)))
+            return progress
+        }
+        
+        let syncableEntityNames = entities.lazy.filter { NSClassFromString($0.managedObjectClassName) is Syncable.Type }.compactMap { $0.name }
+        progress.totalUnitCount = Int64(syncableEntityNames.count)
+        
+        self.performBackgroundTask { (context) in
+            do
+            {
+                for name in syncableEntityNames
+                {
+                    let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: name)
+                    fetchRequest.fetchBatchSize = 50
+                    
+                    let managedObjects = try context.fetch(fetchRequest)
+                    let objectIDs = managedObjects.lazy.compactMap { $0 as? SyncableManagedObject }.filter { $0.isSyncingEnabled }.map { $0.objectID }
+                    
+                    // Create new local records for any syncable managed objects, but ignore existing local records.
+                    self.updateLocalRecords(for: objectIDs, status: .normal, in: context, ignoreExistingRecords: true)
+                    
+                    progress.completedUnitCount += 1
+                }
+                
+                self.isSeeded = true
+                
+                completionHandler(.success)
+            }
+            catch
+            {
+                completionHandler(.failure(AnyError(error)))
+            }
+        }
+        
+        return progress
     }
 }
 
@@ -200,7 +259,7 @@ extension RecordController
             
             for record in records
             {
-                var string = "Record: \(record.objectID)"
+                var string = "Record: \(record.recordedObjectType) \(record.objectID)"
                 
                 if let localRecord = record.localRecord
                 {
@@ -320,7 +379,7 @@ private extension RecordController
         }
     }
     
-    func updateLocalRecords<T: Collection>(for recordedObjectIDs: T, status: RecordStatus, in context: NSManagedObjectContext) where T.Element == NSManagedObjectID
+    func updateLocalRecords<T: Collection>(for recordedObjectIDs: T, status: RecordStatus, in context: NSManagedObjectContext, ignoreExistingRecords: Bool = false) where T.Element == NSManagedObjectID
     {
         func configure(_ localRecord: LocalRecord, with status: RecordStatus)
         {
@@ -350,7 +409,10 @@ private extension RecordController
             // Update existing local records.
             for localRecord in localRecords
             {
-                configure(localRecord, with: status)
+                if !ignoreExistingRecords
+                {
+                    configure(localRecord, with: status)
+                }
                 
                 // Remove from recordedObjectURIs so we know which local records we still need to create.
                 recordedObjectURIs.remove(localRecord.recordedObjectURI)
