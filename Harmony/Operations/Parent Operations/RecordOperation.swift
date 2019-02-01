@@ -32,6 +32,7 @@ class RecordOperation<ResultType>: Operation<ResultType, RecordError>
         super.init(service: service)
         
         self.progress.totalUnitCount = 1
+        self.operationQueue.maxConcurrentOperationCount = 2
     }
     
     override func start()
