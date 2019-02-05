@@ -42,6 +42,7 @@ public final class SyncCoordinator
     }
     
     public private(set) var isAuthenticated = false
+    public private(set) var isSyncing = false
     
     private let operationQueue: OperationQueue
     
@@ -103,6 +104,8 @@ public extension SyncCoordinator
             return operation
         }
         
+        self.isSyncing = true
+        
         let syncRecordsOperation = SyncRecordsOperation(changeToken: UserDefaults.standard.harmonyChangeToken, service: self.service, recordController: self.recordController)
         syncRecordsOperation.resultHandler = { (result) in
             let syncResult: SyncResult
@@ -124,6 +127,11 @@ public extension SyncCoordinator
             }
             
             NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: syncResult])
+            
+            if self.operationQueue.operations.isEmpty
+            {
+                self.isSyncing = false
+            }
         }
         self.operationQueue.addOperation(syncRecordsOperation)
         
