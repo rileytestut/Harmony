@@ -87,17 +87,17 @@ private extension DeleteRecordOperation
                 }
                 
                 self.progress.addChild(progress, withPendingUnitCount: 1)
-                
-                dispatchGroup.notify(queue: .global()) {
-                    self.managedObjectContext.perform {
-                        if !errors.isEmpty
-                        {
-                            completionHandler(.failure(.filesFailed(self.record, errors)))
-                        }
-                        else
-                        {
-                            completionHandler(.success)
-                        }
+            }
+            
+            dispatchGroup.notify(queue: .global()) {
+                self.managedObjectContext.perform {
+                    if !errors.isEmpty
+                    {
+                        completionHandler(.failure(.filesFailed(self.record, errors)))
+                    }
+                    else
+                    {
+                        completionHandler(.success)
                     }
                 }
             }
