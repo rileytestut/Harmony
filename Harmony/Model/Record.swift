@@ -153,11 +153,11 @@ extension Record
 
 public extension Record where T == NSManagedObject
 {
-    public var recordedObject: Syncable? {
+    var recordedObject: Syncable? {
         return self.perform { $0.localRecord?.recordedObject }
     }
     
-    public convenience init<R>(_ record: Record<R>)
+    convenience init<R>(_ record: Record<R>)
     {
         let managedRecord = record.perform { $0 }
         self.init(managedRecord)
@@ -166,7 +166,7 @@ public extension Record where T == NSManagedObject
 
 public extension Record where T: Syncable
 {
-    public var recordedObject: T? {
+    var recordedObject: T? {
         return self.perform { $0.localRecord?.recordedObject as? T }
     }
 }
