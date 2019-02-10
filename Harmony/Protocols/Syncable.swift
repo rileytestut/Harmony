@@ -9,9 +9,7 @@
 import Foundation
 import CoreData
 
-public typealias SyncableManagedObject = (NSManagedObject & Syncable)
-
-public protocol Syncable: NSObjectProtocol
+public protocol Syncable: NSManagedObject
 {
     static var syncablePrimaryKey: AnyKeyPath { get }
     
@@ -28,7 +26,7 @@ public protocol Syncable: NSObjectProtocol
     var isSyncingEnabled: Bool { get }
 }
 
-public extension Syncable where Self: NSManagedObject
+public extension Syncable
 {
     var syncableType: String {
         guard let type = self.entity.name else { fatalError("SyncableManagedObjects must have a valid entity name.") }
@@ -56,7 +54,7 @@ public extension Syncable where Self: NSManagedObject
     }
 }
 
-public extension Syncable where Self: NSManagedObject
+public extension Syncable
 {
     internal(set) var syncableIdentifier: String? {
         get {
@@ -73,16 +71,16 @@ public extension Syncable where Self: NSManagedObject
     }
 }
 
-internal extension Syncable where Self: NSManagedObject
+internal extension Syncable
 {
-    var syncableRelationshipObjects: [String: SyncableManagedObject] {
-        var relationshipObjects = [String: SyncableManagedObject]()
+    var syncableRelationshipObjects: [String: Syncable] {
+        var relationshipObjects = [String: Syncable]()
         
         for keyPath in self.syncableRelationships
         {
             guard let stringValue = keyPath.stringValue else { continue }
             
-            let relationshipObject = self.value(forKeyPath: stringValue) as? SyncableManagedObject
+            let relationshipObject = self.value(forKeyPath: stringValue) as? Syncable
             relationshipObjects[stringValue] = relationshipObject
         }
 

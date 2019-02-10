@@ -145,7 +145,7 @@ public extension RecordController
                     fetchRequest.fetchBatchSize = 50
                     
                     let managedObjects = try context.fetch(fetchRequest)
-                    let objectIDs = managedObjects.lazy.compactMap { $0 as? SyncableManagedObject }.filter { $0.isSyncingEnabled }.map { $0.objectID }
+                    let objectIDs = managedObjects.lazy.compactMap { $0 as? Syncable }.filter { $0.isSyncingEnabled }.map { $0.objectID }
                     
                     // Create new local records for any syncable managed objects, but ignore existing local records.
                     self.updateLocalRecords(for: objectIDs, status: .normal, in: context, ignoreExistingRecords: true)
@@ -169,7 +169,7 @@ public extension RecordController
 
 public extension RecordController
 {
-    func updateRecord<T: SyncableManagedObject>(for managedObject: T)
+    func updateRecord<T: Syncable>(for managedObject: T)
     {
         guard let context = self.processingContext else { return }
         
@@ -192,7 +192,7 @@ public extension RecordController
     func fetchRecords<RecordType: NSManagedObject, U: Collection>(for recordedObjects: U) throws -> Set<Record<RecordType>> where U.Element == RecordType
     {
         let predicates = recordedObjects.compactMap { (recordedObject) -> NSPredicate? in
-            guard let syncableManagedObject = recordedObject as? SyncableManagedObject, let identifier = syncableManagedObject.syncableIdentifier else { return nil }
+            guard let syncableManagedObject = recordedObject as? Syncable, let identifier = syncableManagedObject.syncableIdentifier else { return nil }
             
             let predicate = NSPredicate(format: "%K == %@ AND %K == %@",
                                         #keyPath(ManagedRecord.recordedObjectType), syncableManagedObject.syncableType,
@@ -430,7 +430,7 @@ private extension RecordController
                     {
                         guard
                             let objectID = self.persistentStoreCoordinator.managedObjectID(forURIRepresentation: objectURI),
-                            let syncableManagedObject = try context.existingObject(with: objectID) as? SyncableManagedObject
+                            let syncableManagedObject = try context.existingObject(with: objectID) as? Syncable
                         else { continue }
                         
                         let record = try LocalRecord(recordedObject: syncableManagedObject, context: context)
@@ -468,7 +468,7 @@ private extension RecordController
         
         let cache = ContextCache()
         
-        for case let updatedObject as SyncableManagedObject in managedObjectContext.registeredObjects where updatedObject.hasChanges && updatedObject.isSyncingEnabled
+        for case let updatedObject as Syncable in managedObjectContext.registeredObjects where updatedObject.hasChanges && updatedObject.isSyncingEnabled
         {
             cache.setChangedKeys(Set(updatedObject.changedValues().keys), for: updatedObject)
         }
@@ -488,7 +488,7 @@ private extension RecordController
         guard let cache = managedObjectContext.savingCache else { return }
         
         // Must use registeredObjects, because an inserted object may become an updated object after saving due to merging.
-        for case let updatedObject as SyncableManagedObject in managedObjectContext.registeredObjects where updatedObject.hasChanges && updatedObject.isSyncingEnabled
+        for case let updatedObject as Syncable in managedObjectContext.registeredObjects where updatedObject.hasChanges && updatedObject.isSyncingEnabled
         {
             cache.setChangedKeys(Set(updatedObject.changedValues().keys), for: updatedObject)
         }
@@ -518,13 +518,13 @@ private extension RecordController
         if managedObjectContext.persistentStoreCoordinator != self.persistentStoreCoordinator
         {
             // Filter out non-syncable managed objects.
-            insertedObjects = insertedObjects.filter { ($0 as? SyncableManagedObject)?.isSyncingEnabled == true }
-            deletedObjects = deletedObjects.filter { ($0 as? SyncableManagedObject)?.isSyncingEnabled == true }
+            insertedObjects = insertedObjects.filter { ($0 as? Syncable)?.isSyncingEnabled == true }
+            deletedObjects = deletedObjects.filter { ($0 as? Syncable)?.isSyncingEnabled == true }
             
             var validatedUpdatedObjects = Set<NSManagedObject>()
             
             // Only include updated objects whose syncable keys have been updated.
-            for case let syncableManagedObject as SyncableManagedObject in updatedObjects where syncableManagedObject.isSyncingEnabled
+            for case let syncableManagedObject as Syncable in updatedObjects where syncableManagedObject.isSyncingEnabled
             {
                 if let changedKeys = cache.changedKeys(for: syncableManagedObject)
                 {

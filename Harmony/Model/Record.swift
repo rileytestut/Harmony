@@ -153,7 +153,7 @@ extension Record
 
 public extension Record where T == NSManagedObject
 {
-    public var recordedObject: SyncableManagedObject? {
+    public var recordedObject: Syncable? {
         return self.perform { $0.localRecord?.recordedObject }
     }
     
@@ -164,7 +164,7 @@ public extension Record where T == NSManagedObject
     }
 }
 
-public extension Record where T: NSManagedObject, T: Syncable
+public extension Record where T: Syncable
 {
     public var recordedObject: T? {
         return self.perform { $0.localRecord?.recordedObject as? T }

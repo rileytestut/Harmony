@@ -48,7 +48,7 @@ public class LocalRecord: RecordRepresentation, Codable
     @NSManaged var version: ManagedVersion?
     @NSManaged var remoteFiles: Set<RemoteFile>
     
-    var recordedObject: SyncableManagedObject? {
+    var recordedObject: Syncable? {
         return self.resolveRecordedObject()
     }
     
@@ -64,7 +64,7 @@ public class LocalRecord: RecordRepresentation, Codable
         super.init(entity: entity, insertInto: context)
     }
     
-    init(recordedObject: SyncableManagedObject, context: NSManagedObjectContext) throws
+    init(recordedObject: Syncable, context: NSManagedObjectContext) throws
     {
         super.init(entity: LocalRecord.entity(), insertInto: nil)
         
@@ -102,9 +102,9 @@ public class LocalRecord: RecordRepresentation, Codable
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: recordType)
             fetchRequest.predicate = NSPredicate(format: "%K == %@", primaryKeyPath, identifier)
             
-            let recordedObject: SyncableManagedObject
+            let recordedObject: Syncable
             
-            if let managedObject = try context.fetch(fetchRequest).first as? SyncableManagedObject
+            if let managedObject = try context.fetch(fetchRequest).first as? Syncable
             {
                 tempRecordedObject = managedObject
                 recordedObject = managedObject
@@ -116,7 +116,7 @@ public class LocalRecord: RecordRepresentation, Codable
                 // Assign to tempRecordedObject immediately before checking if it is a SyncableManagedObject so we can remove it if not.
                 tempRecordedObject = managedObject
                 
-                guard let syncableManagedObject = managedObject as? SyncableManagedObject else { throw ValidationError.nonSyncableRecordType(recordType) }
+                guard let syncableManagedObject = managedObject as? Syncable else { throw ValidationError.nonSyncableRecordType(recordType) }
                 recordedObject = syncableManagedObject
             }
             
@@ -209,7 +209,7 @@ extension LocalRecord
         return NSFetchRequest<LocalRecord>(entityName: "LocalRecord")
     }
     
-    func configure(with recordedObject: SyncableManagedObject) throws
+    func configure(with recordedObject: Syncable) throws
     {
         guard recordedObject.isSyncingEnabled else { throw ValidationError.nonSyncableRecordedObject(recordedObject) }
         
@@ -248,7 +248,7 @@ private extension LocalRecord
         return objectID
     }
     
-    func resolveRecordedObject() -> SyncableManagedObject?
+    func resolveRecordedObject() -> Syncable?
     {
         guard let managedObjectContext = self.managedObjectContext else {
             fatalError("LocalRecord's managedObjectContext must not be nil to retrieve external NSManagedObject.")
@@ -258,7 +258,7 @@ private extension LocalRecord
         
         do
         {
-            let managedObject = try managedObjectContext.existingObject(with: objectID) as? SyncableManagedObject
+            let managedObject = try managedObjectContext.existingObject(with: objectID) as? Syncable
             return managedObject
         }
         catch CocoaError.managedObjectReferentialIntegrity

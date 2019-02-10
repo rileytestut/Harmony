@@ -57,7 +57,7 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                 {
                     let localRecords = try temporaryContext.fetch(fetchRequest)
                     
-                    let keyValuePairs = localRecords.lazy.compactMap { (localRecord) -> (RecordID, SyncableManagedObject)? in
+                    let keyValuePairs = localRecords.lazy.compactMap { (localRecord) -> (RecordID, Syncable)? in
                         guard let recordedObject = localRecord.recordedObject else { return nil }
                         return (localRecord.recordID, recordedObject)
                     }
@@ -117,7 +117,7 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
 
 private extension FinishDownloadingRecordsOperation
 {
-    func updateRelationships(for localRecord: LocalRecord, relationshipObjects: [RecordID: SyncableManagedObject]) throws
+    func updateRelationships(for localRecord: LocalRecord, relationshipObjects: [RecordID: Syncable]) throws
     {
         guard let recordedObject = localRecord.recordedObject else { throw ValidationError.nilRecordedObject }
         
