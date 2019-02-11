@@ -19,7 +19,7 @@
 		BF1D94891F9C1C38004216B9 /* Roxas.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; };
 		BF1D94921F9C24DC004216B9 /* XCAssert+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */; };
 		BF34EE621FD381F8004304AC /* NSManagedObjectContext+Generics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF34EE611FD381F8004304AC /* NSManagedObjectContext+Generics.swift */; };
-		BF37289B21B9DE1B008BFB5B /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B1D200ED96700A8F673 /* Result.swift */; };
+		BF37289B21B9DE1B008BFB5B /* Result+Success.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B1D200ED96700A8F673 /* Result+Success.swift */; };
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
 		BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */; };
 		BF3915E121812F0200AF74E5 /* Project1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */; };
@@ -337,7 +337,7 @@
 		BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRemoteRecordsOperation.swift; sourceTree = "<group>"; };
 		BFFB9B17200ED72E00A8F673 /* Operation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Operation.swift; sourceTree = "<group>"; };
 		BFFB9B1A200ED7EA00A8F673 /* Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
-		BFFB9B1D200ED96700A8F673 /* Result.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
+		BFFB9B1D200ED96700A8F673 /* Result+Success.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+Success.swift"; sourceTree = "<group>"; };
 		BFFB9B20200EDED900A8F673 /* FetchRemoteRecordsOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRemoteRecordsOperationTests.swift; sourceTree = "<group>"; };
 		BFFB9B23200EDF2200A8F673 /* MockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockService.swift; sourceTree = "<group>"; };
 		BFFDBAA0216D785E00AED109 /* ManagedVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedVersion.swift; sourceTree = "<group>"; };
@@ -541,6 +541,7 @@
 				BFDDC10D219504AA009732B7 /* UserDefaults+Harmony.swift */,
 				BFAB9F9F219B7DDF0080EC7D /* NSManagedObjectContext+Caching.swift */,
 				BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */,
+				BFFB9B1D200ED96700A8F673 /* Result+Success.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -730,7 +731,6 @@
 		BFFB9B1C200ED93E00A8F673 /* Types */ = {
 			isa = PBXGroup;
 			children = (
-				BFFB9B1D200ED96700A8F673 /* Result.swift */,
 				BF5D2E6E21B5B895007FACFA /* Errors.swift */,
 			);
 			path = Types;
@@ -1033,7 +1033,7 @@
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,
 				BFBC13A221827D15001A321F /* KeyedContainers+ManagedValues.swift in Sources */,
 				BFDDC10E219504AA009732B7 /* UserDefaults+Harmony.swift in Sources */,
-				BF37289B21B9DE1B008BFB5B /* Result.swift in Sources */,
+				BF37289B21B9DE1B008BFB5B /* Result+Success.swift in Sources */,
 				BF8A333621A4872300A42FD4 /* Record.swift in Sources */,
 				BFBDB7C3216EB1F000DC004B /* RemoteRecord.swift in Sources */,
 				BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */,

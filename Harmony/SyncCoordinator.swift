@@ -66,19 +66,19 @@ public final class SyncCoordinator
 
 public extension SyncCoordinator
 {
-    func start(completionHandler: @escaping (Result<Account?, AnyError>) -> Void)
+    func start(completionHandler: @escaping (Result<Account?, Error>) -> Void)
     {
         self.recordController.start { (result) in
             if let error = result.values.first
             {
-                completionHandler(.failure(AnyError(DatabaseError.corrupted(error))))
+                completionHandler(.failure(DatabaseError.corrupted(error)))
             }
             else
             {
                 self.authenticate() { (result) in
                     do
                     {
-                        let account = try result.value()
+                        let account = try result.get()
                         completionHandler(.success(account))
                     }
                     catch AuthenticationError.noSavedCredentials
@@ -87,7 +87,7 @@ public extension SyncCoordinator
                     }
                     catch
                     {
-                        completionHandler(.failure(AnyError(error)))
+                        completionHandler(.failure(error))
                     }
                 }
             }
@@ -110,20 +110,14 @@ public extension SyncCoordinator
         syncRecordsOperation.resultHandler = { (result) in
             let syncResult: SyncResult
             
-            do
+            switch result
             {
-                let (results, changeToken) = try result.value()
+            case .success(let results, let changeToken):
                 UserDefaults.standard.harmonyChangeToken = changeToken
-                
                 syncResult = .success(results)
-            }
-            catch let error as SyncError
-            {
+                
+            case .failure(let error):
                 syncResult = .failure(error)
-            }
-            catch
-            {
-                syncResult = .failure(SyncError(error))
             }
             
             NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: syncResult])
@@ -211,7 +205,7 @@ public extension SyncCoordinator
             operation.resultHandler = { (result) in
                 do
                 {
-                    _ = try result.value()
+                    _ = try result.get()
                     
                     let context = self.recordController.newBackgroundContext()
                     record.perform(in: context) { (managedRecord) in
@@ -250,7 +244,7 @@ public extension SyncCoordinator
             operation.resultHandler = { (result) in
                 do
                 {
-                    _ = try result.value()
+                    _ = try result.get()
                     
                     let context = self.recordController.newBackgroundContext()
                     record.perform(in: context) { (managedRecord) in
@@ -289,7 +283,7 @@ public extension SyncCoordinator
         {
             do
             {
-                let record = try result.value()
+                let record = try result.get()
                 
                 try record.perform { (managedRecord) in
                     managedRecord.isConflicted = false

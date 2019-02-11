@@ -28,7 +28,7 @@ class UpdateRecordMetadataOperation: RecordOperation<Void>
         let progress = self.service.updateMetadata(self.metadata, for: self.record) { (result) in
             do
             {
-                try result.verify()
+                try result.get()
                 
                 self.result = .success
             }

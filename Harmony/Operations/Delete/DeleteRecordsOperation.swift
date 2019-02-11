@@ -18,7 +18,7 @@ class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation>
         super.init(predicate: ManagedRecord.deleteRecordsPredicate, service: service, recordController: recordController)
     }
     
-    override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], AnyError>) -> Void)
+    override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], Error>) -> Void)
     {
         for record in records
         {
@@ -31,7 +31,7 @@ class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation>
         completionHandler(.success(records))
     }
     
-    override func process(_ result: Result<[AnyRecord : Result<Void, RecordError>], AnyError>, in context: NSManagedObjectContext, completionHandler: @escaping () -> Void)
+    override func process(_ result: Result<[AnyRecord : Result<Void, RecordError>], Error>, in context: NSManagedObjectContext, completionHandler: @escaping () -> Void)
     {
         guard case .success(let results) = result else { return completionHandler() }
         

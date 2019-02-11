@@ -22,48 +22,10 @@ extension HarmonyError
     }
 }
 
-public struct AnyError: HarmonyError
+public enum GeneralError: HarmonyError
 {
-    fileprivate enum Error: HarmonyError
-    {
-        case cancelled
-        case unknown
-    }
-    
-    public static let cancelled = AnyError(Error.cancelled)
-    public static let unknown = AnyError(Error.unknown)
-    
-    public let error: Swift.Error
-    
-    private var _nsError: NSError {
-        return (self.error as NSError)
-    }
-    
-    public init(_ error: Swift.Error)
-    {
-        if let error = error as? AnyError
-        {
-            self.error = error.error
-        }
-        else
-        {
-            self.error = error
-        }
-    }
-}
-
-extension AnyError: Hashable, Equatable
-{
-    public static func ==(lhs: AnyError, rhs: AnyError) -> Bool
-    {
-        return lhs._nsError.domain == rhs._nsError.domain && lhs._nsError.code == rhs._nsError.code
-    }
-    
-    public func hash(into hasher: inout Hasher)
-    {
-        hasher.combine(self._nsError.domain)
-        hasher.combine(self._nsError.code)
-    }
+    case cancelled
+    case unknown
 }
 
 //MARK: Errors -
@@ -72,9 +34,9 @@ public enum SyncError: HarmonyError
     case authentication(AuthenticationError)
     case fetch(FetchError)
     case partial([AnyRecord: Result<Void, RecordError>])
-    case other(AnyError)
+    case other(HarmonyError)
     
-    public var underlyingError: Error? {
+    public var underlyingError: HarmonyError? {
         switch self
         {
         case .authentication(let error): return error
@@ -84,38 +46,14 @@ public enum SyncError: HarmonyError
         }
     }
     
-    init(_ error: Error)
+    init(_ error: HarmonyError)
     {
-        do
+        switch error
         {
-            do
-            {
-                throw error
-            }
-            catch let error as SyncError
-            {
-                throw error
-            }
-            catch let error as AuthenticationError
-            {
-                throw SyncError.authentication(error)
-            }
-            catch let error as FetchError
-            {
-                throw SyncError.fetch(error)
-            }
-            catch
-            {
-                throw SyncError.other(AnyError(error))
-            }
-        }
-        catch let error as SyncError
-        {
-            self = error
-        }
-        catch
-        {
-            preconditionFailure("Throwing non-SyncError from initializer.")
+        case let error as SyncError: self = error
+        case let error as AuthenticationError: self = SyncError.authentication(error)
+        case let error as FetchError: self = SyncError.fetch(error)
+        default: self = SyncError.other(error)
         }
     }
 }
@@ -123,15 +61,14 @@ public enum SyncError: HarmonyError
 public enum DatabaseError: HarmonyError
 {
     case corrupted(Error)
-    case other(AnyError)
+    case other(Error)
     
     public init(_ error: Error)
     {
         switch error
         {
         case let error as DatabaseError: self = error
-        case let error as AnyError where error.error is DatabaseError: self = error.error as! DatabaseError
-        case let error: self = .other(AnyError(error))
+        case let error: self = .other(error)
         }
     }
 }
@@ -139,15 +76,14 @@ public enum DatabaseError: HarmonyError
 public enum AuthenticationError: HarmonyError
 {
     case noSavedCredentials
-    case other(AnyError)
+    case other(Error)
     
     public init(_ error: Error)
     {
         switch error
         {
         case let error as AuthenticationError: self = error
-        case let error as AnyError where error.error is AuthenticationError: self = error.error as! AuthenticationError
-        case let error: self = .other(AnyError(error))
+        case let error: self = .other(error)
         }
     }
 }
@@ -155,15 +91,14 @@ public enum AuthenticationError: HarmonyError
 public enum FetchError: HarmonyError
 {
     case invalidChangeToken(Data)
-    case other(AnyError)
+    case other(Error)
     
     public init(_ error: Error)
     {
         switch error
         {
         case let error as FetchError: self = error
-        case let error as AnyError where error.error is FetchError: self = error.error as! FetchError
-        case let error: self = .other(AnyError(error))
+        case let error: self = .other(error)
         }
     }
 }
@@ -175,7 +110,7 @@ public enum RecordError: HarmonyError
     case syncingDisabled(AnyRecord)
     case conflicted(AnyRecord)
     case filesFailed(AnyRecord, [FileError])
-    case other(AnyRecord, AnyError)
+    case other(AnyRecord, Error)
     
     public var record: Record<NSManagedObject> {
         switch self
@@ -195,8 +130,7 @@ public enum RecordError: HarmonyError
         switch error
         {
         case let error as RecordError: self = error
-        case let error as AnyError where error.error is RecordError: self = error.error as! RecordError
-        case let error: self = .other(record, AnyError(error))
+        case let error: self = .other(record, error)
         }
     }
 }
@@ -205,7 +139,7 @@ public enum FileError: HarmonyError
 {
     case unknownFile(String)
     case doesNotExist(String)
-    case other(String, AnyError)
+    case other(String, Error)
     
     public var fileIdentifier: String {
         switch self
@@ -222,8 +156,7 @@ public enum FileError: HarmonyError
         switch error
         {
         case let error as FileError: self = error
-        case let error as AnyError where error.error is FileError: self = error.error as! FileError
-        case let error: self = .other(fileIdentifier, AnyError(error))
+        case let error: self = .other(fileIdentifier, error)
         }
     }
 }
@@ -252,32 +185,13 @@ public enum ValidationError: HarmonyError
 }
 
 //MARK: - Error Localization -
-extension AnyError
+extension GeneralError
 {
-    public var errorDescription: String? {
-        return self._nsError.localizedDescription
-    }
-    
     public var failureDescription: String {
-        return self._nsError.userInfo[NSLocalizedFailureErrorKey] as? String ?? self.error.localizedDescription
-    }
-    
-    public var failureReason: String? {
-        return self._nsError.localizedFailureReason
-    }
-    
-    public var errorUserInfo: [String : Any] {
-        return self._nsError.userInfo
-    }
-}
-
-extension AnyError.Error
-{
-    var failureDescription: String {
         return NSLocalizedString("Unable to complete operation.", comment: "")
     }
     
-    var failureReason: String? {
+    public var failureReason: String? {
         switch self
         {
         case .cancelled: return NSLocalizedString("The operation was cancelled.", comment: "")
@@ -329,7 +243,7 @@ extension AuthenticationError
         switch self
         {
         case .noSavedCredentials: return NSLocalizedString("There are no saved credentials for the current user.", comment: "")
-        case .other(let error): return error.failureReason
+        case .other(let error as NSError): return error.localizedFailureReason
         }
     }
 }
@@ -344,7 +258,7 @@ extension FetchError
         switch self
         {
         case .invalidChangeToken: return NSLocalizedString("The provided change token was invalid.", comment: "")
-        case .other(let error): return error.failureReason
+        case .other(let error as NSError): return error.localizedFailureReason
         }
     }
 }
@@ -363,7 +277,7 @@ extension RecordError
         case .doesNotExist: return NSLocalizedString("The record does not exist.", comment: "")
         case .syncingDisabled: return NSLocalizedString("Syncing is disabled for this record.", comment: "")
         case .conflicted: return NSLocalizedString("There is a conflict with this record.", comment: "")
-        case .other(_, let error): return error.failureReason
+        case .other(_, let error as NSError): return error.localizedFailureReason
         case .filesFailed(_, let errors):
             if let error = errors.first, errors.count == 1
             {
@@ -388,7 +302,7 @@ extension FileError
         {
         case .doesNotExist: return NSLocalizedString("The file does not exist.", comment: "")
         case .unknownFile: return NSLocalizedString("The file is unknown.", comment: "")
-        case .other(_, let error): return error.failureReason
+        case .other(_, let error as NSError): return error.localizedFailureReason
         }
     }
 }
@@ -399,7 +313,7 @@ extension DatabaseError
         switch self
         {
         case .corrupted: return NSLocalizedString("The syncing database is corrupted.", comment: "")
-        case .other(let error): return error.failureDescription
+        case .other(let error as NSError): return error.localizedFailureDescription ?? error.localizedDescription
         }
     }
     

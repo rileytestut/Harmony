@@ -22,13 +22,13 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
         self.downloadRecord { (result) in
             do
             {
-                let localRecord = try result.value()
+                let localRecord = try result.get()
                 
                 self.downloadFiles(for: localRecord) { (result) in
                     self.managedObjectContext.perform {
                         do
                         {
-                            let files = try result.value()
+                            let files = try result.get()
                             localRecord.downloadedFiles = files
                             
                             self.result = .success(localRecord)
@@ -67,11 +67,11 @@ private extension DownloadRecordOperation
             operation.resultHandler = { (result) in
                 do
                 {
-                    let results = try result.value()
+                    let results = try result.get()
                     
-                    guard let result = results.values.first else { throw RecordError.other(self.record, .unknown) }
+                    guard let result = results.values.first else { throw RecordError.other(self.record, GeneralError.unknown) }
                     
-                    let localRecord = try result.value()
+                    let localRecord = try result.get()
                     self.result = .success(localRecord)
                     
                     try self.managedObjectContext.save()
@@ -115,7 +115,7 @@ private extension DownloadRecordOperation
             let progress = self.service.download(self.record, version: version, context: self.managedObjectContext) { (result) in
                 do
                 {
-                    let localRecord = try result.value()
+                    let localRecord = try result.get()
                     localRecord.status = .normal
                     localRecord.modificationDate = version.date
                     
@@ -199,7 +199,7 @@ private extension DownloadRecordOperation
                         let progress = self.service.download(remoteFile) { (result) in
                             do
                             {
-                                let file = try result.value()
+                                let file = try result.get()
                                 files.insert(file)
                             }
                             catch

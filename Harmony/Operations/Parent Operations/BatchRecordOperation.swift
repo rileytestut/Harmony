@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType>>: Operation<[Record<NSManagedObject>: Result<ResultType, RecordError>], AnyError>
+class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType>>: Operation<[Record<NSManagedObject>: Result<ResultType, RecordError>], Error>
 {
     let predicate: NSPredicate
     let recordController: RecordController
@@ -46,12 +46,12 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
             do
             {
                 let records = try fetchContext.fetch(fetchRequest).map(Record.init)
-                records.forEach { self.recordResults[$0] = .failure(RecordError.other($0, .unknown)) }
+                records.forEach { self.recordResults[$0] = .failure(RecordError.other($0, GeneralError.unknown)) }
                 
                 self.process(records, in: fetchContext) { (result) in
                     do
                     {
-                        let records = try result.value()
+                        let records = try result.get()
                         
                         let operations = records.compactMap { (record) -> OperationType? in
                             do
@@ -86,7 +86,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                     saveContext.perform {
                                         do
                                         {
-                                            self.recordResults = try result.value()
+                                            self.recordResults = try result.get()
                                             
                                             try saveContext.save()
                                             
@@ -94,7 +94,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                         }
                                         catch
                                         {
-                                            self.result = .failure(AnyError(error))
+                                            self.result = .failure(error)
                                             self.propagateFailure(error: error)
                                         }
                                         
@@ -110,7 +110,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                     }
                     catch
                     {
-                        self.result = .failure(AnyError(error))
+                        self.result = .failure(error)
                         self.propagateFailure(error: error)
                         
                         saveContext.perform {
@@ -121,7 +121,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
             }
             catch
             {
-                self.result = .failure(AnyError(error))
+                self.result = .failure(error)
                 self.propagateFailure(error: error)
                 
                 saveContext.perform {
@@ -131,19 +131,19 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         }
     }
     
-    func process(_ records: [Record<NSManagedObject>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[Record<NSManagedObject>], AnyError>) -> Void)
+    func process(_ records: [Record<NSManagedObject>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[Record<NSManagedObject>], Error>) -> Void)
     {
         completionHandler(.success(records))
     }
     
     func process(_ results: [Record<NSManagedObject>: Result<ResultType, RecordError>],
                  in context: NSManagedObjectContext,
-                 completionHandler: @escaping (Result<[Record<NSManagedObject>: Result<ResultType, RecordError>], AnyError>) -> Void)
+                 completionHandler: @escaping (Result<[Record<NSManagedObject>: Result<ResultType, RecordError>], Error>) -> Void)
     {
         completionHandler(.success(results))
     }
     
-    func process(_ result: Result<[Record<NSManagedObject>: Result<ResultType, RecordError>], AnyError>, in context: NSManagedObjectContext, completionHandler: @escaping () -> Void)
+    func process(_ result: Result<[Record<NSManagedObject>: Result<ResultType, RecordError>], Error>, in context: NSManagedObjectContext, completionHandler: @escaping () -> Void)
     {
         completionHandler()
     }

@@ -40,7 +40,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
             self.uploadFiles() { (result) in
                 do
                 {
-                    let remoteFiles = try result.value()
+                    let remoteFiles = try result.get()
                     
                     let localRecord = self.localRecord.in(self.managedObjectContext)
                     let localRecordRemoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
@@ -78,9 +78,9 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
             prepareUploadingRecordsOperation.resultHandler = { (result) in
                 do
                 {
-                    let records = try result.value()
+                    let records = try result.get()
                     
-                    guard !records.isEmpty else { throw RecordError.other(self.record, .unknown) }
+                    guard !records.isEmpty else { throw RecordError.other(self.record, GeneralError.unknown) }
                     
                     upload()
                 }
@@ -110,11 +110,11 @@ private extension UploadRecordOperation
             operation.resultHandler = { (result) in
                 do
                 {
-                    let results = try result.value()
+                    let results = try result.get()
                     
-                    guard let result = results.values.first else { throw RecordError.other(self.record, .unknown) }
+                    guard let result = results.values.first else { throw RecordError.other(self.record, GeneralError.unknown) }
                     
-                    let remoteRecord = try result.value()
+                    let remoteRecord = try result.get()
                     self.result = .success(remoteRecord)
                     
                     try self.managedObjectContext.save()
@@ -169,7 +169,7 @@ private extension UploadRecordOperation
                             let progress = self.service.upload(file, for: self.record, metadata: metadata, context: self.managedObjectContext) { (result) in
                                 do
                                 {
-                                    let remoteFile = try result.value()
+                                    let remoteFile = try result.get()
                                     remoteFiles.insert(remoteFile)
                                 }
                                 catch let error as FileError
@@ -253,7 +253,7 @@ private extension UploadRecordOperation
             let progress = self.service.upload(record, metadata: metadata, context: self.managedObjectContext) { (result) in
                 do
                 {
-                    let remoteRecord = try result.value()
+                    let remoteRecord = try result.get()
                     remoteRecord.status = .normal
                     
                     let localRecord = localRecord.in(self.managedObjectContext)

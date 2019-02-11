@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord, RecordError>], AnyError>
+class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord, RecordError>], Error>
 {
     let results: [AnyRecord: Result<RemoteRecord, RecordError>]
     
@@ -40,7 +40,7 @@ class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord
             {
                 let records = results.compactMap { (record, result) -> AnyRecord? in
                     guard record.shouldLockWhenUploading else { return nil }
-                    guard let _ = try? result.value() else { return nil }
+                    guard let _ = try? result.get() else { return nil }
                     
                     return record
                 }
@@ -68,7 +68,7 @@ class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord
                     record.perform(in: self.managedObjectContext) { (managedRecord) in
                         do
                         {
-                            if managedRecord.remoteRecord == nil, let result = results[record], let remoteRecord = try? result.value()
+                            if managedRecord.remoteRecord == nil, let result = results[record], let remoteRecord = try? result.get()
                             {
                                 managedRecord.remoteRecord = remoteRecord
                             }
@@ -80,7 +80,7 @@ class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord
                             operation.resultHandler = { (result) in
                                 do
                                 {
-                                    try result.verify()
+                                    try result.get()
                                 }
                                 catch
                                 {
@@ -118,7 +118,7 @@ class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord
             catch
             {
                 self.managedObjectContext.perform {
-                    self.result = .failure(AnyError(error))
+                    self.result = .failure(error)
                     self.finish()
                 }
             }

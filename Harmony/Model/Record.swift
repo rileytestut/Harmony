@@ -128,7 +128,7 @@ extension Record
     {
         if let context = context ?? self.managedRecordContext
         {
-            let result = context.performAndWait { () -> Result<T, AnyError> in
+            let result = context.performAndWait { () -> Result<T, Error> in
                 do
                 {
                     let record = self.managedRecord.in(context)
@@ -138,11 +138,11 @@ extension Record
                 }
                 catch
                 {
-                    return .failure(AnyError(error))
+                    return .failure(error)
                 }
             }
             
-            return try result.value()
+            return try result.get()
         }
         else
         {
@@ -175,7 +175,7 @@ public extension Record
 {
     func setSyncingEnabled(_ syncingEnabled: Bool) throws
     {
-        let result = self.perform { (managedRecord) -> Result<Void, AnyError> in
+        let result = self.perform { (managedRecord) -> Result<Void, Error> in
             do
             {
                 managedRecord.isSyncingEnabled = syncingEnabled
@@ -186,11 +186,11 @@ public extension Record
             }
             catch
             {
-                return .failure(AnyError(error))
+                return .failure(error)
             }
         }
         
-        try result.verify()
+        try result.get()
     }
 }
 

@@ -124,12 +124,12 @@ public extension RecordController
         }
     }
     
-    @discardableResult func seedFromPersistentContainer(completionHandler: @escaping (Result<Void, AnyError>) -> Void) -> Progress
+    @discardableResult func seedFromPersistentContainer(completionHandler: @escaping (Result<Void, Swift.Error>) -> Void) -> Progress
     {
         let progress = Progress(totalUnitCount: 0)
         
         guard let entities = self.managedObjectModel.entities(forConfigurationName: NSManagedObjectModel.Configuration.external.rawValue) else {
-            completionHandler(.failure(AnyError(Error.noEntities)))
+            completionHandler(.failure(Error.noEntities))
             return progress
         }
         
@@ -159,7 +159,7 @@ public extension RecordController
             }
             catch
             {
-                completionHandler(.failure(AnyError(error)))
+                completionHandler(.failure(error))
             }
         }
         
@@ -211,7 +211,7 @@ public extension RecordController
         let context = self.newBackgroundContext()
         context.automaticallyMergesChangesFromParent = false
         
-        let result = context.performAndWait { () -> Result<Set<Record<RecordType>>, AnyError> in
+        let result = context.performAndWait { () -> Result<Set<Record<RecordType>>, Swift.Error> in
             do
             {
                 try context.setQueryGenerationFrom(.current)
@@ -227,11 +227,11 @@ public extension RecordController
             }
             catch
             {
-                return .failure(AnyError(error))
+                return .failure(error)
             }
         }
         
-        let records = try result.value()
+        let records = try result.get()
         return records
     }
 }

@@ -20,12 +20,12 @@ class DeleteRecordOperation: RecordOperation<Void>
         self.deleteRemoteFiles { (result) in
             do
             {
-                try result.verify()
+                try result.get()
                 
                 self.deleteRemoteRecord { (result) in
                     do
                     {
-                        try result.verify()
+                        try result.get()
                         
                         self.deleteManagedRecord { (result) in
                             self.result = result
@@ -68,7 +68,7 @@ private extension DeleteRecordOperation
                 let progress = self.service.delete(remoteFile) { (result) in
                     do
                     {
-                        try result.verify()
+                        try result.get()
                     }
                     catch FileError.doesNotExist
                     {
@@ -109,7 +109,7 @@ private extension DeleteRecordOperation
         let progress = self.service.delete(self.record) { (result) in
             do
             {
-                try result.verify()
+                try result.get()
                 
                 completionHandler(.success)
             }

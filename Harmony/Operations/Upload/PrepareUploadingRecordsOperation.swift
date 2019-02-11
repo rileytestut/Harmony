@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class PrepareUploadingRecordsOperation: Operation<[AnyRecord], AnyError>
+class PrepareUploadingRecordsOperation: Operation<[AnyRecord], Error>
 {
     let records: [AnyRecord]
     
@@ -50,7 +50,7 @@ class PrepareUploadingRecordsOperation: Operation<[AnyRecord], AnyError>
             }
             catch
             {
-                self.result = .failure(AnyError(error))
+                self.result = .failure(error)
             }
             
             self.finish()

@@ -36,7 +36,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
         {
             do
             {
-                let (updatedRecords, deletedRecordIDs, changeToken) = try result.value()
+                let (updatedRecords, deletedRecordIDs, changeToken) = try result.get()
                 
                 context.perform {
                     do
@@ -49,7 +49,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                             
                             let childContext = self.recordController.newBackgroundContext(withParent: context)
                             
-                            let result = childContext.performAndWait { () -> Result<Set<RemoteRecord>, AnyError> in
+                            let result = childContext.performAndWait { () -> Result<Set<RemoteRecord>, Error> in
                                 do
                                 {
                                     let fetchRequest = RemoteRecord.fetchRequest() as NSFetchRequest<RemoteRecord>
@@ -94,11 +94,11 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                                 }
                                 catch
                                 {
-                                    return .failure(AnyError(error))
+                                    return .failure(error)
                                 }
                             }
                             
-                            let deletedRecords = try result.value().map { $0.in(context) }
+                            let deletedRecords = try result.get().map { $0.in(context) }
                             records.formUnion(deletedRecords)
                         }
                         
@@ -129,7 +129,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
             progress = self.service.fetchChangedRemoteRecords(changeToken: changeToken, context: context) { (result) in
                 do
                 {
-                    let (updatedRecords, deletedRecordIDs, changeToken) = try result.value()
+                    let (updatedRecords, deletedRecordIDs, changeToken) = try result.get()
                     finish(result: .success((updatedRecords, deletedRecordIDs, changeToken)))
                 }
                 catch
@@ -143,7 +143,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
             progress = self.service.fetchAllRemoteRecords(context: context) { (result) in
                 do
                 {
-                    let (updatedRecords, changeToken) = try result.value()
+                    let (updatedRecords, changeToken) = try result.get()
                     finish(result: .success((updatedRecords, nil, changeToken)))
                 }
                 catch

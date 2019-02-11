@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecord, RecordError>], AnyError>
+class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecord, RecordError>], Error>
 {
     let results: [AnyRecord: Result<LocalRecord, RecordError>]
     
@@ -35,7 +35,7 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
             var results = self.results
             
             let predicates = results.values.flatMap { (result) -> [NSPredicate] in
-                guard let localRecord = try? result.value(), let relationships = localRecord.remoteRelationships else { return [] }
+                guard let localRecord = try? result.get(), let relationships = localRecord.remoteRelationships else { return [] }
                 
                 let predicates = relationships.values.compactMap {
                     return NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(LocalRecord.recordedObjectType), $0.type, #keyPath(LocalRecord.recordedObjectIdentifier), $0.identifier)
@@ -72,7 +72,7 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                         {
                             do
                             {
-                                let localRecord = try result.value()
+                                let localRecord = try result.get()
                                 
                                 do
                                 {
@@ -107,7 +107,7 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                 }
                 catch
                 {
-                    self.result = .failure(AnyError(error))
+                    self.result = .failure(error)
                     self.finish()
                 }
             }

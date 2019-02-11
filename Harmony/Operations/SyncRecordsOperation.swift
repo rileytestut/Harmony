@@ -43,14 +43,12 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
         
         let dispatchGroup = DispatchGroup()
         
-        func finish<T, U>(_ result: Result<T, U>, debugTitle: String)
+        func finish<T, U: HarmonyError>(_ result: Result<T, U>, debugTitle: String)
         {
-            do
+            switch result
             {
-                try result.verify()
-            }
-            catch
-            {
+            case .success: break
+            case .failure(let error):
                 self.result = .failure(SyncError(error))
                 self.finish()
             }
@@ -58,7 +56,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
             dispatchGroup.leave()
         }
         
-        func finishRecordOperation<T>(_ result: Result<[AnyRecord: Result<T, RecordError>], AnyError>, debugTitle: String)
+        func finishRecordOperation<T>(_ result: Result<[AnyRecord: Result<T, RecordError>], Error>, debugTitle: String)
         {
             // Map result to use Result<Void, RecordError>.
             let result = result.map { (results) -> [Record<NSManagedObject>: Result<Void, RecordError>] in
@@ -71,7 +69,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
             
             do
             {
-                let value = try result.value()
+                let value = try result.get()
                 
                 for (record, result) in value
                 {

@@ -16,7 +16,7 @@ class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecord
         super.init(predicate: ManagedRecord.downloadRecordsPredicate, service: service, recordController: recordController)
     }
     
-    override func process(_ results: [AnyRecord : Result<LocalRecord, RecordError>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord : Result<LocalRecord, RecordError>], AnyError>) -> Void)
+    override func process(_ results: [AnyRecord : Result<LocalRecord, RecordError>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord : Result<LocalRecord, RecordError>], Error>) -> Void)
     {
         let operation = FinishDownloadingRecordsOperation(results: results, service: self.service, context: context)
         operation.resultHandler = { (result) in
