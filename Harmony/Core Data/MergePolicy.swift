@@ -9,16 +9,34 @@
 import CoreData
 import Roxas
 
-class MergePolicy: RSTRelationshipPreservingMergePolicy
+extension MergePolicy
 {
-    override func resolve(constraintConflicts conflicts: [NSConstraintConflict]) throws
+    public enum Error: LocalizedError
     {
+        case contextLevelConflict
+        
+        public var errorDescription: String? {
+            switch self
+            {
+            case .contextLevelConflict: return NSLocalizedString("MergePolicy is only intended to work with database-level conflicts.", comment: "")
+            }
+        }
+    }
+}
+
+open class MergePolicy: RSTRelationshipPreservingMergePolicy
+{
+    open override func resolve(constraintConflicts conflicts: [NSConstraintConflict]) throws
+    {
+        guard conflicts.allSatisfy({ $0.databaseObject != nil }) else {
+            try super.resolve(constraintConflicts: conflicts)
+            throw Error.contextLevelConflict
+        }
+        
         var remoteFilesByLocalRecord = [LocalRecord: Set<RemoteFile>]()
         
         for conflict in conflicts
         {
-            assert(conflict.databaseObject != nil, "MergePolicy is only intended to work with database-level conflicts.")
-            
             switch conflict.databaseObject
             {
             case let databaseObject as LocalRecord:
