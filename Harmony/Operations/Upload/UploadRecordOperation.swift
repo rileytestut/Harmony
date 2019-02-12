@@ -245,30 +245,41 @@ private extension UploadRecordOperation
         let temporaryContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         temporaryContext.parent = self.managedObjectContext
         
-        self.record.perform(in: temporaryContext) { (managedRecord) in
-            let temporaryLocalRecord = localRecord.in(temporaryContext)
-            managedRecord.localRecord = temporaryLocalRecord
-            
-            let record = Record(managedRecord)            
-            let progress = self.service.upload(record, metadata: metadata, context: self.managedObjectContext) { (result) in
-                do
-                {
-                    let remoteRecord = try result.get()
-                    remoteRecord.status = .normal
-                    
-                    let localRecord = localRecord.in(self.managedObjectContext)
-                    localRecord.version = remoteRecord.version
-                    localRecord.status = .normal
-                    
-                    completionHandler(.success(remoteRecord))
+        do
+        {
+            try self.record.perform(in: temporaryContext) { (managedRecord) in
+                let temporaryLocalRecord = localRecord.in(temporaryContext)
+                managedRecord.localRecord = temporaryLocalRecord
+                
+                try temporaryLocalRecord.recordedObject?.prepareForSync()
+                
+                let record = Record(managedRecord)
+                let progress = self.service.upload(record, metadata: metadata, context: self.managedObjectContext) { (result) in
+                    do
+                    {
+                        let remoteRecord = try result.get()
+                        remoteRecord.status = .normal
+                        
+                        let localRecord = localRecord.in(self.managedObjectContext)
+                        localRecord.version = remoteRecord.version
+                        localRecord.status = .normal
+                        
+                        completionHandler(.success(remoteRecord))
+                    }
+                    catch
+                    {
+                        completionHandler(.failure(RecordError(self.record, error)))
+                    }
                 }
-                catch
-                {
-                    completionHandler(.failure(RecordError(self.record, error)))
-                }
+                
+                self.progress.addChild(progress, withPendingUnitCount: 1)
             }
+        }
+        catch
+        {
+            self.progress.completedUnitCount += 1
             
-            self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
+            completionHandler(.failure(RecordError(self.record, error)))
         }
     }
 }

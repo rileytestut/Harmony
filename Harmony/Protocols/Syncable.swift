@@ -24,6 +24,9 @@ public protocol Syncable: NSManagedObject
     var syncableLocalizedName: String? { get }
     
     var isSyncingEnabled: Bool { get }
+    
+    func prepareForSync() throws
+    func awakeFromSync() throws
 }
 
 public extension Syncable
@@ -51,6 +54,14 @@ public extension Syncable
     
     var syncableMetadata: [HarmonyMetadataKey: String] {
         return [:]
+    }
+    
+    func prepareForSync()
+    {
+    }
+    
+    func awakeFromSync()
+    {
     }
 }
 

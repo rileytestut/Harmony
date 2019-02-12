@@ -78,6 +78,8 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                                 {
                                     try self.updateRelationships(for: localRecord, relationshipObjects: relationshipObjects)
                                     
+                                    try localRecord.recordedObject?.awakeFromSync()
+                                    
                                     // Update files after updating relationships (to prevent replacing files prematurely).
                                     try self.updateFiles(for: localRecord, record: record)
                                 }
