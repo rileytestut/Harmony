@@ -105,11 +105,11 @@ private extension DownloadRecordOperation
                     return completionHandler(.failure(RecordError.locked(self.record)))
                 }
                 
-                version = Version(previousVersion)
+                version = previousVersion
             }
             else
             {
-                version = Version(remoteRecord.version)
+                version = remoteRecord.version
             }
             
             let progress = self.service.download(self.record, version: version, context: self.managedObjectContext) { (result) in
@@ -118,16 +118,11 @@ private extension DownloadRecordOperation
                     let localRecord = try result.get()
                     localRecord.status = .normal
                     localRecord.modificationDate = version.date
+                    localRecord.version = version
                     
                     let remoteRecord = remoteRecord.in(self.managedObjectContext)
                     remoteRecord.status = .normal
-                    
-                    // Create new managed version (in case we were downloading a specified version that wasn't the most recent version).
-                    let managedVersion = ManagedVersion(context: self.managedObjectContext)
-                    managedVersion.identifier = version.identifier
-                    managedVersion.date = version.date
-                    localRecord.version = managedVersion
-                    
+                                        
                     completionHandler(.success(localRecord))
                 }
                 catch

@@ -89,7 +89,7 @@ extension ManagedRecord
     }
     
     private class var mismatchedVersionsPredicate: NSPredicate {
-        let predicate = NSPredicate(format: "%K != %K", #keyPath(ManagedRecord.localRecord.version.identifier), #keyPath(ManagedRecord.remoteRecord.version.identifier))
+        let predicate = NSPredicate(format: "%K != %K", #keyPath(ManagedRecord.localRecord.versionIdentifier), #keyPath(ManagedRecord.remoteRecord.versionIdentifier))
         return predicate
     }
     

@@ -62,11 +62,11 @@ open class MergePolicy: RSTRelationshipPreservingMergePolicy
                     let snapshot = conflict.snapshots.object(forKey: conflict.databaseObject),
                     let previousStatusValue = snapshot[#keyPath(RemoteRecord.status)] as? Int16,
                     let previousStatus = RecordStatus(rawValue: previousStatusValue),
-                    let previousVersion = snapshot[#keyPath(RemoteRecord.version)] as? ManagedVersion
+                    let previousVersionIdentifier = snapshot[#keyPath(RemoteRecord.versionIdentifier)] as? String
                 else { continue }
                 
                 // If previous status was normal, and the previous version identifier matches current version identifier, then status should still be normal.
-                if previousStatus == .normal, previousVersion.identifier == databaseObject.version.identifier
+                if previousStatus == .normal, previousVersionIdentifier == databaseObject.version.identifier
                 {
                     databaseObject.status = .normal
                 }

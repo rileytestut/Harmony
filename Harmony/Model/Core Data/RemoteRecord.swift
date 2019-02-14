@@ -20,10 +20,35 @@ public class RemoteRecord: RecordRepresentation
     
     @NSManaged var metadata: [HarmonyMetadataKey: String]
     
-    @NSManaged var previousUnlockedVersion: ManagedVersion?
+    @NSManaged var versionIdentifier: String
+    @NSManaged var versionDate: Date
     
-    /* Relationships */
-    @NSManaged var version: ManagedVersion
+    @NSManaged private var previousVersionIdentifier: String?
+    @NSManaged private var previousVersionDate: Date?
+    
+    var version: Version {
+        get {
+            let version = Version(identifier: self.versionIdentifier, date: self.versionDate)
+            return version
+        }
+        set {
+            self.versionIdentifier = newValue.identifier
+            self.versionDate = newValue.date
+        }
+    }
+    
+    var previousUnlockedVersion: Version? {
+        get {
+            guard let identifier = self.previousVersionIdentifier, let date = self.previousVersionDate else { return nil }
+            
+            let version = Version(identifier: identifier, date: date)
+            return version
+        }
+        set {
+            self.previousVersionIdentifier = newValue?.identifier
+            self.previousVersionDate = newValue?.date
+        }
+    }
     
     init(identifier: String, versionIdentifier: String, versionDate: Date, recordedObjectType: String, recordedObjectIdentifier: String, status: RecordStatus, context: NSManagedObjectContext)
     {
@@ -36,7 +61,7 @@ public class RemoteRecord: RecordRepresentation
         
         self.status = status
         
-        self.version = ManagedVersion(identifier: versionIdentifier, date: versionDate, context: context)
+        self.version = Version(identifier: versionIdentifier, date: versionDate)
     }
     
     public convenience init(identifier: String, versionIdentifier: String, versionDate: Date, metadata: [HarmonyMetadataKey: String], status: RecordStatus, context: NSManagedObjectContext) throws
@@ -53,7 +78,7 @@ public class RemoteRecord: RecordRepresentation
         if let identifier = metadata[.previousVersionIdentifier], let dateString = metadata[.previousVersionDate], let timeInterval = TimeInterval(dateString)
         {
             let date = Date(timeIntervalSinceReferenceDate: timeInterval)
-            self.previousUnlockedVersion = ManagedVersion(identifier: identifier, date: date, context: context)
+            self.previousUnlockedVersion = Version(identifier: identifier, date: date)
         }
         
         if let author = metadata[.author]

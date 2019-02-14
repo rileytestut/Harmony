@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="18A391" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.78" systemVersion="18C54" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="LocalRecord" representedClassName="LocalRecord" syncable="YES">
         <attribute name="modificationDate" attributeType="Date" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectURI" attributeType="URI" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="versionDate" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="versionIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="managedRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedRecord" inverseName="localRecord" inverseEntity="ManagedRecord" syncable="YES"/>
         <relationship name="remoteFiles" toMany="YES" deletionRule="Cascade" destinationEntity="RemoteFile" inverseName="localRecord" inverseEntity="RemoteFile" syncable="YES"/>
-        <relationship name="version" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedVersion" inverseName="localRecord" inverseEntity="ManagedVersion" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="recordedObjectType"/>
@@ -34,13 +35,6 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
-    <entity name="ManagedVersion" representedClassName="ManagedVersion" syncable="YES">
-        <attribute name="date" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="identifier" attributeType="String" syncable="YES"/>
-        <relationship name="localRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LocalRecord" inverseName="version" inverseEntity="LocalRecord" syncable="YES"/>
-        <relationship name="previousUnlockedRemoteRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RemoteRecord" inverseName="previousUnlockedVersion" inverseEntity="RemoteRecord" syncable="YES"/>
-        <relationship name="remoteRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RemoteRecord" inverseName="version" inverseEntity="RemoteRecord" syncable="YES"/>
-    </entity>
     <entity name="RemoteFile" representedClassName="RemoteFile" syncable="YES">
         <attribute name="identifier" attributeType="String" syncable="YES"/>
         <attribute name="remoteIdentifier" attributeType="String" syncable="YES"/>
@@ -55,12 +49,14 @@
         <attribute name="isLocked" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="localizedName" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="metadata" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="previousVersionDate" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="previousVersionIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="versionDate" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
         <relationship name="managedRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedRecord" inverseName="remoteRecord" inverseEntity="ManagedRecord" syncable="YES"/>
-        <relationship name="previousUnlockedVersion" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedVersion" inverseName="previousUnlockedRemoteRecord" inverseEntity="ManagedVersion" syncable="YES"/>
-        <relationship name="version" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedVersion" inverseName="remoteRecord" inverseEntity="ManagedVersion" syncable="YES"/>
         <fetchIndex name="byIdentifier">
             <fetchIndexElement property="identifier" type="Binary" order="ascending"/>
         </fetchIndex>
@@ -74,16 +70,14 @@
     <configuration name="External"/>
     <configuration name="Harmony">
         <memberEntity name="ManagedRecord"/>
-        <memberEntity name="ManagedVersion"/>
         <memberEntity name="LocalRecord"/>
         <memberEntity name="RemoteRecord"/>
         <memberEntity name="RemoteFile"/>
     </configuration>
     <elements>
-        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="165"/>
+        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="180"/>
         <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
-        <element name="ManagedVersion" positionX="298.94921875" positionY="439.0625" width="128" height="120"/>
         <element name="RemoteFile" positionX="288" positionY="378" width="128" height="135"/>
-        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="210"/>
+        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="240"/>
     </elements>
 </model>

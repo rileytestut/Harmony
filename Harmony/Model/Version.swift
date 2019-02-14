@@ -18,9 +18,4 @@ public struct Version: Hashable
         self.identifier = identifier
         self.date = date
     }
-    
-    init(_ managedVersion: ManagedVersion)
-    {
-        self.init(identifier: managedVersion.identifier, date: managedVersion.date)
-    }
 }

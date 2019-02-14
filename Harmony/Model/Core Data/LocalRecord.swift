@@ -44,9 +44,24 @@ public class LocalRecord: RecordRepresentation, Codable
     @NSManaged var recordedObjectURI: URL
     @NSManaged var modificationDate: Date
     
+    @NSManaged var versionIdentifier: String?
+    @NSManaged var versionDate: Date?
+    
     /* Relationships */
-    @NSManaged var version: ManagedVersion?
     @NSManaged var remoteFiles: Set<RemoteFile>
+    
+    var version: Version? {
+        get {
+            guard let identifier = self.versionIdentifier, let date = self.versionDate else { return nil }
+            
+            let version = Version(identifier: identifier, date: date)
+            return version
+        }
+        set {
+            self.versionIdentifier = newValue?.identifier
+            self.versionDate = newValue?.date
+        }
+    }
     
     var recordedObject: Syncable? {
         return self.resolveRecordedObject()

@@ -65,16 +65,7 @@ public class Record<T: NSManagedObject>
     }
     
     public var remoteVersion: Version? {
-        return self.perform { (managedRecord) in
-            if let version = managedRecord.remoteRecord?.version
-            {
-                return Version(version)
-            }
-            else
-            {
-                return nil
-            }
-        }
+        return self.perform { $0.remoteRecord?.version }
     }
     
     public var remoteAuthor: String? {

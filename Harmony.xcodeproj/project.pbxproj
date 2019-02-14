@@ -97,7 +97,6 @@
 		BFFDBA9B216D649B00AED109 /* UploadRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */; };
 		BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95137521657437007EF10C /* DownloadRecordOperation.swift */; };
 		BFFDBA9F216D74FC00AED109 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3396B1FD3A4DF006FACAD /* File.swift */; };
-		BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFDBAA0216D785E00AED109 /* ManagedVersion.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -340,7 +339,6 @@
 		BFFB9B1D200ED96700A8F673 /* Result+Success.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+Success.swift"; sourceTree = "<group>"; };
 		BFFB9B20200EDED900A8F673 /* FetchRemoteRecordsOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRemoteRecordsOperationTests.swift; sourceTree = "<group>"; };
 		BFFB9B23200EDF2200A8F673 /* MockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockService.swift; sourceTree = "<group>"; };
-		BFFDBAA0216D785E00AED109 /* ManagedVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedVersion.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -434,7 +432,6 @@
 				BFBDB7C5216ECC8500DC004B /* RecordRepresentation.swift */,
 				BFBDB7C2216EB1F000DC004B /* LocalRecord.swift */,
 				BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */,
-				BFFDBAA0216D785E00AED109 /* ManagedVersion.swift */,
 				BF84220B21936E950035340B /* RemoteFile.swift */,
 			);
 			path = "Core Data";
@@ -1044,7 +1041,6 @@
 				BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */,
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BF4EE59821AC968600FA648D /* FinishUploadingRecordsOperation.swift in Sources */,
-				BFFDBAA1216D785E00AED109 /* ManagedVersion.swift in Sources */,
 				BF4EE59421AC901500FA648D /* FinishDownloadingRecordsOperation.swift in Sources */,
 				BFDDC10C2194F337009732B7 /* ConflictRecordsOperation.swift in Sources */,
 				BFAB9FA0219B7DDF0080EC7D /* NSManagedObjectContext+Caching.swift in Sources */,
