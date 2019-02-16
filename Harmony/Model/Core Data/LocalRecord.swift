@@ -148,7 +148,7 @@ public class LocalRecord: RecordRepresentation, Codable
             
             try self.configure(with: recordedObject)
             
-            self.remoteFiles = try container.decode(Set<RemoteFile>.self, forKey: .files)
+            self.remoteFiles = try container.decodeIfPresent(Set<RemoteFile>.self, forKey: .files) ?? []
             self.remoteRelationships = try container.decodeIfPresent([String: RecordID].self, forKey: .relationships)
         }
         catch
