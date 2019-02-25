@@ -834,7 +834,7 @@
 					BFA1C8D31ECD01C100DEA99D = {
 						CreatedOnToolsVersion = 8.3.2;
 						DevelopmentTeam = 6XVY5G3U44;
-						LastSwiftMigration = 1010;
+						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
 					};
 					BFA1C8DC1ECD01C100DEA99D = {
@@ -1286,7 +1286,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -1306,7 +1306,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.rileytestut.Harmony;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
