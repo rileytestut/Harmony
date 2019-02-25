@@ -140,7 +140,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
             
             self.finish()
             
-            self.recordController.printRecords()
+            //self.recordController.printRecords()
         }
     }
     

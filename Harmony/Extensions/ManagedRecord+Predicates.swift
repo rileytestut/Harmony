@@ -28,7 +28,7 @@ extension ManagedRecord
             case (.normal?, nil): self = .upload
                 
             case (.updated?, .normal?): self = .upload
-            case (.updated?, .updated?): self = .conflict
+            case (.updated?, .updated?): self = .download
             case (.updated?, .deleted?): self = .upload
             case (.updated?, nil): self = .upload
                 
@@ -54,7 +54,7 @@ extension ManagedRecord
     }
     
     class var syncableRecordsPredicate: NSPredicate {
-        let predicate = NSPredicate(format: "%K == NO AND %K == YES", #keyPath(ManagedRecord.isConflicted), #keyPath(ManagedRecord.isSyncingEnabled))
+        let predicate = NSPredicate(format: "%K == YES", #keyPath(ManagedRecord.isSyncingEnabled))
         return predicate
     }
     

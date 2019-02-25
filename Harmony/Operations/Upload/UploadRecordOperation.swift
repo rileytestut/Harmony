@@ -35,6 +35,8 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
     {
         super.main()
         
+        print("Uploading record:", self.record.recordID)
+        
         func upload()
         {
             self.uploadFiles() { (result) in
