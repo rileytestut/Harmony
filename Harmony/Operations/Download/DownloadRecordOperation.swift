@@ -18,6 +18,8 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
     override func main()
     {
         super.main()
+        
+        print("Downloading record:", self.record.recordID)
                 
         self.downloadRecord { (result) in
             do
