@@ -3,7 +3,7 @@
 	url = https://github.com/rileytestut/Roxas.git
 [submodule "External/CwlPreconditionTesting"]
 	path = External/CwlPreconditionTesting
-	url = https://github.com/mattgallagher/CwlPreconditionTesting.git
+	url = https://github.com/rileytestut/CwlPreconditionTesting.git
 [submodule "Backends/Drive"]
 	path = Backends/Drive
 	url = https://github.com/rileytestut/Harmony-Drive.git
