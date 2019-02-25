@@ -93,6 +93,7 @@ extension KeyedDecodingContainer
             
         case .undefinedAttributeType: fatalError("KeyedDecodingContainer.decodeManagedValue() does not yet support undefined attribute types.")
         case .objectIDAttributeType: fatalError("KeyedDecodingContainer.decodeManagedValue() does not yet support objectID attributes.")
+        @unknown default: fatalError("KeyedDecodingContainer.decodeManagedValue() encountered unknown attribute type.")
         }
         
         return value
@@ -154,6 +155,7 @@ extension KeyedEncodingContainer
                 
             case (.undefinedAttributeType, _): fatalError("KeyedEncodingContainer.encodeManagedValue() does not yet support undefined attribute types.")
             case (.objectIDAttributeType, _): fatalError("KeyedEncodingContainer.encodeManagedValue() does not yet support objectID attributes.")
+            @unknown default: fatalError("KeyedEncodingContainer.encodeManagedValue() encountered unknown attribute type.")
             }
         }
         else
