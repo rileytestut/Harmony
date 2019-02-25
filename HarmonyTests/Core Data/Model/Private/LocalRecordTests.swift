@@ -104,12 +104,12 @@ extension LocalRecordTests
         _ = try! LocalRecord(recordedObject: course, context: self.recordController.viewContext)
         _ = try! LocalRecord(recordedObject: course, context: self.recordController.viewContext)
         
-        // Assert fatal error because we have an assertion that our merge policy work only with context-level conflicts.
-        XCTAssertFatalError(try! self.recordController.viewContext.save())
+        // Assert throwing error because we have an assertion that our merge policy work only with context-level conflicts.
+        XCTAssertThrowsError(try self.recordController.viewContext.save())
         
         let fetchRequest: NSFetchRequest<LocalRecord> = LocalRecord.fetchRequest()
         let records = try! self.recordController.viewContext.fetch(fetchRequest)
-        XCTAssertEqual(records.count, 2)
+        XCTAssertEqual(records.count, 1)
     }
 }
 

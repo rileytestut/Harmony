@@ -61,7 +61,7 @@ extension RecordControllerTests
         let recordController = RecordController(persistentContainer: self.persistentContainer)
         recordController.persistentStoreDescriptions.forEach { $0.type = NSInMemoryStoreType }
         
-        XCTAssertEqual(recordController.persistentStoreDescriptions.map { $0.shouldAddStoreAsynchronously }, Array(repeating: true, count: recordController.persistentStoreDescriptions.count), "NSPersistentStoreDescriptions should all be configured to add store asynchronously.")
+        XCTAssertTrue(recordController.shouldAddStoresAsynchronously, "RecordController should be configured to add store asynchronously.")
     }
     
     func testInitializationInvalid()

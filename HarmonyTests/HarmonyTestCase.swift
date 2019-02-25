@@ -69,6 +69,7 @@ class HarmonyTestCase: XCTestCase
             do
             {
                 try persistentStoreCoordinator.destroyPersistentStore(at: store.url!, ofType: NSSQLiteStoreType, options: store.options)
+                try FileManager.default.removeItem(at: store.url!)
             }
             catch let error where error._code == NSCoreDataError {
                 print(error)
@@ -93,7 +94,7 @@ extension HarmonyTestCase
     {
         let managedObjectModel = HarmonyTestCase.managedObjectModel
         self.persistentContainer = NSPersistentContainer(name: "HarmonyTests", managedObjectModel: managedObjectModel)
-        self.persistentContainer.persistentStoreDescriptions.forEach { $0.shouldAddStoreAsynchronously = false }
+        self.persistentContainer.persistentStoreDescriptions.forEach { $0.shouldAddStoreAsynchronously = false; $0.shouldMigrateStoreAutomatically = false }
         
         self.persistentContainer.loadPersistentStores { (description, error) in
             assert(error == nil)
@@ -105,7 +106,8 @@ extension HarmonyTestCase
     func prepareRecordController()
     {
         self.recordController = RecordController(persistentContainer: self.persistentContainer)
-        self.recordController.persistentStoreDescriptions.forEach { $0.shouldAddStoreAsynchronously = false }
+        self.recordController.shouldAddStoresAsynchronously = false
+        self.recordController.persistentStoreDescriptions.forEach { $0.shouldMigrateStoreAutomatically = false }
         self.recordController.automaticallyRecordsManagedObjects = false
         
         self.recordController.start { (errors) in
