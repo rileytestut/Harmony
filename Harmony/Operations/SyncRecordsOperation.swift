@@ -20,6 +20,8 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
     
     private var recordResults = [Record<NSManagedObject>: Result<Void, RecordError>]()
     
+    private var backgroundTaskIdentifier: UIBackgroundTaskIdentifier?
+    
     override var isAsynchronous: Bool {
         return true
     }
@@ -38,6 +40,11 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
     override func main()
     {
         super.main()
+        
+        self.backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(withName: "com.rileytestut.Harmony.SyncRecordsOperation") { [weak self] in
+            guard let identifier = self?.backgroundTaskIdentifier else { return }
+            UIApplication.shared.endBackgroundTask(identifier)
+        }
         
         NotificationCenter.default.post(name: SyncCoordinator.didStartSyncingNotification, object: nil)
         
@@ -175,6 +182,16 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
             self.finish()
             
             self.recordController.printRecords()
+        }
+    }
+    
+    override func finish()
+    {
+        super.finish()
+        
+        if let identifier = self.backgroundTaskIdentifier
+        {
+            UIApplication.shared.endBackgroundTask(identifier)
         }
     }
 }
