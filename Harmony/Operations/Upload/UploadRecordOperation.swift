@@ -247,11 +247,40 @@ private extension UploadRecordOperation
             metadata[.previousVersionDate] = String(remoteRecord.version.date.timeIntervalSinceReferenceDate)
         }
         
-        let temporaryContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        temporaryContext.parent = self.managedObjectContext
-        
         do
         {
+            func finish(_ localRecord: LocalRecord, _ remoteRecord: RemoteRecord)
+            {
+                remoteRecord.status = .normal
+                
+                let localRecord = localRecord.in(self.managedObjectContext)
+                localRecord.version = remoteRecord.version
+                localRecord.status = .normal
+                
+                completionHandler(.success(remoteRecord))
+            }
+            
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.sortedKeys] // Ensures consistent ordering of keys (and thus consistent hashing).
+            
+            let data = try encoder.encode(localRecord)
+            
+            let hash = RSTHasher.sha1Hash(of: data)
+            metadata[.sha1Hash] = hash
+            
+            guard localRecord.managedRecord?.remoteRecord?.sha1Hash != hash else {
+                // Hash is the same, so don't upload record.
+                self.progress.completedUnitCount += 1
+                
+                let remoteRecord = localRecord.managedRecord!.remoteRecord! // Safe because sha1Hash must've matched non-nil hash.
+                finish(localRecord, remoteRecord)
+                
+                return
+            }
+            
+            let temporaryContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+            temporaryContext.parent = self.managedObjectContext
+            
             try self.record.perform(in: temporaryContext) { (managedRecord) in
                 let temporaryLocalRecord = localRecord.in(temporaryContext)
                 managedRecord.localRecord = temporaryLocalRecord
@@ -263,13 +292,7 @@ private extension UploadRecordOperation
                     do
                     {
                         let remoteRecord = try result.get()
-                        remoteRecord.status = .normal
-                        
-                        let localRecord = localRecord.in(self.managedObjectContext)
-                        localRecord.version = remoteRecord.version
-                        localRecord.status = .normal
-                        
-                        completionHandler(.success(remoteRecord))
+                        finish(localRecord, remoteRecord)
                     }
                     catch
                     {

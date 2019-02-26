@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.78" systemVersion="18C54" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.87.2" systemVersion="18D109" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="LocalRecord" representedClassName="LocalRecord" syncable="YES">
         <attribute name="modificationDate" attributeType="Date" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
@@ -53,6 +53,7 @@
         <attribute name="previousVersionIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
+        <attribute name="sha1Hash" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="versionDate" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
@@ -78,6 +79,6 @@
         <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="180"/>
         <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
         <element name="RemoteFile" positionX="288" positionY="378" width="128" height="135"/>
-        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="240"/>
+        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="255"/>
     </elements>
 </model>
