@@ -32,8 +32,10 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
         
         let context = self.recordController.newBackgroundContext()
         
-        func finish(result: Result<(Set<RemoteRecord>, Set<String>?, Data), FetchError>)
-        {
+        // Use closure instead of local function so we can capture `self` weakly.
+        let finish = { [weak self] (result: Result<(Set<RemoteRecord>, Set<String>?, Data), FetchError>) in
+            guard let self = self else { return }
+            
             do
             {
                 let (updatedRecords, deletedRecordIDs, changeToken) = try result.get()
@@ -130,11 +132,11 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                 do
                 {
                     let (updatedRecords, deletedRecordIDs, changeToken) = try result.get()
-                    finish(result: .success((updatedRecords, deletedRecordIDs, changeToken)))
+                    finish(.success((updatedRecords, deletedRecordIDs, changeToken)))
                 }
                 catch
                 {
-                    finish(result: .failure(FetchError(error)))
+                    finish(.failure(FetchError(error)))
                 }
             }
         }
@@ -144,11 +146,11 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                 do
                 {
                     let (updatedRecords, changeToken) = try result.get()
-                    finish(result: .success((updatedRecords, nil, changeToken)))
+                    finish(.success((updatedRecords, nil, changeToken)))
                 }
                 catch
                 {
-                    finish(result: .failure(FetchError(error)))
+                    finish(.failure(FetchError(error)))
                 }
             }
         }

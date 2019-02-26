@@ -162,7 +162,12 @@ private extension UploadRecordOperation
                     
                     // Hash is either different or file hasn't yet been uploaded, so upload file.
                     
-                    let operation = RSTAsyncBlockOperation { (operation) in
+                    let operation = RSTAsyncBlockOperation { [weak self] (operation) in
+                        guard let self = self else {
+                            operation.finish()
+                            return
+                        }
+                        
                         localRecord.managedObjectContext?.perform {
                             let metadata: [HarmonyMetadataKey: Any] = [.relationshipIdentifier: file.identifier, .sha1Hash: hash]
                             
