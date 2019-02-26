@@ -62,23 +62,23 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
         }
         
         let conflictRecordsOperation = ConflictRecordsOperation(service: self.service, recordController: self.recordController)
-        conflictRecordsOperation.resultHandler = { [weak self] (result) in
-            self?.finishRecordOperation(result, debugTitle: "Conflict Result:")
+        conflictRecordsOperation.resultHandler = { [weak self, unowned conflictRecordsOperation] (result) in
+            self?.finishRecordOperation(conflictRecordsOperation, result: result, debugTitle: "Conflict Result:")
         }
         
         let uploadRecordsOperation = UploadRecordsOperation(service: self.service, recordController: self.recordController)
-        uploadRecordsOperation.resultHandler = { [weak self] (result) in
-            self?.finishRecordOperation(result, debugTitle: "Upload Result:")
+        uploadRecordsOperation.resultHandler = { [weak self, unowned uploadRecordsOperation] (result) in
+            self?.finishRecordOperation(uploadRecordsOperation, result: result, debugTitle: "Upload Result:")
         }
         
         let downloadRecordsOperation = DownloadRecordsOperation(service: self.service, recordController: self.recordController)
-        downloadRecordsOperation.resultHandler = { [weak self] (result) in
-            self?.finishRecordOperation(result, debugTitle: "Download Result:")
+        downloadRecordsOperation.resultHandler = { [weak self, unowned downloadRecordsOperation] (result) in
+            self?.finishRecordOperation(downloadRecordsOperation, result: result, debugTitle: "Download Result:")
         }
         
         let deleteRecordsOperation = DeleteRecordsOperation(service: self.service, recordController: self.recordController)
-        deleteRecordsOperation.resultHandler = { [weak self] (result) in
-            self?.finishRecordOperation(result, debugTitle: "Delete Result:")
+        deleteRecordsOperation.resultHandler = { [weak self, unowned deleteRecordsOperation] (result) in
+            self?.finishRecordOperation(deleteRecordsOperation, result: result, debugTitle: "Delete Result:")
         }
         
         let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
@@ -170,25 +170,23 @@ private extension SyncRecordsOperation
         self.dispatchGroup.leave()
     }
     
-    func finishRecordOperation<T>(_ result: Result<[AnyRecord: Result<T, RecordError>], Error>, debugTitle: String)
+    func finishRecordOperation<R, T>(_ operation: BatchRecordOperation<R, T>, result: Result<[AnyRecord: Result<R, RecordError>], Error>, debugTitle: String)
     {
-        // Map result to use Result<Void, RecordError>.
-        let result = result.map { (results) -> [Record<NSManagedObject>: Result<Void, RecordError>] in
-            results.mapValues { (result) in
-                result.map { _ in () }
-            }
+        // Map operation.recordResults to use Result<Void, RecordError>.
+        let recordResults = operation.recordResults.mapValues { (result) in
+            result.map { _ in () }
         }
         
         print(debugTitle, result)
         
         do
         {
-            let value = try result.get()
-            
-            for (record, result) in value
+            for (record, result) in recordResults
             {
                 self.recordResults[record] = result
             }
+            
+            _ = try result.get()
         }
         catch
         {
