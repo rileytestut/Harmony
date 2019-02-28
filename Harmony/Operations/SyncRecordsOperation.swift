@@ -65,19 +65,38 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
                 }
             }
             
-            print(debugTitle, result)
+            print(debugTitle, terminator: " ")
             
             do
             {
                 let value = try result.get()
                 
+                var statuses = [String: String]()
+                
                 for (record, result) in value
                 {
+                    switch result
+                    {
+                    case .success: statuses[record.recordID.description] = "SUCCESS"
+                    case .failure(let error): statuses[record.recordID.description] = error.failureReason ?? error.localizedDescription
+                    }
+                    
                     self.recordResults[record] = result
+                }
+                
+                if statuses.isEmpty
+                {
+                    print("n/a")
+                }
+                else
+                {
+                    print("\n" + statuses.description)
                 }
             }
             catch
             {
+                print("FAILURE:", (error as? HarmonyError)?.failureReason ?? error.localizedDescription)
+                
                 self.result = .failure(SyncError.partial(self.recordResults))
                 self.finish()
             }
@@ -94,7 +113,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
             
             finish(result, debugTitle: "Fetch Records Result:")
             
-            self?.recordController.printRecords()
+            //self?.recordController.printRecords()
         }
         
         let conflictRecordsOperation = ConflictRecordsOperation(service: self.service, recordController: self.recordController)
