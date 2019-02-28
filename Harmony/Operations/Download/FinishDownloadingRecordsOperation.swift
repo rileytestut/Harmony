@@ -68,6 +68,22 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                     
                     self.managedObjectContext.perform {
                         // Switch back to context so we can modify objects.
+                        
+                        func handleError(_ error: Error, record: AnyRecord, localRecord: LocalRecord?)
+                        {
+                            localRecord?.removeFromContext()
+                            
+                            results[record] = .failure(RecordError(record, error))
+                            
+                            if let remoteRecordObjectID = record.perform(closure: { $0.remoteRecord?.objectID })
+                            {
+                                // Reset remoteRecord status to make us retry the download again in the future.
+                                let remoteRecord = self.managedObjectContext.object(with: remoteRecordObjectID) as! RemoteRecord
+                                remoteRecord.status = .updated
+                            }
+                        }
+
+                        // Update relationships for all records first.
                         for (record, result) in results
                         {
                             do
@@ -77,29 +93,34 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                                 do
                                 {
                                     try self.updateRelationships(for: localRecord, relationshipObjects: relationshipObjects)
-                                    
-                                    try localRecord.recordedObject?.awakeFromSync()
-                                    
-                                    // Update files after updating relationships (to prevent replacing files prematurely).
-                                    try self.updateFiles(for: localRecord, record: record)
                                 }
                                 catch
                                 {
-                                    localRecord.removeFromContext()
-                                    
-                                    throw error
+                                    handleError(error, record: record, localRecord: localRecord)
                                 }
                             }
                             catch
                             {
-                                results[record] = .failure(RecordError(record, error))
+                                handleError(error, record: record, localRecord: nil)
+                            }
+                        }
+                        
+                        // Perform additional logic now that all relationships have been repaired.
+                        for (record, result) in results
+                        {
+                            // Only process records that don't have errors.
+                            guard let localRecord = try? result.get() else { continue }
+                            
+                            do
+                            {
+                                try localRecord.recordedObject?.awakeFromSync()
                                 
-                                if let remoteRecordObjectID = record.perform(closure: { $0.remoteRecord?.objectID })
-                                {
-                                    // Reset remoteRecord status to make us retry the download again in the future.
-                                    let remoteRecord = self.managedObjectContext.object(with: remoteRecordObjectID) as! RemoteRecord
-                                    remoteRecord.status = .updated
-                                }
+                                // Update files after updating relationships (to prevent replacing files prematurely).
+                                try self.updateFiles(for: localRecord, record: record)
+                            }
+                            catch
+                            {
+                               handleError(error, record: record, localRecord: localRecord)
                             }
                         }
                         
