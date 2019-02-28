@@ -58,7 +58,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
             
             self?.finish(result, debugTitle: "Fetch Records Result:")
             
-            self?.recordController.printRecords()
+            //self?.recordController.printRecords()
         }
         
         let conflictRecordsOperation = ConflictRecordsOperation(service: self.service, recordController: self.recordController)
