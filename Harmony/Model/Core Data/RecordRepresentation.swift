@@ -8,10 +8,10 @@
 
 import CoreData
 
-public class RecordRepresentation: NSManagedObject
+public class RecordRepresentation: NSManagedObject, RecordEntry
 {
-    @NSManaged var recordedObjectType: String
-    @NSManaged var recordedObjectIdentifier: String
+    @NSManaged public internal(set) var recordedObjectType: String
+    @NSManaged public internal(set) var recordedObjectIdentifier: String
     
     @NSManaged public var managedRecord: ManagedRecord?
     
@@ -30,10 +30,5 @@ public class RecordRepresentation: NSManagedObject
             
             self.setPrimitiveValue(newValue.rawValue, forKey: #keyPath(RecordRepresentation.status))
         }
-    }
-    
-    public var recordID: RecordID {
-        let recordID = RecordID(type: self.recordedObjectType, identifier: self.recordedObjectIdentifier)
-        return recordID
     }
 }

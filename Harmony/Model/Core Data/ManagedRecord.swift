@@ -10,25 +10,20 @@ import Foundation
 import CoreData
 
 @objc(ManagedRecord)
-public class ManagedRecord: NSManagedObject
+public class ManagedRecord: NSManagedObject, RecordEntry
 {
     /* Properties */
     @NSManaged var isConflicted: Bool
     
     @NSManaged var isSyncingEnabled: Bool
     
-    @NSManaged var recordedObjectType: String
-    @NSManaged var recordedObjectIdentifier: String
+    @NSManaged public internal(set) var recordedObjectType: String
+    @NSManaged public internal(set) var recordedObjectIdentifier: String
     
     /* Relationships */
     @NSManaged public var localRecord: LocalRecord?
     @NSManaged public var remoteRecord: RemoteRecord?
-    
-    public var recordID: RecordID {
-        let recordID = RecordID(type: self.recordedObjectType, identifier: self.recordedObjectIdentifier)
-        return recordID
-    }
-            
+          
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
         super.init(entity: entity, insertInto: context)

@@ -325,17 +325,8 @@ private extension RecordController
                 recordRepresentationsByRecordID[recordID] = record
             }
             
-            
             // Fetch managed records for record representations.
-            let predicates = recordRepresentationsByRecordID.keys.map {
-                return NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(ManagedRecord.recordedObjectType), $0.type, #keyPath(ManagedRecord.recordedObjectIdentifier), $0.identifier)
-            }
-            
-            let managedRecordsFetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
-            managedRecordsFetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
-            
-            let managedRecords = try context.fetch(managedRecordsFetchRequest)
-            
+            let managedRecords = try context.fetchRecords(for: Set(recordRepresentationsByRecordID.keys)) as [ManagedRecord]
             
             // Update existing managed records.
             for record in managedRecords
