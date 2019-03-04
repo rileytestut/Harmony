@@ -34,28 +34,18 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
         self.managedObjectContext.perform {
             var results = self.results
             
-            let predicates = results.values.flatMap { (result) -> [NSPredicate] in
-                guard let localRecord = try? result.get(), let relationships = localRecord.remoteRelationships else { return [] }
-                
-                let predicates = relationships.values.compactMap {
-                    return NSPredicate(format: "%K == %@ AND %K == %@", #keyPath(LocalRecord.recordedObjectType), $0.type, #keyPath(LocalRecord.recordedObjectIdentifier), $0.identifier)
-                }
-                
-                return predicates
+            let recordIDs = results.values.reduce(into: Set<RecordID>()) { (recordIDs, result) in
+                guard let localRecord = try? result.get(), let relationships = localRecord.remoteRelationships else { return }
+                recordIDs.formUnion(relationships.values)
             }
             
             // Use temporary context to prevent fetching objects that may conflict with temporary objects when saving context.
             let temporaryContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
             temporaryContext.parent = self.managedObjectContext
             temporaryContext.perform {
-                
-                let fetchRequest = LocalRecord.fetchRequest() as NSFetchRequest<LocalRecord>
-                fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
-                fetchRequest.propertiesToFetch = [#keyPath(LocalRecord.recordedObjectType), #keyPath(LocalRecord.recordedObjectIdentifier)]
-                
                 do
                 {
-                    let localRecords = try temporaryContext.fetch(fetchRequest)
+                    let localRecords = try temporaryContext.fetchRecords(for: recordIDs) as [LocalRecord]
                     
                     let keyValuePairs = localRecords.lazy.compactMap { (localRecord) -> (RecordID, Syncable)? in
                         guard let recordedObject = localRecord.recordedObject else { return nil }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.78" systemVersion="18C54" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.87.2" systemVersion="18D109" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="LocalRecord" representedClassName="LocalRecord" syncable="YES">
         <attribute name="modificationDate" attributeType="Date" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
@@ -10,6 +10,9 @@
         <attribute name="versionIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="managedRecord" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ManagedRecord" inverseName="localRecord" inverseEntity="ManagedRecord" syncable="YES"/>
         <relationship name="remoteFiles" toMany="YES" deletionRule="Cascade" destinationEntity="RemoteFile" inverseName="localRecord" inverseEntity="RemoteFile" syncable="YES"/>
+        <fetchIndex name="byRecordedObjectIdentifier">
+            <fetchIndexElement property="recordedObjectIdentifier" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="recordedObjectType"/>
@@ -24,8 +27,7 @@
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <relationship name="localRecord" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="LocalRecord" inverseName="managedRecord" inverseEntity="LocalRecord" syncable="YES"/>
         <relationship name="remoteRecord" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="RemoteRecord" inverseName="managedRecord" inverseEntity="RemoteRecord" syncable="YES"/>
-        <fetchIndex name="byRecordedObject">
-            <fetchIndexElement property="recordedObjectType" type="Binary" order="ascending"/>
+        <fetchIndex name="byRecordedObjectIdentifier">
             <fetchIndexElement property="recordedObjectIdentifier" type="Binary" order="ascending"/>
         </fetchIndex>
         <uniquenessConstraints>
