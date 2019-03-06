@@ -164,7 +164,8 @@ private extension DownloadRecordOperation
                 if let filesByIdentifier = filesByIdentifier
                 {
                     guard let localFile = filesByIdentifier[remoteFile.identifier] else {
-                        throw FileError.unknownFile(remoteFile.identifier)
+                        //throw FileError.unknownFile(remoteFile.identifier)
+                        continue // Local record might not yet be updated to say what files it wants.
                     }
                     
                     do
