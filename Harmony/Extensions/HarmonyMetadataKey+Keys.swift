@@ -25,7 +25,7 @@ extension HarmonyMetadataKey
     static let author = HarmonyMetadataKey("harmony_author")
     static let localizedName = HarmonyMetadataKey("harmony_localizedName")
     
-    static var allHarmonyKeys: Set<HarmonyMetadataKey> {
+    public static var allHarmonyKeys: Set<HarmonyMetadataKey> {
         return [.recordedObjectType, .recordedObjectIdentifier, .relationshipIdentifier,
                 .isLocked, .previousVersionIdentifier, .previousVersionDate,
                 .sha1Hash, .author, .localizedName]
