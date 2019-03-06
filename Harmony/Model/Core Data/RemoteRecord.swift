@@ -28,7 +28,7 @@ public class RemoteRecord: RecordRepresentation
     @NSManaged private var previousVersionIdentifier: String?
     @NSManaged private var previousVersionDate: Date?
     
-    var version: Version {
+    public var version: Version {
         get {
             let version = Version(identifier: self.versionIdentifier, date: self.versionDate)
             return version
