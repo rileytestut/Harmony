@@ -12,6 +12,8 @@ import CoreData
 public protocol HarmonyError: LocalizedError, CustomNSError
 {
     var failureDescription: String { get }
+    
+    var underlyingError: HarmonyError? { get }
 }
 
 extension HarmonyError
@@ -20,12 +22,43 @@ extension HarmonyError
         let userInfo = [NSLocalizedFailureErrorKey: self.failureDescription]
         return userInfo
     }
+    
+    public static func ==(lhs: Self, rhs: Self) -> Bool
+    {
+        return lhs._code == rhs._code
+    }
+}
+
+public func ~=<T: HarmonyError>(pattern: T, value: Error) -> Bool
+{
+    switch value
+    {
+    case let error as T: return error == pattern
+    case let harmonyError as HarmonyError:
+        var error = harmonyError.underlyingError
+        while error != nil
+        {
+            if let error = error as? T, error == pattern
+            {
+                return true
+            }
+            
+            error = error?.underlyingError
+        }
+        return false
+        
+    default: return false
+    }
 }
 
 public enum GeneralError: HarmonyError
 {
     case cancelled
     case unknown
+    
+    public var underlyingError: HarmonyError? {
+        return nil
+    }
 }
 
 //MARK: Errors -
@@ -63,6 +96,14 @@ public enum DatabaseError: HarmonyError
     case corrupted(Error)
     case other(Error)
     
+    public var underlyingError: HarmonyError? {
+        switch self
+        {
+        case .corrupted(let error): return error as? HarmonyError
+        case .other(let error): return error as? HarmonyError
+        }
+    }
+    
     public init(_ error: Error)
     {
         switch error
@@ -75,8 +116,18 @@ public enum DatabaseError: HarmonyError
 
 public enum AuthenticationError: HarmonyError
 {
+    case notAuthenticated
     case noSavedCredentials
+    case tokenExpired
     case other(Error)
+    
+    public var underlyingError: HarmonyError? {
+        switch self
+        {
+        case .other(let error): return error as? HarmonyError
+        default: return nil
+        }
+    }
     
     public init(_ error: Error)
     {
@@ -92,6 +143,14 @@ public enum FetchError: HarmonyError
 {
     case invalidChangeToken(Data)
     case other(Error)
+    
+    public var underlyingError: HarmonyError? {
+        switch self
+        {
+        case .other(let error): return error as? HarmonyError
+        default: return nil
+        }
+    }
     
     public init(_ error: Error)
     {
@@ -125,11 +184,21 @@ public enum RecordError: HarmonyError
         }
     }
     
+    public var underlyingError: HarmonyError? {
+        switch self
+        {
+        case .doesNotExist: return ServiceError.itemDoesNotExist
+        case .other(_, let error): return error as? HarmonyError
+        default: return nil
+        }
+    }
+    
     public init(_ record: AnyRecord, _ error: Error)
     {
         switch error
         {
         case let error as RecordError: self = error
+        case ServiceError.itemDoesNotExist: self = .doesNotExist(record)
         case let error: self = .other(record, error)
         }
     }
@@ -151,20 +220,40 @@ public enum FileError: HarmonyError
         }
     }
     
+    public var underlyingError: HarmonyError? {
+        switch self
+        {
+        case .doesNotExist: return ServiceError.itemDoesNotExist
+        case .other(_, let error): return error as? HarmonyError
+        default: return nil
+        }
+    }
+    
     public init(_ fileIdentifier: String, _ error: Error)
     {
         switch error
         {
         case let error as FileError: self = error
+        case ServiceError.itemDoesNotExist: self = .doesNotExist(fileIdentifier)
         case let error: self = .other(fileIdentifier, error)
         }
     }
 }
 
-public enum NetworkError: HarmonyError
+public enum ServiceError: HarmonyError
 {
     case invalidResponse
-    case connectionFailed(Error)
+    case rateLimitExceeded
+    case itemDoesNotExist
+    case other(Error)
+    
+    public var underlyingError: HarmonyError? {
+        switch self
+        {
+        case .other(let error): return error as? HarmonyError
+        default: return nil
+        }
+    }
 }
 
 public enum ValidationError: HarmonyError
@@ -182,6 +271,10 @@ public enum ValidationError: HarmonyError
     case nonSyncableRecordedObject(NSManagedObject)
     
     case invalidMetadata([HarmonyMetadataKey: String])
+    
+    public var underlyingError: HarmonyError? {
+        return nil
+    }
 }
 
 //MARK: - Error Localization -
@@ -242,7 +335,9 @@ extension AuthenticationError
     public var failureReason: String? {
         switch self
         {
+        case .notAuthenticated: return NSLocalizedString("The current user is not authenticated.", comment: "")
         case .noSavedCredentials: return NSLocalizedString("There are no saved credentials for the current user.", comment: "")
+        case .tokenExpired: return NSLocalizedString("The authentication token has expired.", comment: "")
         case .other(let error as NSError): return error.localizedFailureReason
         }
     }
@@ -327,17 +422,19 @@ extension DatabaseError
     }
 }
 
-extension NetworkError
+extension ServiceError
 {
     public var failureDescription: String {
-        return NSLocalizedString("Unable to complete network request.", comment: "")
+        return NSLocalizedString("Failed to communicate with server.", comment: "")
     }
     
     public var failureReason: String? {
         switch self
         {
         case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
-        case .connectionFailed(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
+        case .rateLimitExceeded: return NSLocalizedString("The network request rate exceeded the server's rate limit.", comment: "")
+        case .itemDoesNotExist: return NSLocalizedString("The requested item does not exist.", comment: "")
+        case .other(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         }
     }
 }
