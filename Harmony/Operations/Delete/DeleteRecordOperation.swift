@@ -65,7 +65,12 @@ private extension DeleteRecordOperation
                 
                 dispatchGroup.enter()
                 
-                let progress = self.service.delete(remoteFile) { (result) in
+                let operation = ServiceOperation<Void, FileError>(coordinator: self.coordinator) { (completionHandler) -> Progress? in
+                    return remoteFile.managedObjectContext?.performAndWait {
+                        return self.service.delete(remoteFile, completionHandler: completionHandler)
+                    }
+                }
+                operation.resultHandler = { (result) in
                     do
                     {
                         try result.get()
@@ -85,8 +90,9 @@ private extension DeleteRecordOperation
                     
                     dispatchGroup.leave()
                 }
-                
-                self.progress.addChild(progress, withPendingUnitCount: 1)
+
+                self.progress.addChild(operation.progress, withPendingUnitCount: 1)
+                self.operationQueue.addOperation(operation)
             }
             
             dispatchGroup.notify(queue: .global()) {
@@ -106,7 +112,10 @@ private extension DeleteRecordOperation
     
     func deleteRemoteRecord(completionHandler: @escaping (Result<Void, RecordError>) -> Void)
     {
-        let progress = self.service.delete(self.record) { (result) in
+        let operation = ServiceOperation(coordinator: self.coordinator) { (completionHandler) -> Progress? in
+            return self.service.delete(self.record, completionHandler: completionHandler)
+        }
+        operation.resultHandler = { (result) in
             do
             {
                 try result.get()
@@ -122,8 +131,9 @@ private extension DeleteRecordOperation
                 completionHandler(.failure(RecordError(self.record, error)))
             }
         }
-        
-        self.progress.addChild(progress, withPendingUnitCount: 1)
+
+        self.progress.addChild(operation.progress, withPendingUnitCount: 1)
+        self.operationQueue.addOperation(operation)
     }
     
     func deleteManagedRecord(completionHandler: @escaping (Result<Void, RecordError>) -> Void)

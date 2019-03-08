@@ -254,6 +254,15 @@ public enum ServiceError: HarmonyError
         default: return nil
         }
     }
+    
+    public init(_ error: Error)
+    {
+        switch error
+        {
+        case let error as ServiceError: self = error
+        case let error: self = .other(error)
+        }
+    }
 }
 
 public enum ValidationError: HarmonyError

@@ -14,7 +14,6 @@ import Roxas
 class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, RecordError>], Data), SyncError>
 {
     let changeToken: Data?
-    let recordController: RecordController
     
     private let dispatchGroup = DispatchGroup()
         
@@ -27,12 +26,11 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
         return true
     }
     
-    init(changeToken: Data?, service: Service, recordController: RecordController)
+    init(changeToken: Data?, coordinator: SyncCoordinator)
     {
         self.changeToken = changeToken
-        self.recordController = recordController
         
-        super.init(service: service)
+        super.init(coordinator: coordinator)
         
         self.operationQueue.maxConcurrentOperationCount = 1
         self.progress.totalUnitCount = 0
@@ -49,7 +47,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
         
         NotificationCenter.default.post(name: SyncCoordinator.didStartSyncingNotification, object: nil)
         
-        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, service: self.service, recordController: self.recordController)
+        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator, recordController: self.recordController)
         fetchRemoteRecordsOperation.resultHandler = { [weak self] (result) in
             if case .success(_, let changeToken) = result
             {
@@ -61,22 +59,22 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
             //self?.recordController.printRecords()
         }
         
-        let conflictRecordsOperation = ConflictRecordsOperation(service: self.service, recordController: self.recordController)
+        let conflictRecordsOperation = ConflictRecordsOperation(coordinator: self.coordinator)
         conflictRecordsOperation.resultHandler = { [weak self, unowned conflictRecordsOperation] (result) in
             self?.finishRecordOperation(conflictRecordsOperation, result: result, debugTitle: "Conflict Result:")
         }
         
-        let uploadRecordsOperation = UploadRecordsOperation(service: self.service, recordController: self.recordController)
+        let uploadRecordsOperation = UploadRecordsOperation(coordinator: self.coordinator)
         uploadRecordsOperation.resultHandler = { [weak self, unowned uploadRecordsOperation] (result) in
             self?.finishRecordOperation(uploadRecordsOperation, result: result, debugTitle: "Upload Result:")
         }
         
-        let downloadRecordsOperation = DownloadRecordsOperation(service: self.service, recordController: self.recordController)
+        let downloadRecordsOperation = DownloadRecordsOperation(coordinator: self.coordinator)
         downloadRecordsOperation.resultHandler = { [weak self, unowned downloadRecordsOperation] (result) in
             self?.finishRecordOperation(downloadRecordsOperation, result: result, debugTitle: "Download Result:")
         }
         
-        let deleteRecordsOperation = DeleteRecordsOperation(service: self.service, recordController: self.recordController)
+        let deleteRecordsOperation = DeleteRecordsOperation(coordinator: self.coordinator)
         deleteRecordsOperation.resultHandler = { [weak self, unowned deleteRecordsOperation] (result) in
             self?.finishRecordOperation(deleteRecordsOperation, result: result, debugTitle: "Delete Result:")
         }

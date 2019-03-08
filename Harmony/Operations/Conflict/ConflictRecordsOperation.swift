@@ -11,8 +11,8 @@ import CoreData
 
 class ConflictRecordsOperation: BatchRecordOperation<Void, ConflictRecordOperation>
 {
-    init(service: Service, recordController: RecordController)
+    init(coordinator: SyncCoordinator)
     {
-        super.init(predicate: ManagedRecord.conflictRecordsPredicate, service: service, recordController: recordController)
+        super.init(predicate: ManagedRecord.conflictRecordsPredicate, coordinator: coordinator)
     }
 }

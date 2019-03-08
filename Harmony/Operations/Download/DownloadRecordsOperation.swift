@@ -11,14 +11,14 @@ import CoreData
 
 class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecordOperation>
 {
-    init(service: Service, recordController: RecordController)
+    init(coordinator: SyncCoordinator)
     {
-        super.init(predicate: ManagedRecord.downloadRecordsPredicate, service: service, recordController: recordController)
+        super.init(predicate: ManagedRecord.downloadRecordsPredicate, coordinator: coordinator)
     }
     
     override func process(_ results: [AnyRecord : Result<LocalRecord, RecordError>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord : Result<LocalRecord, RecordError>], Error>) -> Void)
     {
-        let operation = FinishDownloadingRecordsOperation(results: results, service: self.service, context: context)
+        let operation = FinishDownloadingRecordsOperation(results: results, coordinator: self.coordinator, context: context)
         operation.resultHandler = { (result) in
             completionHandler(result)
         }

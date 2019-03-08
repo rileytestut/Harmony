@@ -63,7 +63,7 @@ private extension DownloadRecordOperation
         }
         else
         {
-            let operation = FinishDownloadingRecordsOperation(results: [self.record: self.result!], service: self.service, context: self.managedObjectContext)
+            let operation = FinishDownloadingRecordsOperation(results: [self.record: self.result!], coordinator: self.coordinator, context: self.managedObjectContext)
             operation.resultHandler = { (result) in
                 do
                 {
@@ -112,7 +112,10 @@ private extension DownloadRecordOperation
                 version = remoteRecord.version
             }
             
-            let progress = self.service.download(self.record, version: version, context: self.managedObjectContext) { (result) in
+            let operation = ServiceOperation(coordinator: self.coordinator) { (completionHandler) in
+                return self.service.download(self.record, version: version, context: self.managedObjectContext, completionHandler: completionHandler)
+            }
+            operation.resultHandler = { (result) in
                 do
                 {
                     let localRecord = try result.get()
@@ -122,7 +125,7 @@ private extension DownloadRecordOperation
                     
                     let remoteRecord = remoteRecord.in(self.managedObjectContext)
                     remoteRecord.status = .normal
-                                        
+                    
                     completionHandler(.success(localRecord))
                 }
                 catch
@@ -131,7 +134,8 @@ private extension DownloadRecordOperation
                 }
             }
             
-            self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
+            self.progress.addChild(operation.progress, withPendingUnitCount: self.progress.totalUnitCount)
+            self.operationQueue.addOperation(operation)
         }
     }
     
@@ -187,30 +191,28 @@ private extension DownloadRecordOperation
                 
                 self.progress.totalUnitCount += 1
                 
-                let operation = RSTAsyncBlockOperation { (operation) in
-                    remoteFile.managedObjectContext?.perform {
-                        let fileIdentifier = remoteFile.identifier
-                        
-                        let progress = self.service.download(remoteFile) { (result) in
-                            do
-                            {
-                                let file = try result.get()
-                                files.insert(file)
-                            }
-                            catch
-                            {
-                                errors.append(FileError(fileIdentifier, error))
-                            }
-                            
-                            dispatchGroup.leave()
-                            
-                            operation.finish()
-                        }
-                        
-                        self.progress.addChild(progress, withPendingUnitCount: 1)
+                let fileIdentifier = remoteFile.identifier
+                
+                let operation = ServiceOperation<File, FileError>(coordinator: self.coordinator) { (completionHandler) in
+                    return self.managedObjectContext.performAndWait {
+                        return self.service.download(remoteFile, completionHandler: completionHandler)
                     }
                 }
+                operation.resultHandler = { (result) in
+                    do
+                    {
+                        let file = try result.get()
+                        files.insert(file)
+                    }
+                    catch
+                    {
+                        errors.append(FileError(fileIdentifier, error))
+                    }
+                    
+                    dispatchGroup.leave()
+                }
                 
+                self.progress.addChild(operation.progress, withPendingUnitCount: 1)
                 self.operationQueue.addOperation(operation)
             }
             catch

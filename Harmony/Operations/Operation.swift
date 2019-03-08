@@ -13,7 +13,7 @@ import Roxas
 
 class Operation<ResultType, ErrorType: Swift.Error>: RSTOperation, ProgressReporting
 {
-    let service: Service
+    let coordinator: SyncCoordinator
     
     let progress = Progress.discreteProgress(totalUnitCount: 1)
     
@@ -22,9 +22,17 @@ class Operation<ResultType, ErrorType: Swift.Error>: RSTOperation, ProgressRepor
     var result: Result<ResultType, ErrorType>?
     var resultHandler: ((Result<ResultType, ErrorType>) -> Void)?
     
-    init(service: Service)
+    var service: Service {
+        return self.coordinator.service
+    }
+    
+    var recordController: RecordController {
+        return self.coordinator.recordController
+    }
+    
+    init(coordinator: SyncCoordinator)
     {
-        self.service = service
+        self.coordinator = coordinator
         
         self.operationQueue = OperationQueue()
         self.operationQueue.name = "com.rileytestut.Harmony.\(type(of: self)).operationQueue"

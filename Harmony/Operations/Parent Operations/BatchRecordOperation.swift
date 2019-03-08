@@ -12,7 +12,6 @@ import CoreData
 class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType>>: Operation<[Record<NSManagedObject>: Result<ResultType, RecordError>], Error>
 {
     let predicate: NSPredicate
-    let recordController: RecordController
     
     private(set) var recordResults = [AnyRecord: Result<ResultType, RecordError>]()
     
@@ -20,14 +19,13 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         return true
     }
     
-    init(predicate: NSPredicate, service: Service, recordController: RecordController)
+    init(predicate: NSPredicate, coordinator: SyncCoordinator)
     {
         self.predicate = predicate
-        self.recordController = recordController
         
-        super.init(service: service)
+        super.init(coordinator: coordinator)
         
-        self.operationQueue.maxConcurrentOperationCount = 3
+        self.operationQueue.maxConcurrentOperationCount = 5
     }
     
     override func main()
@@ -56,7 +54,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                         let operations = records.compactMap { (record) -> OperationType? in
                             do
                             {
-                                let operation = try OperationType(record: record, service: self.service, context: saveContext)
+                                let operation = try OperationType(record: record, coordinator: self.coordinator, context: saveContext)
                                 operation.isBatchOperation = true
                                 operation.resultHandler = { (result) in
                                     self.recordResults[record] = result

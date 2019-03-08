@@ -11,14 +11,14 @@ import CoreData
 
 class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation>
 {
-    init(service: Service, recordController: RecordController)
+    init(coordinator: SyncCoordinator)
     {
-        super.init(predicate: ManagedRecord.uploadRecordsPredicate, service: service, recordController: recordController)
+        super.init(predicate: ManagedRecord.uploadRecordsPredicate, coordinator: coordinator)
     }
     
     override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], Error>) -> Void)
     {
-        let operation = PrepareUploadingRecordsOperation(records: records, service: self.service, context: context)
+        let operation = PrepareUploadingRecordsOperation(records: records, coordinator: coordinator, context: context)
         operation.resultHandler = { (result) in
             completionHandler(result)
         }
@@ -28,7 +28,7 @@ class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOpe
     
     override func process(_ results: [AnyRecord : Result<RemoteRecord, RecordError>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord : Result<RemoteRecord, RecordError>], Error>) -> Void)
     {
-        let operation = FinishUploadingRecordsOperation(results: results, service: self.service, context: context)
+        let operation = FinishUploadingRecordsOperation(results: results, coordinator: self.coordinator, context: context)
         operation.resultHandler = { (result) in
             completionHandler(result)
         }

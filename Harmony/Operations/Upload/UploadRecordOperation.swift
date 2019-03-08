@@ -14,9 +14,9 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
 {
     private var localRecord: LocalRecord!
     
-    required init<T: NSManagedObject>(record: Record<T>, service: Service, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
     {
-        try super.init(record: record, service: service, context: context)
+        try super.init(record: record, coordinator: coordinator, context: context)
         
         try self.record.perform { (managedRecord) in
             guard let localRecord = managedRecord.localRecord else {
@@ -74,7 +74,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
         }
         else
         {
-            let prepareUploadingRecordsOperation = PrepareUploadingRecordsOperation(records: [self.record], service: self.service, context: self.managedObjectContext)
+            let prepareUploadingRecordsOperation = PrepareUploadingRecordsOperation(records: [self.record], coordinator: self.coordinator, context: self.managedObjectContext)
             prepareUploadingRecordsOperation.resultHandler = { (result) in
                 do
                 {
@@ -106,7 +106,7 @@ private extension UploadRecordOperation
         }
         else
         {
-            let operation = FinishUploadingRecordsOperation(results: [self.record: self.result!], service: self.service, context: self.managedObjectContext)
+            let operation = FinishUploadingRecordsOperation(results: [self.record: self.result!], coordinator: self.coordinator, context: self.managedObjectContext)
             operation.resultHandler = { (result) in
                 do
                 {
@@ -161,39 +161,36 @@ private extension UploadRecordOperation
                     }
                     
                     // Hash is either different or file hasn't yet been uploaded, so upload file.
-                    
-                    let operation = RSTAsyncBlockOperation { [weak self] (operation) in
+                    let operation = ServiceOperation<RemoteFile, FileError>(coordinator: self.coordinator) { [weak self] (completionHandler) in
                         guard let self = self else {
-                            operation.finish()
-                            return
+                            completionHandler(.failure(FileError(file.identifier, GeneralError.unknown)))
+                            return nil
                         }
                         
-                        localRecord.managedObjectContext?.perform {
+                        return localRecord.managedObjectContext?.performAndWait { () -> Progress in
                             let metadata: [HarmonyMetadataKey: Any] = [.relationshipIdentifier: file.identifier, .sha1Hash: hash]
-                            
-                            let progress = self.service.upload(file, for: self.record, metadata: metadata, context: self.managedObjectContext) { (result) in
-                                do
-                                {
-                                    let remoteFile = try result.get()
-                                    remoteFiles.insert(remoteFile)
-                                }
-                                catch let error as FileError
-                                {
-                                    errors.append(error)
-                                }
-                                catch
-                                {
-                                    errors.append(FileError(file.identifier, error))
-                                }
-                                
-                                dispatchGroup.leave()
-                                
-                                operation.finish()
-                            }
-                            
-                            self.progress.addChild(progress, withPendingUnitCount: 1)
+                            return self.service.upload(file, for: self.record, metadata: metadata, context: self.managedObjectContext, completionHandler: completionHandler)
                         }
                     }
+                    operation.resultHandler = { (result) in
+                        do
+                        {
+                            let remoteFile = try result.get()
+                            remoteFiles.insert(remoteFile)
+                        }
+                        catch let error as FileError
+                        {
+                            errors.append(error)
+                        }
+                        catch
+                        {
+                            errors.append(FileError(file.identifier, error))
+                        }
+                        
+                        dispatchGroup.leave()
+                    }
+                    
+                    self.progress.addChild(operation.progress, withPendingUnitCount: 1)
                     self.operationQueue.addOperation(operation)
                 }
                 catch CocoaError.fileNoSuchFile
@@ -288,7 +285,11 @@ private extension UploadRecordOperation
                 try temporaryLocalRecord.recordedObject?.prepareForSync()
                 
                 let record = Record(managedRecord)
-                let progress = self.service.upload(record, metadata: metadata, context: self.managedObjectContext) { (result) in
+                
+                let operation = ServiceOperation(coordinator: self.coordinator) { (completionHandler) in
+                    return self.service.upload(record, metadata: metadata, context: self.managedObjectContext, completionHandler: completionHandler)
+                }
+                operation.resultHandler = { (result) in
                     do
                     {
                         let remoteRecord = try result.get()
@@ -299,8 +300,9 @@ private extension UploadRecordOperation
                         completionHandler(.failure(RecordError(self.record, error)))
                     }
                 }
-                
-                self.progress.addChild(progress, withPendingUnitCount: 1)
+ 
+                self.progress.addChild(operation.progress, withPendingUnitCount: 1)
+                self.operationQueue.addOperation(operation)
             }
         }
         catch

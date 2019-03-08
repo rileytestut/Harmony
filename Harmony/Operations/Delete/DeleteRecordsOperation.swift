@@ -13,9 +13,9 @@ class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation>
 {
     private var syncableFiles = [AnyRecord: Set<File>]()
     
-    init(service: Service, recordController: RecordController)
+    init(coordinator: SyncCoordinator)
     {
-        super.init(predicate: ManagedRecord.deleteRecordsPredicate, service: service, recordController: recordController)
+        super.init(predicate: ManagedRecord.deleteRecordsPredicate, coordinator: coordinator)
     }
     
     override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], Error>) -> Void)

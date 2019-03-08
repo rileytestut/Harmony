@@ -19,12 +19,12 @@ class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord
         return true
     }
     
-    init(results: [AnyRecord: Result<RemoteRecord, RecordError>], service: Service, context: NSManagedObjectContext)
+    init(results: [AnyRecord: Result<RemoteRecord, RecordError>], coordinator: SyncCoordinator, context: NSManagedObjectContext)
     {
         self.results = results
         self.managedObjectContext = context
         
-        super.init(service: service)
+        super.init(coordinator: coordinator)
     }
     
     override func main()
@@ -75,7 +75,7 @@ class FinishUploadingRecordsOperation: Operation<[AnyRecord: Result<RemoteRecord
                             
                             let record = AnyRecord(managedRecord)
                             
-                            let operation = try UpdateRecordMetadataOperation(record: record, service: self.service, context: self.managedObjectContext)
+                            let operation = try UpdateRecordMetadataOperation(record: record, coordinator: self.coordinator, context: self.managedObjectContext)
                             operation.metadata[.isLocked] = NSNull()
                             operation.resultHandler = { (result) in
                                 do

@@ -38,9 +38,9 @@
 		BF6C9EF91F9BFA05001B3F37 /* Professor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF81F9BFA05001B3F37 /* Professor.swift */; };
 		BF6DADDF1F9EB86A00F04D61 /* LocalRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA1C8E21ECD01C100DEA99D /* LocalRecordTests.swift */; };
 		BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7A1FC91F9D5F610061B187 /* NSManagedObject+Harmony.swift */; };
-		BF7A20101F9D67500061B187 /* CwlCatchException.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20031F9D667B0061B187 /* CwlCatchException.framework */; };
 		BF7A20111F9D67520061B187 /* CwlPreconditionTesting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20051F9D667B0061B187 /* CwlPreconditionTesting.framework */; };
 		BF81658F20164A280025CA9F /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81658E20164A280025CA9F /* OperationTests.swift */; };
+		BF823E4A2232132800ABAA2A /* ServiceOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF823E3F2232132700ABAA2A /* ServiceOperation.swift */; };
 		BF84220C21936E950035340B /* RemoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF84220B21936E950035340B /* RemoteFile.swift */; };
 		BF8A333621A4872300A42FD4 /* Record.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8A333521A4872300A42FD4 /* Record.swift */; };
 		BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */; };
@@ -114,13 +114,6 @@
 			remoteGlobalIDString = BFECF9F82016982D0012B9FC;
 			remoteInfo = "Harmony-Drive";
 		};
-		BF7A1FFC1F9D667B0061B187 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = C935204F1F0B7C1F0038F4E0;
-			remoteInfo = CwlCatchException_macOS;
-		};
 		BF7A1FFE1F9D667B0061B187 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
@@ -134,13 +127,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = C98707801C3F886F009B413A;
 			remoteInfo = CwlPreconditionTesting_macOSTests;
-		};
-		BF7A20021F9D667B0061B187 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = C935205C1F0B7C2F0038F4E0;
-			remoteInfo = CwlCatchException_iOS;
 		};
 		BF7A20041F9D667B0061B187 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -183,20 +169,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 96ACCC481C6E8A7C00FE0B1B;
 			remoteInfo = CwlPreconditionTesting_tvOSTests;
-		};
-		BF7A75AB2166DD2500797D91 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = C978CA1C211EEA9F005F8866;
-			remoteInfo = CwlCatchException_iOSTests;
-		};
-		BF7A75AD2166DD2500797D91 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = C978CA46211EEC3E005F8866;
-			remoteInfo = CwlCatchException_macOSTests;
 		};
 		BFA1C8DF1ECD01C100DEA99D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -280,6 +252,7 @@
 		BF7A1FC91F9D5F610061B187 /* NSManagedObject+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Harmony.swift"; sourceTree = "<group>"; };
 		BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CwlPreconditionTesting.xcodeproj; path = External/CwlPreconditionTesting/CwlPreconditionTesting.xcodeproj; sourceTree = SOURCE_ROOT; };
 		BF81658E20164A280025CA9F /* OperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationTests.swift; sourceTree = "<group>"; };
+		BF823E3F2232132700ABAA2A /* ServiceOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOperation.swift; sourceTree = "<group>"; };
 		BF84220B21936E950035340B /* RemoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteFile.swift; sourceTree = "<group>"; };
 		BF8A333521A4872300A42FD4 /* Record.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Record.swift; sourceTree = "<group>"; };
 		BF91BA66201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSError+LocalizedFailureDescription.swift"; sourceTree = "<group>"; };
@@ -355,7 +328,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BFA1C8DE1ECD01C100DEA99D /* Harmony.framework in Frameworks */,
-				BF7A20101F9D67500061B187 /* CwlCatchException.framework in Frameworks */,
 				BF7A20111F9D67520061B187 /* CwlPreconditionTesting.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -554,10 +526,6 @@
 		BF7A1FEF1F9D667A0061B187 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BF7A20031F9D667B0061B187 /* CwlCatchException.framework */,
-				BF7A75AC2166DD2500797D91 /* CwlCatchException_iOSTests.xctest */,
-				BF7A1FFD1F9D667B0061B187 /* CwlCatchException.framework */,
-				BF7A75AE2166DD2500797D91 /* CwlCatchException_macOSTests.xctest */,
 				BF7A20051F9D667B0061B187 /* CwlPreconditionTesting.framework */,
 				BF7A20071F9D667B0061B187 /* CwlPreconditionTesting_iOSTests.xctest */,
 				BF7A1FFF1F9D667B0061B187 /* CwlPreconditionTesting.framework */,
@@ -715,6 +683,7 @@
 			children = (
 				BFFB9B17200ED72E00A8F673 /* Operation.swift */,
 				BF9A36672162ED0800F8EE91 /* SyncRecordsOperation.swift */,
+				BF823E3F2232132700ABAA2A /* ServiceOperation.swift */,
 				BF9A367921630F2B00F8EE91 /* Parent Operations */,
 				BF4EE58321AC8FF000FA648D /* Upload */,
 				BF4EE59221AC8FF500FA648D /* Download */,
@@ -882,13 +851,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		BF7A1FFD1F9D667B0061B187 /* CwlCatchException.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CwlCatchException.framework;
-			remoteRef = BF7A1FFC1F9D667B0061B187 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		BF7A1FFF1F9D667B0061B187 /* CwlPreconditionTesting.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -901,13 +863,6 @@
 			fileType = wrapper.cfbundle;
 			path = CwlPreconditionTesting_macOSTests.xctest;
 			remoteRef = BF7A20001F9D667B0061B187 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BF7A20031F9D667B0061B187 /* CwlCatchException.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CwlCatchException.framework;
-			remoteRef = BF7A20021F9D667B0061B187 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		BF7A20051F9D667B0061B187 /* CwlPreconditionTesting.framework */ = {
@@ -950,20 +905,6 @@
 			fileType = wrapper.cfbundle;
 			path = CwlPreconditionTesting_tvOSTests.xctest;
 			remoteRef = BF7A200E1F9D667B0061B187 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BF7A75AC2166DD2500797D91 /* CwlCatchException_iOSTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = CwlCatchException_iOSTests.xctest;
-			remoteRef = BF7A75AB2166DD2500797D91 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BF7A75AE2166DD2500797D91 /* CwlCatchException_macOSTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = CwlCatchException_macOSTests.xctest;
-			remoteRef = BF7A75AD2166DD2500797D91 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		BFAC53962017F963006E0D36 /* Harmony_Drive.framework */ = {
@@ -1029,6 +970,7 @@
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,
 				BFBC13A221827D15001A321F /* KeyedContainers+ManagedValues.swift in Sources */,
+				BF823E4A2232132800ABAA2A /* ServiceOperation.swift in Sources */,
 				BFDDC10E219504AA009732B7 /* UserDefaults+Harmony.swift in Sources */,
 				BF37289B21B9DE1B008BFB5B /* Result+Success.swift in Sources */,
 				BF8A333621A4872300A42FD4 /* Record.swift in Sources */,

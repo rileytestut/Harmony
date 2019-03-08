@@ -13,19 +13,22 @@ class UpdateRecordMetadataOperation: RecordOperation<Void>
 {
     var metadata = [HarmonyMetadataKey: Any]()
     
-    required init<T: NSManagedObject>(record: Record<T>, service: Service, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
     {
         self.metadata[.recordedObjectType] = record.recordID.type
         self.metadata[.recordedObjectIdentifier] = record.recordID.identifier
         
-        try super.init(record: record, service: service, context: context)
+        try super.init(record: record, coordinator: coordinator, context: context)
     }
     
     override func main()
     {
         super.main()
         
-        let progress = self.service.updateMetadata(self.metadata, for: self.record) { (result) in
+        let operation = ServiceOperation(coordinator: self.coordinator) { (completionHandler) -> Progress? in
+            return self.service.updateMetadata(self.metadata, for: self.record, completionHandler: completionHandler)
+        }
+        operation.resultHandler = { (result) in
             do
             {
                 try result.get()
@@ -40,6 +43,7 @@ class UpdateRecordMetadataOperation: RecordOperation<Void>
             self.finish()
         }
         
-        self.progress.addChild(progress, withPendingUnitCount: 1)
+        self.progress.addChild(operation.progress, withPendingUnitCount: 1)
+        self.operationQueue.addOperation(operation)
     }
 }

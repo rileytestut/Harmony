@@ -20,7 +20,7 @@ class RecordOperation<ResultType>: Operation<ResultType, RecordError>
         return true
     }
     
-    required init<T: NSManagedObject>(record: Record<T>, service: Service, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
     {
         let record = AnyRecord(record)
         guard !record.isConflicted else { throw RecordError.conflicted(record) }
@@ -29,7 +29,7 @@ class RecordOperation<ResultType>: Operation<ResultType, RecordError>
         
         self.managedObjectContext = context
         
-        super.init(service: service)
+        super.init(coordinator: coordinator)
         
         self.progress.totalUnitCount = 1
         self.operationQueue.maxConcurrentOperationCount = 2

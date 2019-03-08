@@ -19,12 +19,12 @@ class PrepareUploadingRecordsOperation: Operation<[AnyRecord], Error>
         return true
     }
     
-    init(records: [AnyRecord], service: Service, context: NSManagedObjectContext)
+    init(records: [AnyRecord], coordinator: SyncCoordinator, context: NSManagedObjectContext)
     {
         self.records = records
         self.managedObjectContext = context
         
-        super.init(service: service)
+        super.init(coordinator: coordinator)
     }
     
     override func main()

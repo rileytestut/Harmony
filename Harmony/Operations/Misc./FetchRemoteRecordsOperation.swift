@@ -12,18 +12,16 @@ import CoreData
 class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchError>
 {
     let changeToken: Data?
-    let recordController: RecordController
     
     override var isAsynchronous: Bool {
         return true
     }
     
-    init(changeToken: Data?, service: Service, recordController: RecordController)
+    init(changeToken: Data?, coordinator: SyncCoordinator, recordController: RecordController)
     {
         self.changeToken = changeToken
-        self.recordController = recordController
         
-        super.init(service: service)
+        super.init(coordinator: coordinator)
     }
     
     override func main()
@@ -124,11 +122,14 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
             }
         }
         
-        let progress: Progress
+        let fetchOperation: Foundation.Operation & ProgressReporting
         
         if let changeToken = self.changeToken
         {
-            progress = self.service.fetchChangedRemoteRecords(changeToken: changeToken, context: context) { (result) in
+            let operation = ServiceOperation(coordinator: self.coordinator) { (completionHandler) -> Progress? in
+                return self.service.fetchChangedRemoteRecords(changeToken: changeToken, context: context, completionHandler: completionHandler)
+            }
+            operation.resultHandler = { (result) in
                 do
                 {
                     let (updatedRecords, deletedRecordIDs, changeToken) = try result.get()
@@ -139,10 +140,15 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                     finish(.failure(FetchError(error)))
                 }
             }
+            
+            fetchOperation = operation
         }
         else
         {
-            progress = self.service.fetchAllRemoteRecords(context: context) { (result) in
+            let operation = ServiceOperation(coordinator: self.coordinator) { (completionHandler) -> Progress? in
+                return self.service.fetchAllRemoteRecords(context: context, completionHandler: completionHandler)
+            }
+            operation.resultHandler = { (result) in
                 do
                 {
                     let (updatedRecords, changeToken) = try result.get()
@@ -153,9 +159,12 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                     finish(.failure(FetchError(error)))
                 }
             }
+            
+            fetchOperation = operation
         }
         
-        self.progress.addChild(progress, withPendingUnitCount: self.progress.totalUnitCount)
+        self.progress.addChild(fetchOperation.progress, withPendingUnitCount: self.progress.totalUnitCount)
+        self.operationQueue.addOperation(fetchOperation)
     }
     
     override func finish()

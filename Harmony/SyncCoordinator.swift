@@ -106,7 +106,7 @@ public extension SyncCoordinator
         
         self.isSyncing = true
         
-        let syncRecordsOperation = SyncRecordsOperation(changeToken: UserDefaults.standard.harmonyChangeToken, service: self.service, recordController: self.recordController)
+        let syncRecordsOperation = SyncRecordsOperation(changeToken: UserDefaults.standard.harmonyChangeToken, coordinator: self)
         syncRecordsOperation.resultHandler = { (result) in
             let syncResult: SyncResult
             
@@ -137,8 +137,19 @@ public extension SyncCoordinator
 {
     func authenticate(presentingViewController: UIViewController? = nil, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
     {
-        func finish(result: Result<Account, AuthenticationError>)
-        {
+        let operation = ServiceOperation<Account, AuthenticationError>(coordinator: self) { (completionHandler) -> Progress? in
+            if let presentingViewController = presentingViewController
+            {
+                self.service.authenticate(withPresentingViewController: presentingViewController, completionHandler: completionHandler)
+            }
+            else
+            {
+                self.service.authenticateInBackground(completionHandler: completionHandler)
+            }
+            
+            return nil
+        }
+        operation.resultHandler = { (result) in
             switch result
             {
             case .success(let account):
@@ -151,19 +162,19 @@ public extension SyncCoordinator
             completionHandler(result)
         }
         
-        if let presentingViewController = presentingViewController
-        {
-            self.service.authenticate(withPresentingViewController: presentingViewController, completionHandler: finish)
-        }
-        else
-        {
-            self.service.authenticateInBackground(completionHandler: finish)
-        }
+        // Don't add to operation queue, or else it might result in a deadlock
+        // if another operation we've started requires reauthentication.
+        operation.ignoreAuthenticationErrors = true
+        operation.start()
     }
     
     func deauthenticate(completionHandler: @escaping (Result<Void, AuthenticationError>) -> Void)
     {
-        self.service.deauthenticate { (result) in
+        let operation = ServiceOperation<Void, AuthenticationError>(coordinator: self) { (completionHandler) -> Progress? in
+            self.service.deauthenticate(completionHandler: completionHandler)
+            return nil
+        }
+        operation.resultHandler = { (result) in
             switch result
             {
             case .success:
@@ -175,6 +186,8 @@ public extension SyncCoordinator
             
             completionHandler(result)
         }
+        
+        self.operationQueue.addOperation(operation)
     }
 }
 
@@ -182,15 +195,20 @@ public extension SyncCoordinator
 {
     @discardableResult func fetchVersions<T: NSManagedObject>(for record: Record<T>, completionHandler: @escaping (Result<[Version], RecordError>) -> Void) -> Progress
     {
-        let progress = self.service.fetchVersions(for: AnyRecord(record)) { (result) in
+        let operation = ServiceOperation(coordinator: self) { (completionHandler) -> Progress? in
+            return self.service.fetchVersions(for: AnyRecord(record), completionHandler: completionHandler)
+        }
+        operation.resultHandler = { (result) in
             switch result
             {
             case .success(let versions): completionHandler(.success(versions))
             case .failure(let error): completionHandler(.failure(RecordError(Record(record), error)))
             }
         }
-
-        return progress
+        
+        self.operationQueue.addOperation(operation)
+        
+        return operation.progress
     }
     
     @discardableResult func upload<T: NSManagedObject>(_ record: Record<T>, completionHandler: @escaping (Result<Record<T>, RecordError>) -> Void) -> Progress
@@ -201,7 +219,7 @@ public extension SyncCoordinator
         
         do
         {
-            let operation = try UploadRecordOperation(record: record, service: self.service, context: context)
+            let operation = try UploadRecordOperation(record: record, coordinator: self, context: context)
             operation.resultHandler = { (result) in
                 do
                 {
@@ -239,7 +257,7 @@ public extension SyncCoordinator
         
         do
         {
-            let operation = try DownloadRecordOperation(record: record, service: self.service, context: context)
+            let operation = try DownloadRecordOperation(record: record, coordinator: self, context: context)
             operation.version = version
             operation.resultHandler = { (result) in
                 do

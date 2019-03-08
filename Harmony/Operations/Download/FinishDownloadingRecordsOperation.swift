@@ -19,12 +19,12 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
         return true
     }
     
-    init(results: [AnyRecord: Result<LocalRecord, RecordError>], service: Service, context: NSManagedObjectContext)
+    init(results: [AnyRecord: Result<LocalRecord, RecordError>], coordinator: SyncCoordinator, context: NSManagedObjectContext)
     {
         self.results = results
         self.managedObjectContext = context
         
-        super.init(service: service)
+        super.init(coordinator: coordinator)
     }
     
     override func main()
@@ -110,7 +110,7 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                             }
                             catch
                             {
-                               handleError(error, record: record, localRecord: localRecord)
+                                handleError(error, record: record, localRecord: localRecord)
                             }
                         }
                         
