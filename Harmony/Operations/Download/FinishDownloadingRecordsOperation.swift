@@ -152,14 +152,8 @@ private extension FinishDownloadingRecordsOperation
         }
         
         if !missingRelationshipKeys.isEmpty
-        {            
-            for key in missingRelationshipKeys
-            {
-                if let relationship = recordedObject.entity.relationshipsByName[key], !relationship.isOptional
-                {
-                    throw ValidationError.nilRelationshipObjects(keys: missingRelationshipKeys)
-                }
-            }
+        {
+            throw ValidationError.nilRelationshipObjects(keys: missingRelationshipKeys)
         }
     }
     
