@@ -20,6 +20,18 @@ extension NSManagedObjectContext
         
         return result
     }
+    
+    func performAndWait<T>(_ block: @escaping () throws -> T) throws -> T
+    {
+        var result: Result<T, Error>! = nil
+        
+        self.performAndWait {
+            result = Result { try block() }
+        }
+        
+        let value = try result.get()
+        return value
+    }
 }
 
 extension NSManagedObjectContext
@@ -37,8 +49,12 @@ extension NSManagedObjectContext
         fetchRequest.fetchBatchSize = 100
         fetchRequest.propertiesToFetch = [#keyPath(ManagedRecord.recordedObjectType), #keyPath(ManagedRecord.recordedObjectIdentifier)]
         
-        // Filter out any records that happen to have a matching recordedObjectIdentifier, but not matching recordedObjectType.
-        let records = try self.fetch(fetchRequest).filter { recordIDs.contains($0.recordID) }
-        return records
+        // For some reason, not explicitly calling performAndWait may cause Core Data threading assertion failures
+        // ...even if we already called this method from a context's perform(AndWait) closure.
+        return try self.performAndWait {
+            // Filter out any records that happen to have a matching recordedObjectIdentifier, but not matching recordedObjectType.
+            let records = try self.fetch(fetchRequest).filter { recordIDs.contains($0.recordID) }
+            return records
+        }
     }
 }

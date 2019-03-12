@@ -119,21 +119,10 @@ extension Record
     {
         if let context = context ?? self.managedRecordContext
         {
-            let result = context.performAndWait { () -> Result<T, Error> in
-                do
-                {
-                    let record = self.managedRecord.in(context)
-                    
-                    let value = try closure(record)
-                    return .success(value)
-                }
-                catch
-                {
-                    return .failure(error)
-                }
+            return try context.performAndWait {
+                let record = self.managedRecord.in(context)
+                return try closure(record)
             }
-            
-            return try result.get()
         }
         else
         {
