@@ -114,6 +114,13 @@
 			remoteGlobalIDString = BFECF9F82016982D0012B9FC;
 			remoteInfo = "Harmony-Drive";
 		};
+		BF1449CD223837F400C387E1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF1446CC223837F300C387E1 /* Harmony-Dropbox.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BFDE2C3C222DEBC9008038E0;
+			remoteInfo = "Harmony-Dropbox";
+		};
 		BF7A1FFE1F9D667B0061B187 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */;
@@ -232,6 +239,7 @@
 		BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyKeyPath+StringValue.swift"; sourceTree = "<group>"; };
 		BF06AD07222DD97900994C50 /* NSManagedObjectContext+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Harmony.swift"; sourceTree = "<group>"; };
 		BF06AD17222DDD7700994C50 /* RecordEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordEntry.swift; sourceTree = "<group>"; };
+		BF1446CC223837F300C387E1 /* Harmony-Dropbox.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "Harmony-Dropbox.xcodeproj"; sourceTree = "<group>"; };
 		BF1D948A1F9C1C38004216B9 /* Roxas.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Roxas.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordControllerTests.swift; sourceTree = "<group>"; };
 		BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCAssert+Harmony.swift"; sourceTree = "<group>"; };
@@ -376,6 +384,22 @@
 				BF06AD17222DDD7700994C50 /* RecordEntry.swift */,
 			);
 			path = Protocols;
+			sourceTree = "<group>";
+		};
+		BF1446BE223837F300C387E1 /* Dropbox */ = {
+			isa = PBXGroup;
+			children = (
+				BF1446CC223837F300C387E1 /* Harmony-Dropbox.xcodeproj */,
+			);
+			path = Dropbox;
+			sourceTree = "<group>";
+		};
+		BF1446CD223837F300C387E1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BF1449CE223837F400C387E1 /* Harmony_Dropbox.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		BF1D94881F9C1C38004216B9 /* Frameworks */ = {
@@ -625,6 +649,7 @@
 		BFAC538D2017F932006E0D36 /* Backends */ = {
 			isa = PBXGroup;
 			children = (
+				BF1446BE223837F300C387E1 /* Dropbox */,
 				BFAC538E2017F94F006E0D36 /* Drive */,
 			);
 			path = Backends;
@@ -840,6 +865,10 @@
 					ProductGroup = BFAC53902017F963006E0D36 /* Products */;
 					ProjectRef = BFAC538F2017F963006E0D36 /* Harmony-Drive.xcodeproj */;
 				},
+				{
+					ProductGroup = BF1446CD223837F300C387E1 /* Products */;
+					ProjectRef = BF1446CC223837F300C387E1 /* Harmony-Dropbox.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -851,6 +880,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		BF1449CE223837F400C387E1 /* Harmony_Dropbox.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Harmony_Dropbox.framework;
+			remoteRef = BF1449CD223837F400C387E1 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		BF7A1FFF1F9D667B0061B187 /* CwlPreconditionTesting.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
