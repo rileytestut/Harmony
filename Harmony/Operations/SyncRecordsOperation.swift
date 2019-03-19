@@ -11,13 +11,13 @@ import CoreData
 
 import Roxas
 
-class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, RecordError>], Data), SyncError>
+class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, RecordError>], SyncError>
 {
     let changeToken: Data?
     
     private let dispatchGroup = DispatchGroup()
         
-    private var updatedChangeToken: Data?
+    private(set) var updatedChangeToken: Data?
     private var backgroundTaskIdentifier: UIBackgroundTaskIdentifier?
     
     private var recordResults = [Record<NSManagedObject>: Result<Void, RecordError>]()
@@ -94,9 +94,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
         
         self.dispatchGroup.notify(queue: .global()) { [weak self] in
             guard let self = self else { return }
-            
-            guard let updatedChangeToken = self.updatedChangeToken else { return }
-            
+                        
             // Fetch all conflicted records and add conflicted errors for them all to recordResults.
             let context = self.recordController.newBackgroundContext()
             context.performAndWait {
@@ -133,7 +131,7 @@ class SyncRecordsOperation: Operation<([Record<NSManagedObject>: Result<Void, Re
             }
             else
             {
-                self.result = .success((self.recordResults, updatedChangeToken))
+                self.result = .success(self.recordResults)
             }            
             
             self.finish()

@@ -107,20 +107,13 @@ public extension SyncCoordinator
         self.isSyncing = true
         
         let syncRecordsOperation = SyncRecordsOperation(changeToken: UserDefaults.standard.harmonyChangeToken, coordinator: self)
-        syncRecordsOperation.resultHandler = { (result) in
-            let syncResult: SyncResult
-            
-            switch result
+        syncRecordsOperation.resultHandler = { [weak syncRecordsOperation] (result) in
+            if let changeToken = syncRecordsOperation?.updatedChangeToken
             {
-            case .success(let results, let changeToken):
                 UserDefaults.standard.harmonyChangeToken = changeToken
-                syncResult = .success(results)
-                
-            case .failure(let error):
-                syncResult = .failure(error)
             }
             
-            NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: syncResult])
+            NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: result])
             
             if self.operationQueue.operations.isEmpty
             {
