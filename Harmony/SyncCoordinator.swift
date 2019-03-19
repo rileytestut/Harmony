@@ -161,9 +161,9 @@ public extension SyncCoordinator
         operation.start()
     }
     
-    func deauthenticate(completionHandler: @escaping (Result<Void, AuthenticationError>) -> Void)
+    func deauthenticate(completionHandler: @escaping (Result<Void, DeauthenticationError>) -> Void)
     {
-        let operation = ServiceOperation<Void, AuthenticationError>(coordinator: self) { (completionHandler) -> Progress? in
+        let operation = ServiceOperation<Void, DeauthenticationError>(coordinator: self) { (completionHandler) -> Progress? in
             self.service.deauthenticate(completionHandler: completionHandler)
             return nil
         }

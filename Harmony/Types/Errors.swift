@@ -139,6 +139,27 @@ public enum AuthenticationError: HarmonyError
     }
 }
 
+public enum DeauthenticationError: HarmonyError
+{
+    case other(Error)
+    
+    public var underlyingError: HarmonyError? {
+        switch self
+        {
+        case .other(let error): return error as? HarmonyError
+        }
+    }
+    
+    public init(_ error: Error)
+    {
+        switch error
+        {
+        case let error as DeauthenticationError: self = error
+        case let error: self = .other(error)
+        }
+    }
+}
+
 public enum FetchError: HarmonyError
 {
     case invalidChangeToken(Data)
@@ -348,6 +369,16 @@ extension AuthenticationError
         case .noSavedCredentials: return NSLocalizedString("There are no saved credentials for the current user.", comment: "")
         case .tokenExpired: return NSLocalizedString("The authentication token has expired.", comment: "")
         case .other(let error as NSError): return error.localizedFailureReason
+extension DeauthenticationError
+{
+    public var failureDescription: String {
+        return NSLocalizedString("Failed to deauthenticate user.", comment: "")
+    }
+    
+    public var failureReason: String? {
+        switch self
+        {
+        case .other(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         }
     }
 }

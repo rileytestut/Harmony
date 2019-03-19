@@ -17,7 +17,7 @@ public protocol Service
     func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
     func authenticateInBackground(completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
     
-    func deauthenticate(completionHandler: @escaping (Result<Void, AuthenticationError>) -> Void)
+    func deauthenticate(completionHandler: @escaping (Result<Void, DeauthenticationError>) -> Void)
     
     func fetchAllRemoteRecords(context: NSManagedObjectContext, completionHandler: @escaping (Result<(Set<RemoteRecord>, Data), FetchError>) -> Void) -> Progress
     func fetchChangedRemoteRecords(changeToken: Data, context: NSManagedObjectContext, completionHandler: @escaping (Result<(Set<RemoteRecord>, Set<String>, Data), FetchError>) -> Void) -> Progress
