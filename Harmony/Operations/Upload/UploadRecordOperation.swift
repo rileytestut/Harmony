@@ -129,10 +129,12 @@ private extension UploadRecordOperation
                     
                     guard let result = results.values.first else { throw RecordError.other(self.record, GeneralError.unknown) }
                     
-                    let remoteRecord = try result.get()
-                    self.result = .success(remoteRecord)
+                    let tempRemoteRecord = try result.get()
                     
                     try self.managedObjectContext.save()
+                    
+                    let remoteRecord = tempRemoteRecord.in(self.managedObjectContext)
+                    self.result = .success(remoteRecord)
                 }
                 catch
                 {

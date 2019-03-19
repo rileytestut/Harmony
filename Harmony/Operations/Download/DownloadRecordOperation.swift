@@ -86,10 +86,12 @@ private extension DownloadRecordOperation
                     
                     guard let result = results.values.first else { throw RecordError.other(self.record, GeneralError.unknown) }
                     
-                    let localRecord = try result.get()
-                    self.result = .success(localRecord)
+                    let tempLocalRecord = try result.get()
                     
                     try self.managedObjectContext.save()
+                    
+                    let localRecord = tempLocalRecord.in(self.managedObjectContext)
+                    self.result = .success(localRecord)
                 }
                 catch
                 {
