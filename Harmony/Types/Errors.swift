@@ -368,7 +368,11 @@ extension AuthenticationError
         case .notAuthenticated: return NSLocalizedString("The current user is not authenticated.", comment: "")
         case .noSavedCredentials: return NSLocalizedString("There are no saved credentials for the current user.", comment: "")
         case .tokenExpired: return NSLocalizedString("The authentication token has expired.", comment: "")
-        case .other(let error as NSError): return error.localizedFailureReason
+        case .other(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
+        }
+    }
+}
+
 extension DeauthenticationError
 {
     public var failureDescription: String {
@@ -393,7 +397,7 @@ extension FetchError
         switch self
         {
         case .invalidChangeToken: return NSLocalizedString("The provided change token was invalid.", comment: "")
-        case .other(let error as NSError): return error.localizedFailureReason
+        case .other(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         }
     }
 }
@@ -412,7 +416,7 @@ extension RecordError
         case .doesNotExist: return NSLocalizedString("The record does not exist.", comment: "")
         case .syncingDisabled: return NSLocalizedString("Syncing is disabled for this record.", comment: "")
         case .conflicted: return NSLocalizedString("There is a conflict with this record.", comment: "")
-        case .other(_, let error as NSError): return error.localizedFailureReason
+        case .other(_, let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         case .filesFailed(_, let errors):
             if let error = errors.first, errors.count == 1
             {
@@ -437,7 +441,7 @@ extension FileError
         {
         case .doesNotExist: return NSLocalizedString("The file does not exist.", comment: "")
         case .unknownFile: return NSLocalizedString("The file is unknown.", comment: "")
-        case .other(_, let error as NSError): return error.localizedFailureReason
+        case .other(_, let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         }
     }
 }
@@ -457,7 +461,7 @@ extension DatabaseError
         {
         case .corrupted(let error as NSError),
              .other(let error as NSError):
-            return error.localizedFailureReason
+            return error.localizedFailureReason ?? error.localizedDescription
         }
     }
 }
