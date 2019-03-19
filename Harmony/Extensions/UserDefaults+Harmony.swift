@@ -17,3 +17,10 @@ extension UserDefaults
     
     @NSManaged var harmonyIsRecordControllerSeeded: Bool
 }
+
+extension UserDefaults
+{
+    var isDebugModeEnabled: Bool {
+        return UserDefaults.standard.bool(forKey: "com.rileytestut.Harmony.Debug")
+    }
+}

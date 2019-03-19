@@ -46,6 +46,9 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                 let records = try fetchContext.fetch(fetchRequest).map(Record.init)
                 records.forEach { self.recordResults[$0] = .failure(RecordError.other($0, GeneralError.unknown)) }
                 
+                var remainingRecordsCount = records.count
+                let remainingRecordsOutputQueue = DispatchQueue(label: "com.rileytestut.BatchRecordOperation.remainingRecordsOutputQueue")
+                
                 self.process(records, in: fetchContext) { (result) in
                     do
                     {
@@ -59,6 +62,14 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                 operation.resultHandler = { (result) in
                                     self.recordResults[record] = result
                                     dispatchGroup.leave()
+                                    
+                                    if UserDefaults.standard.isDebugModeEnabled
+                                    {
+                                        remainingRecordsOutputQueue.async {
+                                            remainingRecordsCount = remainingRecordsCount - 1
+                                            print("Remaining \(type(of: self)) operations:", remainingRecordsCount)
+                                        }
+                                    }
                                 }
                                 
                                 dispatchGroup.enter()

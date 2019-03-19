@@ -18,7 +18,12 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
     override func main()
     {
         super.main()
-                
+        
+        if UserDefaults.standard.isDebugModeEnabled
+        {
+            print("Started downloading record: ", self.record.recordID)
+        }
+        
         self.downloadRecord { (result) in
             do
             {
@@ -49,6 +54,16 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
                 self.result = .failure(RecordError(self.record, error))
                 self.finishDownload()
             }
+        }
+    }
+    
+    override func finish()
+    {
+        super.finish()
+        
+        if UserDefaults.standard.isDebugModeEnabled
+        {
+            print("Finished downloading record: ", self.record.recordID)
         }
     }
 }

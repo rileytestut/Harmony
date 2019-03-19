@@ -55,8 +55,6 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
             }
             
             self?.finish(result, debugTitle: "Fetch Records Result:")
-            
-            //self?.recordController.printRecords()
         }
         
         let conflictRecordsOperation = ConflictRecordsOperation(coordinator: self.coordinator)
@@ -136,7 +134,10 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
             
             self.finish()
             
-            self.recordController.printRecords()
+            if UserDefaults.standard.isDebugModeEnabled
+            {
+                self.recordController.printRecords()
+            }
         }
     }
     

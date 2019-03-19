@@ -43,6 +43,14 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                     {
                         var records = updatedRecords
                         
+                        if UserDefaults.standard.isDebugModeEnabled
+                        {
+                            for record in updatedRecords
+                            {
+                                print("Fetched RecordID: \(record.recordID). Hash: \(record.sha1Hash).")
+                            }
+                        }                        
+                        
                         if let recordIDs = deletedRecordIDs
                         {
                             let updatedRecordsByRecordID = Dictionary(updatedRecords, keyedBy: \.recordID)

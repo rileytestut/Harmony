@@ -213,6 +213,11 @@ public extension RecordController
                     progress.completedUnitCount += 1
                 }
                 
+                if UserDefaults.standard.isDebugModeEnabled
+                {
+                    self.printRecords()
+                }
+                
                 self.isSeeded = true
                 
                 completionHandler(.success)
@@ -306,7 +311,7 @@ extension RecordController
         }
     }
     
-    func printRecords()
+    public func printRecords()
     {
         let context = self.newBackgroundContext()
         context.performAndWait {
@@ -316,7 +321,7 @@ extension RecordController
             
             for record in records
             {
-                var string = "Record: \(record.recordedObjectType) \(record.objectID)"
+                var string = "Record: \(record.recordID)"
                 
                 if let localRecord = record.localRecord
                 {

@@ -35,6 +35,11 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
     {
         super.main()
         
+        if UserDefaults.standard.isDebugModeEnabled
+        {
+            print("Started uploading record: ", self.record.recordID)
+        }
+        
         func upload()
         {
             self.uploadFiles() { (result) in
@@ -92,6 +97,16 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
             }
             
             self.operationQueue.addOperation(prepareUploadingRecordsOperation)
+        }
+    }
+    
+    override func finish()
+    {
+        super.finish()
+        
+        if UserDefaults.standard.isDebugModeEnabled
+        {
+            print("Finished uploading record: ", self.record.recordID)
         }
     }
 }
