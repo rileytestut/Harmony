@@ -44,7 +44,12 @@ public final class SyncCoordinator
     public private(set) var isAuthenticated = false
     public private(set) var isSyncing = false
     
+    public var isStarted: Bool {
+        return self.recordController.isStarted
+    }
+    
     private let operationQueue: OperationQueue
+    private let syncOperationQueue: OperationQueue
     
     public init(service: Service, persistentContainer: NSPersistentContainer)
     {
@@ -55,11 +60,27 @@ public final class SyncCoordinator
         self.operationQueue = OperationQueue()
         self.operationQueue.name = "com.rileytestut.Harmony.SyncCoordinator.operationQueue"
         self.operationQueue.qualityOfService = .utility
-        self.operationQueue.maxConcurrentOperationCount = 1
+
+        self.syncOperationQueue = OperationQueue()
+        self.syncOperationQueue.name = "com.rileytestut.Harmony.SyncCoordinator.syncOperationQueue"
+        self.syncOperationQueue.qualityOfService = .utility
+        self.syncOperationQueue.maxConcurrentOperationCount = 1
         
         if let accountName = UserDefaults.standard.harmonyAccountName
         {
             self.account = Account(name: accountName)
+        }
+    }
+    
+    deinit
+    {
+        do
+        {
+            try self.stop()
+        }
+        catch
+        {
+            print("Failed to stop SyncCoordinator.", error)
         }
     }
 }
@@ -68,13 +89,13 @@ public extension SyncCoordinator
 {
     func start(completionHandler: @escaping (Result<Account?, Error>) -> Void)
     {
+        guard !self.isStarted else { return completionHandler(.success(self.account)) }
+        
         self.recordController.start { (result) in
-            if let error = result.values.first
+            do
             {
-                completionHandler(.failure(DatabaseError.corrupted(error)))
-            }
-            else
-            {
+                try result.get()
+                
                 self.authenticate() { (result) in
                     do
                     {
@@ -91,7 +112,22 @@ public extension SyncCoordinator
                     }
                 }
             }
+            catch
+            {
+                completionHandler(.failure(error))
+            }
         }
+    }
+    
+    func stop() throws
+    {
+        guard self.isStarted else { return }
+        
+        try self.recordController.stop()
+        
+        // Intentionally do not deauthorize, as that also resets the database.
+        // No harm in allowing user to remain authorized even if not syncing.
+        // self.deauthenticate()
     }
     
     @discardableResult func sync() -> (Foundation.Operation & ProgressReporting)?
@@ -99,7 +135,7 @@ public extension SyncCoordinator
         guard self.isAuthenticated else { return nil }
         
         // If there is already a sync operation waiting to execute, no use adding another one.
-        if self.operationQueue.operationCount > 1, let operation = self.operationQueue.operations.last as? SyncRecordsOperation
+        if self.syncOperationQueue.operationCount > 1, let operation = self.syncOperationQueue.operations.last as? SyncRecordsOperation
         {
             return operation
         }
@@ -115,12 +151,12 @@ public extension SyncCoordinator
             
             NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: result])
             
-            if self.operationQueue.operations.isEmpty
+            if self.syncOperationQueue.operations.isEmpty
             {
                 self.isSyncing = false
             }
         }
-        self.operationQueue.addOperation(syncRecordsOperation)
+        self.syncOperationQueue.addOperation(syncRecordsOperation)
         
         return syncRecordsOperation
     }
@@ -130,19 +166,32 @@ public extension SyncCoordinator
 {
     func authenticate(presentingViewController: UIViewController? = nil, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
     {
-        let operation = ServiceOperation<Account, AuthenticationError>(coordinator: self) { (completionHandler) -> Progress? in
-            if let presentingViewController = presentingViewController
-            {
-                self.service.authenticate(withPresentingViewController: presentingViewController, completionHandler: completionHandler)
-            }
-            else
-            {
-                self.service.authenticateInBackground(completionHandler: completionHandler)
+        guard self.isStarted else {
+            self.start { (result) in
+                switch result
+                {
+                case .success: self.authenticate(presentingViewController: presentingViewController, completionHandler: completionHandler)
+                case .failure(let error): completionHandler(.failure(AuthenticationError(error)))
+                }
             }
             
+            return
+        }
+        
+        let operation = ServiceOperation<Account, AuthenticationError>(coordinator: self) { (completionHandler) -> Progress? in
+            DispatchQueue.main.async {
+                if let presentingViewController = presentingViewController
+                {
+                    self.service.authenticate(withPresentingViewController: presentingViewController, completionHandler: completionHandler)
+                }
+                else
+                {
+                    self.service.authenticateInBackground(completionHandler: completionHandler)
+                }
+            }            
             return nil
         }
-        operation.resultHandler = { (result) in
+        operation.resultHandler = { (result) in            
             switch result
             {
             case .success(let account):
@@ -163,24 +212,38 @@ public extension SyncCoordinator
     
     func deauthenticate(completionHandler: @escaping (Result<Void, DeauthenticationError>) -> Void)
     {
+        // Set isAuthenticated to false immediately to disable syncing while we attempt deauthentication.
+        let isAuthenticated = self.isAuthenticated
+        self.isAuthenticated = false
+        
         let operation = ServiceOperation<Void, DeauthenticationError>(coordinator: self) { (completionHandler) -> Progress? in
             self.service.deauthenticate(completionHandler: completionHandler)
             return nil
         }
         operation.resultHandler = { (result) in
-            switch result
+            do
             {
-            case .success:
+                try result.get()
+                
+                try self.stop()
+                try self.recordController.reset()
+                
                 self.account = nil
                 self.isAuthenticated = false
                 
-            case .failure: break
+                UserDefaults.standard.harmonyChangeToken = nil
+                
+                completionHandler(.success)
             }
-            
-            completionHandler(result)
+            catch
+            {
+                self.isAuthenticated = isAuthenticated
+                completionHandler(.failure(DeauthenticationError(error)))
+            }
         }
         
-        self.operationQueue.addOperation(operation)
+        self.syncOperationQueue.cancelAllOperations()
+        self.syncOperationQueue.addOperation(operation)
     }
 }
 

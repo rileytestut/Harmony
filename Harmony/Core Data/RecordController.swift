@@ -35,6 +35,8 @@ public final class RecordController: RSTPersistentContainer
         }
     }
     
+    public private(set) var isStarted = false
+    
     let persistentContainer: NSPersistentContainer
     
     var automaticallyRecordsManagedObjects = true
@@ -73,12 +75,26 @@ public final class RecordController: RSTPersistentContainer
         let harmonyDirectory = FileManager.default.applicationSupportDirectory.appendingPathComponent("com.rileytestut.Harmony", isDirectory: true)
         return harmonyDirectory
     }
+    
+    deinit
+    {
+        do
+        {
+            try self.stop()
+        }
+        catch
+        {
+            print("Failed to stop RecordController.", error)
+        }
+    }
 }
 
-public extension RecordController
+internal extension RecordController
 {
-    func start(withCompletionHandler completionHandler: @escaping ([NSPersistentStoreDescription: Swift.Error]) -> Void)
+    func start(completionHandler: @escaping (Result<Void, DatabaseError>) -> Void)
     {
+        guard !self.isStarted else { return completionHandler(.success) }
+        
         do
         {
             try FileManager.default.createDirectory(at: RecordController.defaultDirectoryURL(), withIntermediateDirectories: true, attributes: nil)
@@ -88,28 +104,43 @@ public extension RecordController
             print(error)
         }
         
-        var errors = [NSPersistentStoreDescription: Swift.Error]()
+        var databaseError: Swift.Error?
         
         let dispatchGroup = DispatchGroup()
         self.persistentStoreDescriptions.forEach { _ in dispatchGroup.enter() }
         
         self.loadPersistentStores { (description, error) in
-            errors[description] = error
+            if let error = error, databaseError == nil
+            {
+                databaseError = error
+            }
             
             dispatchGroup.leave()
         }
         
         func finish()
         {
-            self.processingContext = self.newBackgroundContext()
-            
-            NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(_:)), name: .NSManagedObjectContextDidSave, object: nil)
-            
-            completionHandler(errors)
+            do
+            {
+                if let error = databaseError
+                {
+                    throw error
+                }
+                
+                self.processingContext = self.newBackgroundContext()
+                self.isStarted = true
+                
+                NotificationCenter.default.addObserver(self, selector: #selector(RecordController.managedObjectContextDidSave(_:)), name: .NSManagedObjectContextDidSave, object: nil)
+                
+                completionHandler(.success)
+            }
+            catch
+            {
+                completionHandler(.failure(DatabaseError.corrupted(error)))
+            }
         }
         
-        let isAddingStoresAsynchronously = self.persistentStoreDescriptions.contains(where: { $0.shouldAddStoreAsynchronously })
-        if isAddingStoresAsynchronously
+        if self.shouldAddStoresAsynchronously
         {
             dispatchGroup.notify(queue: DispatchQueue.global(qos: .userInitiated)) {
                 finish()
@@ -122,6 +153,37 @@ public extension RecordController
         }
     }
     
+    func stop() throws
+    {
+        guard self.isStarted else { return }
+        
+        try self.persistentStoreCoordinator.persistentStores.forEach(self.persistentStoreCoordinator.remove)
+        
+        NotificationCenter.default.removeObserver(self, name: .NSManagedObjectContextDidSave, object: nil)
+        
+        self.processingContext = nil
+        self.isStarted = false
+    }
+    
+    func reset() throws
+    {
+        try self.stop()
+        
+        do
+        {
+            try FileManager.default.removeItem(at: RecordController.defaultDirectoryURL())
+        }
+        catch CocoaError.fileNoSuchFile
+        {
+            // Ignore
+        }
+        
+        self.isSeeded = false
+    }
+}
+
+public extension RecordController
+{
     @discardableResult func seedFromPersistentContainer(completionHandler: @escaping (Result<Void, Swift.Error>) -> Void) -> Progress
     {
         let progress = Progress(totalUnitCount: 0)
@@ -163,10 +225,7 @@ public extension RecordController
         
         return progress
     }
-}
 
-public extension RecordController
-{
     func updateRecord<T: Syncable>(for managedObject: T)
     {
         guard let context = self.processingContext else { return }
