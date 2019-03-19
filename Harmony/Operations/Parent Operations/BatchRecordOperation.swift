@@ -86,6 +86,8 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                         {
                                             self.recordResults = try result.get()
                                             
+                                            guard !self.isCancelled else { throw GeneralError.cancelled }
+                                            
                                             try saveContext.save()
                                             
                                             self.result = .success(self.recordResults)

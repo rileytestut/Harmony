@@ -142,11 +142,20 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
     
     override func finish()
     {
+        guard !self.isFinished else { return }
+        
+        if self.isCancelled
+        {
+            self.result = .failure(SyncError(GeneralError.cancelled))
+        }
+        
         super.finish()
         
         if let identifier = self.backgroundTaskIdentifier
         {
             UIApplication.shared.endBackgroundTask(identifier)
+            
+            self.backgroundTaskIdentifier = nil
         }
     }
 }
@@ -154,11 +163,13 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
 private extension SyncRecordsOperation
 {
     func finish<T, U: HarmonyError>(_ result: Result<T, U>, debugTitle: String)
-    {
+    {        
         switch result
         {
         case .success: break
         case .failure(let error):
+            self.operationQueue.cancelAllOperations()
+            
             self.result = .failure(SyncError(error))
             self.finish()
         }

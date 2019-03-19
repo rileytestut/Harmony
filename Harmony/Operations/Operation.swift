@@ -59,11 +59,39 @@ class Operation<ResultType, ErrorType: Swift.Error>: RSTOperation, ProgressRepor
     
     public override func finish()
     {
+        guard !self.isFinished else {
+            return
+        }
+        
         super.finish()
         
-        if let result = self.result
+        let result: Result<ResultType, ErrorType>?
+        
+        if self.isCancelled
         {
-            self.resultHandler?(result)
+            let cancelledResult = Result<ResultType, Swift.Error>.failure(GeneralError.cancelled)
+            
+            if let cancelledResult = cancelledResult as? Result<ResultType, ErrorType>
+            {
+                result = cancelledResult
+            }
+            else
+            {
+                result = self.result
+            }
+        }
+        else
+        {
+            result = self.result
+        }
+        
+        if let resultHandler = self.resultHandler, let result = result
+        {
+            resultHandler(result)
+        }
+        else
+        {
+            assertionFailure("There should always be a result handler and a result.")
         }
     }
 }

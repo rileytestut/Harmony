@@ -45,6 +45,11 @@ class RecordOperation<ResultType>: Operation<ResultType, RecordError>
     override func finish()
     {
         self.managedObjectContext.performAndWait {
+            if self.isCancelled
+            {
+                self.result = .failure(RecordError(self.record, GeneralError.cancelled))
+            }
+            
             super.finish()
         }
     }
