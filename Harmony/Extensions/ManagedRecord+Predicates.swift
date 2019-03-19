@@ -81,7 +81,6 @@ extension ManagedRecord
     
     class var conflictRecordsPredicate: NSPredicate {
         let predicate = self.predicate(for: .conflict)
-        
         let allConflictsPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [predicate, self.conflictedUploadsPredicate])
         
         let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [allConflictsPredicate, self.syncableRecordsPredicate])
@@ -93,8 +92,16 @@ extension ManagedRecord
         return predicate
     }
     
+    private class var mismatchedHashesPredicate: NSPredicate {
+        let predicate = NSPredicate(format: "%K != %K", #keyPath(ManagedRecord.localRecord.sha1Hash), #keyPath(ManagedRecord.remoteRecord.sha1Hash))
+        return predicate
+    }
+    
     private class var conflictedUploadsPredicate: NSPredicate {
-        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [self.uploadRecordsPredicate, self.mismatchedVersionsPredicate])
+        let mismatchedVersionsPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [self.predicate(for: .upload), self.mismatchedVersionsPredicate])
+        let mismatchedHashesPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [self.predicate(for: .none), self.mismatchedHashesPredicate])
+        
+        let predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [mismatchedVersionsPredicate, mismatchedHashesPredicate])
         return predicate
     }
 }

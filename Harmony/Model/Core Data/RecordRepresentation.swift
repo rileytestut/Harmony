@@ -15,6 +15,8 @@ public class RecordRepresentation: NSManagedObject, RecordEntry
     
     @NSManaged public var managedRecord: ManagedRecord?
     
+    @NSManaged var sha1Hash: String
+    
     @objc public var status: RecordStatus {
         get {
             self.willAccessValue(forKey: #keyPath(RecordRepresentation.status))

@@ -8,6 +8,12 @@
 
 import Foundation
 import CoreData
+import Roxas
+
+fileprivate extension CodingUserInfoKey
+{
+    static let isEncodingForHashing = CodingUserInfoKey(rawValue: "isEncodingForHashing")!
+}
 
 extension LocalRecord
 {
@@ -18,6 +24,7 @@ extension LocalRecord
         case record
         case files
         case relationships
+        case sha1Hash
     }
     
     private struct AnyKey: CodingKey
@@ -81,13 +88,18 @@ public class LocalRecord: RecordRepresentation, Codable
     
     init(recordedObject: Syncable, context: NSManagedObjectContext) throws
     {
-        super.init(entity: LocalRecord.entity(), insertInto: nil)
+        super.init(entity: LocalRecord.entity(), insertInto: context)
         
-        // Must be after super.init() or else Swift compiler will crash (as of Swift 4.0)
-        try self.configure(with: recordedObject)
-        
-        // We know initialization didn't fail, so insert self into managed object context.
-        context.insert(self)
+        do
+        {
+            // Must be after super.init() or else Swift compiler will crash (as of Swift 4.0)
+            try self.configure(with: recordedObject)
+        }
+        catch
+        {
+            // Initialization failed, so remove self from managed object context.
+            context.delete(self)
+        }
     }
     
     public required init(from decoder: Decoder) throws
@@ -146,7 +158,11 @@ public class LocalRecord: RecordRepresentation, Codable
                 recordedObject.setValue(value, forKey: stringValue)
             }
             
-            try self.configure(with: recordedObject)
+            let sha1Hash = try container.decodeIfPresent(String.self, forKey: .sha1Hash)
+            
+            // Pass in non-nil string to prevent calculating hashes,
+            // which would potentially rely on not-yet-connected relationships.
+            try self.configure(with: recordedObject, sha1Hash: sha1Hash ?? "")
             
             self.remoteFiles = try container.decodeIfPresent(Set<RemoteFile>.self, forKey: .files) ?? []
             self.remoteRelationships = try container.decodeIfPresent([String: RecordID].self, forKey: .relationships)
@@ -163,7 +179,15 @@ public class LocalRecord: RecordRepresentation, Codable
     {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
-        try container.encode(self.recordedObjectType, forKey: .type)
+        func sanitized(_ type: String) -> String
+        {
+            // For some _bizarre_ reason, occasionally Core Data entity names encode themselves as gibberish.
+            // To prevent this, we perform a deep copy of the syncableType, which we then encode 🤷‍♂️.
+            let syncableType = String(type.lazy.map { $0 })
+            return syncableType
+        }
+        
+        try container.encode(sanitized(self.recordedObjectType), forKey: .type)
         try container.encode(self.recordedObjectIdentifier, forKey: .identifier)
         
         guard let recordedObject = self.recordedObject else { throw ValidationError.nilRecordedObject }
@@ -196,17 +220,40 @@ public class LocalRecord: RecordRepresentation, Codable
         let relationships = recordedObject.syncableRelationshipObjects.mapValues { (relationshipObject) -> RecordID? in
             guard let identifier = relationshipObject.syncableIdentifier else { return nil }
             
-            // For some _bizarre_ reason, occasionally Core Data entity names encode themselves as gibberish.
-            // To prevent this, we perform a deep copy of the syncableType, which we then encode 🤷‍♂️.
-            let syncableType = String(relationshipObject.syncableType.lazy.map { $0 })
-            
-            let relationship = RecordID(type: syncableType, identifier: identifier)
+            let relationship = RecordID(type: sanitized(relationshipObject.syncableType), identifier: identifier)
             return relationship
         }
         
         try container.encode(relationships, forKey: .relationships)
         
-        try container.encode(self.remoteFiles, forKey: .files)
+        if let isEncodingForHashing = encoder.userInfo[.isEncodingForHashing] as? Bool, isEncodingForHashing
+        {
+            // If encoding for hashing, we need to hash the _local_ files, not the remote files.
+            
+            var hashes = [String: String]()
+            
+            for file in recordedObject.syncableFiles
+            {
+                do
+                {
+                    let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
+                    hashes[file.identifier] = hash
+                }
+                catch CocoaError.fileNoSuchFile
+                {
+                    // File doesn't exist (which is valid), so just continue along.
+                }
+            }
+            
+            try container.encode(hashes, forKey: .files)
+        }
+        else
+        {
+            // If encoding for upload, encode self.remoteFiles, as well as our sha1Hash.
+            
+            try container.encode(self.remoteFiles, forKey: .files)
+            try container.encodeIfPresent(self.sha1Hash, forKey: .sha1Hash)
+        }
     }
     
     public override func awakeFromInsert()
@@ -224,7 +271,7 @@ extension LocalRecord
         return NSFetchRequest<LocalRecord>(entityName: "LocalRecord")
     }
     
-    func configure(with recordedObject: Syncable) throws
+    func configure(with recordedObject: Syncable, sha1Hash: String? = nil) throws
     {
         guard recordedObject.isSyncingEnabled else { throw ValidationError.nonSyncableRecordedObject(recordedObject) }
         
@@ -239,6 +286,27 @@ extension LocalRecord
         self.recordedObjectType = recordedObject.syncableType
         self.recordedObjectIdentifier = recordedObjectIdentifier
         self.recordedObjectURI = recordedObject.objectID.uriRepresentation()
+        
+        if let sha1Hash = sha1Hash
+        {
+            self.sha1Hash = sha1Hash
+        }
+        else
+        {
+            self.sha1Hash = try self.calculateSHA1Hash()
+        }
+    }
+    
+    func calculateSHA1Hash() throws -> String
+    {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys] // Ensures consistent ordering of keys (and thus consistent hashing).
+        encoder.userInfo = [.isEncodingForHashing: true]
+        
+        let data = try encoder.encode(self)
+                
+        let sha1Hash = RSTHasher.sha1Hash(of: data)
+        return sha1Hash
     }
 }
 

@@ -261,6 +261,10 @@ private extension UploadRecordOperation
         
         do
         {
+            // Always re-calculate hash since the record's files on disk might have changed.
+            let sha1Hash = try localRecord.calculateSHA1Hash()
+            metadata[.sha1Hash] = sha1Hash
+                        
             func finish(_ localRecord: LocalRecord, _ remoteRecord: RemoteRecord)
             {
                 remoteRecord.status = .normal
@@ -268,19 +272,12 @@ private extension UploadRecordOperation
                 let localRecord = localRecord.in(self.managedObjectContext)
                 localRecord.version = remoteRecord.version
                 localRecord.status = .normal
+                localRecord.sha1Hash = sha1Hash
                 
                 completionHandler(.success(remoteRecord))
             }
-            
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.sortedKeys] // Ensures consistent ordering of keys (and thus consistent hashing).
-            
-            let data = try encoder.encode(localRecord)
-            
-            let hash = RSTHasher.sha1Hash(of: data)
-            metadata[.sha1Hash] = hash
-            
-            guard localRecord.managedRecord?.remoteRecord?.sha1Hash != hash else {
+
+            guard sha1Hash != localRecord.managedRecord?.remoteRecord?.sha1Hash else {
                 // Hash is the same, so don't upload record.
                 self.progress.completedUnitCount += 1
                 

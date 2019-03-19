@@ -22,9 +22,7 @@ public class RemoteRecord: RecordRepresentation
     
     @NSManaged var versionIdentifier: String
     @NSManaged var versionDate: Date
-    
-    @NSManaged var sha1Hash: String?
-    
+        
     @NSManaged private var previousVersionIdentifier: String?
     @NSManaged private var previousVersionDate: Date?
     
@@ -96,6 +94,10 @@ public class RemoteRecord: RecordRepresentation
         if let sha1Hash = metadata[.sha1Hash]
         {
             self.sha1Hash = sha1Hash
+        }
+        else
+        {
+            self.sha1Hash = ""
         }
                 
         let filteredMetadata = metadata.filter { !HarmonyMetadataKey.allHarmonyKeys.contains($0.key) }

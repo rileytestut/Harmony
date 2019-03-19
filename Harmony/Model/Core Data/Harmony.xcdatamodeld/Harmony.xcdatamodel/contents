@@ -5,6 +5,7 @@
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectURI" attributeType="URI" syncable="YES"/>
+        <attribute name="sha1Hash" attributeType="String" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="versionDate" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="versionIdentifier" optional="YES" attributeType="String" syncable="YES"/>
@@ -12,6 +13,9 @@
         <relationship name="remoteFiles" toMany="YES" deletionRule="Cascade" destinationEntity="RemoteFile" inverseName="localRecord" inverseEntity="RemoteFile" syncable="YES"/>
         <fetchIndex name="byRecordedObjectIdentifier">
             <fetchIndexElement property="recordedObjectIdentifier" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byRecordedObjectURI">
+            <fetchIndexElement property="recordedObjectURI" type="Binary" order="ascending"/>
         </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -55,7 +59,7 @@
         <attribute name="previousVersionIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String" syncable="YES"/>
         <attribute name="recordedObjectType" attributeType="String" syncable="YES"/>
-        <attribute name="sha1Hash" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sha1Hash" attributeType="String" syncable="YES"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="versionDate" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="versionIdentifier" attributeType="String" syncable="YES"/>
@@ -78,7 +82,7 @@
         <memberEntity name="RemoteFile"/>
     </configuration>
     <elements>
-        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="180"/>
+        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="195"/>
         <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
         <element name="RemoteFile" positionX="288" positionY="378" width="128" height="135"/>
         <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="255"/>
