@@ -256,9 +256,21 @@ public extension SyncCoordinator
                 do
                 {
                     _ = try result.get()
-                    
+
                     let context = self.recordController.newBackgroundContext()
-                    record.perform(in: context) { (managedRecord) in
+                    try record.perform(in: context) { (managedRecord) in
+                        
+                        // Mark as updated so we can upload restored version on next sync.
+                        managedRecord.localRecord?.status = .updated
+                        
+                        if let version = managedRecord.remoteRecord?.version
+                        {
+                            // Assign to same version as RemoteRecord to prevent sync conflicts.
+                            managedRecord.localRecord?.version = version
+                        }
+                        
+                        try context.save()
+                        
                         let record = Record(managedRecord) as Record<T>
                         completionHandler(.success(record))
                     }
