@@ -293,20 +293,20 @@ extension LocalRecord
         }
         else
         {
-            self.sha1Hash = try self.calculateSHA1Hash()
+            try self.updateSHA1Hash()
         }
     }
     
-    func calculateSHA1Hash() throws -> String
+    func updateSHA1Hash() throws
     {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys] // Ensures consistent ordering of keys (and thus consistent hashing).
         encoder.userInfo = [.isEncodingForHashing: true]
         
         let data = try encoder.encode(self)
-                
+        
         let sha1Hash = RSTHasher.sha1Hash(of: data)
-        return sha1Hash
+        self.sha1Hash = sha1Hash
     }
 }
 

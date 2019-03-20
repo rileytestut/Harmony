@@ -264,7 +264,9 @@ private extension UploadRecordOperation
         do
         {
             // Always re-calculate hash since the record's files on disk might have changed.
-            let sha1Hash = try localRecord.calculateSHA1Hash()
+            try localRecord.updateSHA1Hash()
+            
+            let sha1Hash = localRecord.sha1Hash
             metadata[.sha1Hash] = sha1Hash
                         
             func finish(_ localRecord: LocalRecord, _ remoteRecord: RemoteRecord)
