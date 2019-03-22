@@ -11,7 +11,11 @@ import CoreData
 
 class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType>>: Operation<[Record<NSManagedObject>: Result<ResultType, RecordError>], Error>
 {
-    let predicate: NSPredicate
+    class var predicate: NSPredicate {
+        fatalError()
+    }
+        
+    var syncProgress: SyncProgress!
     
     private(set) var recordResults = [AnyRecord: Result<ResultType, RecordError>]()
     
@@ -19,10 +23,8 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         return true
     }
     
-    init(predicate: NSPredicate, coordinator: SyncCoordinator)
+    override init(coordinator: SyncCoordinator)
     {
-        self.predicate = predicate
-        
         super.init(coordinator: coordinator)
         
         self.operationQueue.maxConcurrentOperationCount = 5
@@ -33,7 +35,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         super.main()
         
         let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
-        fetchRequest.predicate = self.predicate
+        fetchRequest.predicate = type(of: self).predicate
         fetchRequest.returnsObjectsAsFaults = false
         
         let dispatchGroup = DispatchGroup()
@@ -45,6 +47,12 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
             {
                 let records = try fetchContext.fetch(fetchRequest).map(Record.init)
                 records.forEach { self.recordResults[$0] = .failure(RecordError.other($0, GeneralError.unknown)) }
+                
+                if records.count > 0
+                {
+                    // We'll increment totalUnitCount as we add operations.
+                    self.progress.totalUnitCount = 0
+                }
                 
                 var remainingRecordsCount = records.count
                 let remainingRecordsOutputQueue = DispatchQueue(label: "com.rileytestut.BatchRecordOperation.remainingRecordsOutputQueue")
@@ -72,6 +80,9 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                     }
                                 }
                                 
+                                self.progress.totalUnitCount += 1
+                                self.progress.addChild(operation.progress, withPendingUnitCount: 1)
+                                
                                 dispatchGroup.enter()
                                 
                                 return operation
@@ -84,8 +95,15 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                             return nil
                         }
                         
-                        self.progress.totalUnitCount = Int64(operations.count)
-                        operations.forEach { self.progress.addChild($0.progress, withPendingUnitCount: 1) }
+                        if records.count > 0
+                        {
+                            self.syncProgress.addChild(self.progress, withPendingUnitCount: self.progress.totalUnitCount)
+                            self.syncProgress.activeProgress = self.progress
+                        }
+                        else
+                        {
+                            self.syncProgress.addChild(self.progress, withPendingUnitCount: 0)
+                        }                        
                         
                         self.operationQueue.addOperations(operations, waitUntilFinished: false)
                         

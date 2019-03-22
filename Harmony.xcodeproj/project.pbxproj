@@ -87,6 +87,7 @@
 		BFECF58121912203006DB8F5 /* UploadRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */; };
 		BFECF58321912559006DB8F5 /* DownloadRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */; };
 		BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF0169620040FD300210A38 /* ManagedRecord.swift */; };
+		BFF1A6BC2244276B00CF89AE /* SyncProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF1A6BB2244276B00CF89AE /* SyncProgress.swift */; };
 		BFFAA627200582D700C4E475 /* HarmonyTests+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */; };
 		BFFAA65020059C5400C4E475 /* Harmony+Factories.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */; };
 		BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B17200ED72E00A8F673 /* Operation.swift */; };
@@ -312,6 +313,7 @@
 		BFECF58021912203006DB8F5 /* UploadRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadRecordsOperation.swift; sourceTree = "<group>"; };
 		BFECF58221912559006DB8F5 /* DownloadRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadRecordsOperation.swift; sourceTree = "<group>"; };
 		BFF0169620040FD300210A38 /* ManagedRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedRecord.swift; sourceTree = "<group>"; };
+		BFF1A6BB2244276B00CF89AE /* SyncProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncProgress.swift; sourceTree = "<group>"; };
 		BFFAA61A200582D700C4E475 /* HarmonyTests+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HarmonyTests+Factories.swift"; sourceTree = "<group>"; };
 		BFFAA64420059C5400C4E475 /* Harmony+Factories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Harmony+Factories.swift"; sourceTree = "<group>"; };
 		BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRemoteRecordsOperation.swift; sourceTree = "<group>"; };
@@ -723,6 +725,7 @@
 			isa = PBXGroup;
 			children = (
 				BF5D2E6E21B5B895007FACFA /* Errors.swift */,
+				BFF1A6BB2244276B00CF89AE /* SyncProgress.swift */,
 			);
 			path = Types;
 			sourceTree = "<group>";
@@ -1040,6 +1043,7 @@
 				BFFB9B1B200ED7EA00A8F673 /* Service.swift in Sources */,
 				BFAA23B91F9C14CC00969993 /* RecordController.swift in Sources */,
 				BFDA96F72164176000AF12F8 /* MergePolicy.swift in Sources */,
+				BFF1A6BC2244276B00CF89AE /* SyncProgress.swift in Sources */,
 				BFFDBA9F216D74FC00AED109 /* File.swift in Sources */,
 				BFB0454A1F9D8B75007FCC8C /* NSPersistentStore+Configuration.swift in Sources */,
 				BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */,

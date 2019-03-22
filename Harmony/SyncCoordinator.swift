@@ -130,14 +130,14 @@ public extension SyncCoordinator
         // self.deauthenticate()
     }
     
-    @discardableResult func sync() -> (Foundation.Operation & ProgressReporting)?
+    @discardableResult func sync() -> Progress?
     {
         guard self.isAuthenticated else { return nil }
         
         // If there is already a sync operation waiting to execute, no use adding another one.
         if self.syncOperationQueue.operationCount > 1, let operation = self.syncOperationQueue.operations.last as? SyncRecordsOperation
         {
-            return operation
+            return operation.progress
         }
         
         self.isSyncing = true
@@ -158,7 +158,7 @@ public extension SyncCoordinator
         }
         self.syncOperationQueue.addOperation(syncRecordsOperation)
         
-        return syncRecordsOperation
+        return syncRecordsOperation.syncProgress
     }
 }
 

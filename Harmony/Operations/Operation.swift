@@ -65,6 +65,11 @@ class Operation<ResultType, ErrorType: Swift.Error>: RSTOperation, ProgressRepor
         
         super.finish()
         
+        if !self.progress.isFinished
+        {
+            self.progress.completedUnitCount = self.progress.totalUnitCount
+        }
+        
         let result: Result<ResultType, ErrorType>?
         
         if self.isCancelled

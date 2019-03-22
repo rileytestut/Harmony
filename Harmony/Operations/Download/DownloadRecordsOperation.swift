@@ -11,9 +11,15 @@ import CoreData
 
 class DownloadRecordsOperation: BatchRecordOperation<LocalRecord, DownloadRecordOperation>
 {
-    init(coordinator: SyncCoordinator)
+    override class var predicate: NSPredicate {
+        return ManagedRecord.downloadRecordsPredicate
+    }
+    
+    override func main()
     {
-        super.init(predicate: ManagedRecord.downloadRecordsPredicate, coordinator: coordinator)
+        self.syncProgress.status = .downloading
+        
+        super.main()
     }
     
     override func process(_ results: [AnyRecord : Result<LocalRecord, RecordError>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord : Result<LocalRecord, RecordError>], Error>) -> Void)

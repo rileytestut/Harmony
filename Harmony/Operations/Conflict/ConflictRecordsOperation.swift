@@ -11,8 +11,15 @@ import CoreData
 
 class ConflictRecordsOperation: BatchRecordOperation<Void, ConflictRecordOperation>
 {
-    init(coordinator: SyncCoordinator)
+    override class var predicate: NSPredicate {
+        return ManagedRecord.conflictRecordsPredicate
+    }
+    
+    override func main()
     {
-        super.init(predicate: ManagedRecord.conflictRecordsPredicate, coordinator: coordinator)
+        // Not worth having an additional state for just conflicting records.
+        self.syncProgress.status = .fetchingChanges
+        
+        super.main()
     }
 }

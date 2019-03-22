@@ -15,6 +15,8 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
 {
     let changeToken: Data?
     
+    let syncProgress = SyncProgress(parent: nil, userInfo: nil)
+    
     private let dispatchGroup = DispatchGroup()
         
     private(set) var updatedChangeToken: Data?
@@ -32,13 +34,15 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         
         super.init(coordinator: coordinator)
         
+        self.syncProgress.totalUnitCount = 1
         self.operationQueue.maxConcurrentOperationCount = 1
-        self.progress.totalUnitCount = 0
     }
     
     override func main()
     {
         super.main()
+        
+        self.progress.addChild(self.syncProgress, withPendingUnitCount: 1)
         
         self.backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(withName: "com.rileytestut.Harmony.SyncRecordsOperation") { [weak self] in
             guard let identifier = self?.backgroundTaskIdentifier else { return }
@@ -56,37 +60,37 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
             
             self?.finish(result, debugTitle: "Fetch Records Result:")
         }
+        self.syncProgress.status = .fetchingChanges
+        self.syncProgress.addChild(fetchRemoteRecordsOperation.progress, withPendingUnitCount: 0)
         
         let conflictRecordsOperation = ConflictRecordsOperation(coordinator: self.coordinator)
         conflictRecordsOperation.resultHandler = { [weak self, unowned conflictRecordsOperation] (result) in
             self?.finishRecordOperation(conflictRecordsOperation, result: result, debugTitle: "Conflict Result:")
         }
+        conflictRecordsOperation.syncProgress = self.syncProgress
         
         let uploadRecordsOperation = UploadRecordsOperation(coordinator: self.coordinator)
         uploadRecordsOperation.resultHandler = { [weak self, unowned uploadRecordsOperation] (result) in
             self?.finishRecordOperation(uploadRecordsOperation, result: result, debugTitle: "Upload Result:")
         }
+        uploadRecordsOperation.syncProgress = self.syncProgress
         
         let downloadRecordsOperation = DownloadRecordsOperation(coordinator: self.coordinator)
         downloadRecordsOperation.resultHandler = { [weak self, unowned downloadRecordsOperation] (result) in
             self?.finishRecordOperation(downloadRecordsOperation, result: result, debugTitle: "Download Result:")
         }
+        downloadRecordsOperation.syncProgress = self.syncProgress
         
         let deleteRecordsOperation = DeleteRecordsOperation(coordinator: self.coordinator)
         deleteRecordsOperation.resultHandler = { [weak self, unowned deleteRecordsOperation] (result) in
             self?.finishRecordOperation(deleteRecordsOperation, result: result, debugTitle: "Delete Result:")
         }
+        deleteRecordsOperation.syncProgress = self.syncProgress
         
         let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
-        self.progress.totalUnitCount = Int64(operations.count)
-        
         for operation in operations
         {
-            // Explicitly declaring `operations` as [Foundation.Operation & ProgressReporting] sometimes crashes 4.2 compiler, so we just force cast it here.
-            let operation = operation as! (Foundation.Operation & ProgressReporting)
             self.dispatchGroup.enter()
-            
-            self.progress.addChild(operation.progress, withPendingUnitCount: 1)
             self.operationQueue.addOperation(operation)
         }
         
@@ -164,15 +168,35 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
 private extension SyncRecordsOperation
 {
     func finish<T, U: HarmonyError>(_ result: Result<T, U>, debugTitle: String)
-    {        
-        switch result
+    {
+        do
         {
-        case .success: break
-        case .failure(let error):
+            _ = try result.get()
+            
+            let context = self.recordController.newBackgroundContext()
+            let recordCount = try context.performAndWait { () -> Int in
+                let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
+                fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [ConflictRecordsOperation.predicate,
+                                                                                            UploadRecordsOperation.predicate,
+                                                                                            DownloadRecordsOperation.predicate,
+                                                                                            DeleteRecordsOperation.predicate])
+                
+                let count = try context.count(for: fetchRequest)
+                return count
+            }
+            
+            self.syncProgress.totalUnitCount = Int64(recordCount)
+        }
+        catch let error as HarmonyError
+        {
             self.operationQueue.cancelAllOperations()
             
             self.result = .failure(SyncError(error))
             self.finish()
+        }
+        catch
+        {
+            fatalError("Non-HarmonyError thrown from SyncRecordsOperation.finish")
         }
         
         self.dispatchGroup.leave()

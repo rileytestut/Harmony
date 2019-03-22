@@ -17,6 +17,8 @@ class ServiceOperation<R, E: Error>: Operation<R, E>
     private var retryDelay: TimeInterval = 1.0
     private var didAttemptReauthentication = false
     
+    private var taskProgress: Progress?
+    
     override var isAsynchronous: Bool {
         return true
     }
@@ -40,7 +42,13 @@ private extension ServiceOperation
 {
     func performTask()
     {
-        let progress = self.task() { (result) in
+        self.taskProgress = self.task() { (result) in
+            if let progress = self.taskProgress
+            {
+                // Ensure progress is completed.
+                progress.completedUnitCount = progress.totalUnitCount
+            }
+            
             // We must append .self to our Error enum cases for pattern matching to work.
             // Otherwise, the compiler (incorrectly) defaults to using normal enum pattern matching
             // and won't call our custom pattern matching operator.
@@ -62,6 +70,8 @@ private extension ServiceOperation
                 }
                 
                 print("Retrying request after delay:", self.retryDelay)
+                
+                self.progress.completedUnitCount -= 1
                 
                 DispatchQueue.global().asyncAfter(deadline: .now() + self.retryDelay) {
                     self.retryDelay = self.retryDelay * 2
@@ -92,7 +102,7 @@ private extension ServiceOperation
             }
         }
         
-        if let progress = progress
+        if let progress = self.taskProgress
         {
             self.progress.addChild(progress, withPendingUnitCount: 1)
         }

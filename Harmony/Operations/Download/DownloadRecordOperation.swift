@@ -15,6 +15,14 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
 {
     var version: Version?
     
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+    {
+        try super.init(record: record, coordinator: coordinator, context: context)
+        
+        // Record itself = 1 unit, files = 3 units.
+        self.progress.totalUnitCount = 4
+    }
+    
     override func main()
     {
         super.main()
@@ -151,7 +159,7 @@ private extension DownloadRecordOperation
                 }
             }
             
-            self.progress.addChild(operation.progress, withPendingUnitCount: self.progress.totalUnitCount)
+            self.progress.addChild(operation.progress, withPendingUnitCount: 1)
             self.operationQueue.addOperation(operation)
         }
     }
@@ -169,6 +177,8 @@ private extension DownloadRecordOperation
         
         // Suspend operation queue to prevent download operations from starting automatically.
         self.operationQueue.isSuspended = true
+        
+        let filesProgress = Progress.discreteProgress(totalUnitCount: 0)
         
         var files = Set<File>()
         var errors = [FileError]()
@@ -206,9 +216,9 @@ private extension DownloadRecordOperation
                     }
                 }
                 
-                self.progress.totalUnitCount += 1
-                
                 let fileIdentifier = remoteFile.identifier
+                
+                dispatchGroup.enter()
                 
                 let operation = ServiceOperation<File, FileError>(coordinator: self.coordinator) { (completionHandler) in
                     return self.managedObjectContext.performAndWait {
@@ -229,7 +239,9 @@ private extension DownloadRecordOperation
                     dispatchGroup.leave()
                 }
                 
-                self.progress.addChild(operation.progress, withPendingUnitCount: 1)
+                filesProgress.totalUnitCount += 1
+                filesProgress.addChild(operation.progress, withPendingUnitCount: 1)
+                
                 self.operationQueue.addOperation(operation)
             }
             catch
@@ -240,7 +252,8 @@ private extension DownloadRecordOperation
         
         if errors.isEmpty
         {
-            self.operationQueue.operations.forEach { _ in dispatchGroup.enter() }
+            self.progress.addChild(filesProgress, withPendingUnitCount: 3)
+            
             self.operationQueue.isSuspended = false
         }
         

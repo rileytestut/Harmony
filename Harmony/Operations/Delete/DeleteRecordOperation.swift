@@ -11,11 +11,17 @@ import CoreData
 
 class DeleteRecordOperation: RecordOperation<Void>
 {
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+    {
+        try super.init(record: record, coordinator: coordinator, context: context)
+        
+        // Remote record = 2 units, local record = 1 unit.
+        self.progress.totalUnitCount = 3
+    }
+    
     override func main()
     {
         super.main()
-        
-        self.progress.totalUnitCount = 2
         
         self.deleteRemoteFiles { (result) in
             do
@@ -56,13 +62,13 @@ private extension DeleteRecordOperation
             // If local record doesn't exist, we don't treat it as an error and just say it succeeded.
             guard let localRecord = managedRecord.localRecord else { return completionHandler(.success) }
             
+            let filesProgress = Progress(totalUnitCount: Int64(localRecord.remoteFiles.count), parent: self.progress, pendingUnitCount: 2)
+            
             var errors = [FileError]()
             let dispatchGroup = DispatchGroup()
             
             for remoteFile in localRecord.remoteFiles
             {
-                self.progress.totalUnitCount += 1
-                
                 dispatchGroup.enter()
                 
                 let operation = ServiceOperation<Void, FileError>(coordinator: self.coordinator) { (completionHandler) -> Progress? in
@@ -91,7 +97,8 @@ private extension DeleteRecordOperation
                     dispatchGroup.leave()
                 }
 
-                self.progress.addChild(operation.progress, withPendingUnitCount: 1)
+                filesProgress.addChild(operation.progress, withPendingUnitCount: 1)
+                
                 self.operationQueue.addOperation(operation)
             }
             

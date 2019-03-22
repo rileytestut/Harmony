@@ -11,9 +11,15 @@ import CoreData
 
 class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOperation>
 {
-    init(coordinator: SyncCoordinator)
+    override class var predicate: NSPredicate {
+        return ManagedRecord.uploadRecordsPredicate
+    }
+    
+    override func main()
     {
-        super.init(predicate: ManagedRecord.uploadRecordsPredicate, coordinator: coordinator)
+        self.syncProgress.status = .uploading
+        
+        super.main()
     }
     
     override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], Error>) -> Void)

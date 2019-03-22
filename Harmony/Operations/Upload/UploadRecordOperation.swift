@@ -24,10 +24,8 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
             }
             self.localRecord = localRecord
             
-            guard  let recordedObject = localRecord.recordedObject else {
-                throw RecordError(self.record, ValidationError.nilRecordedObject)
-            }
-            self.progress.totalUnitCount = Int64(recordedObject.syncableFiles.count) + 1
+            // Record itself = 1 unit, files = 3 units.
+            self.progress.totalUnitCount = 4
         }
     }
     
@@ -159,6 +157,8 @@ private extension UploadRecordOperation
             // Suspend operation queue to prevent upload operations from starting automatically.
             self.operationQueue.isSuspended = true
             
+            let filesProgress = Progress.discreteProgress(totalUnitCount: 0)
+            
             var remoteFiles = Set<RemoteFile>()
             var errors = [FileError]()
             
@@ -176,6 +176,8 @@ private extension UploadRecordOperation
                         self.progress.completedUnitCount += 1
                         continue
                     }
+                    
+                    dispatchGroup.enter()
                     
                     // Hash is either different or file hasn't yet been uploaded, so upload file.
                     let operation = ServiceOperation<RemoteFile, FileError>(coordinator: self.coordinator) { [weak self] (completionHandler) in
@@ -207,7 +209,9 @@ private extension UploadRecordOperation
                         dispatchGroup.leave()
                     }
                     
-                    self.progress.addChild(operation.progress, withPendingUnitCount: 1)
+                    filesProgress.totalUnitCount += 1
+                    filesProgress.addChild(operation.progress, withPendingUnitCount: 1)
+                    
                     self.operationQueue.addOperation(operation)
                 }
                 catch CocoaError.fileNoSuchFile
@@ -222,7 +226,8 @@ private extension UploadRecordOperation
             
             if errors.isEmpty
             {
-                self.operationQueue.operations.forEach { _ in dispatchGroup.enter() }
+                self.progress.addChild(filesProgress, withPendingUnitCount: 3)
+                
                 self.operationQueue.isSuspended = false
             }
             
