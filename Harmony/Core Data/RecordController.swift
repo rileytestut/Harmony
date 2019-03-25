@@ -28,10 +28,26 @@ public final class RecordController: RSTPersistentContainer
 {
     public private(set) var isSeeded: Bool {
         get {
-            return UserDefaults.standard.harmonyIsRecordControllerSeeded
+            guard let metadata = self.persistentStoreCoordinator.persistentStores.first?.metadata else { return false }
+            
+            let isSeeded = metadata["harmony_isSeeded"] as? Bool
+            return isSeeded ?? false
         }
         set {
-            UserDefaults.standard.harmonyIsRecordControllerSeeded = newValue
+            guard let store = self.persistentStoreCoordinator.persistentStores.first else { return }
+            store.metadata["harmony_isSeeded"] = newValue
+            
+            // Must save a context for store metadata to update.
+            self.performBackgroundTask { (context) in
+                do
+                {
+                    try context.save()
+                }
+                catch
+                {
+                    print("Failed to update store metadata:", error)
+                }
+            }
         }
     }
     

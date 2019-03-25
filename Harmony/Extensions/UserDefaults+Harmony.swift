@@ -15,7 +15,6 @@ extension UserDefaults
     
     @NSManaged var harmonyAccountName: String?
     
-    @NSManaged var harmonyIsRecordControllerSeeded: Bool
 }
 
 extension UserDefaults
