@@ -49,6 +49,7 @@ class SyncProgress: Progress
         super.init(parent: parentProgressOrNil, userInfo: userInfoOrNil)
         
         self.localizedDescription = NSLocalizedString("Syncing…", comment: "")
+        self.updateLocalizedAdditionalDescription()
     }
     
     private func updateLocalizedAdditionalDescription()
@@ -65,7 +66,7 @@ class SyncProgress: Progress
             case .fetchingChanges: localizedAdditionalDescription = ""
             case .uploading: localizedAdditionalDescription = String.localizedStringWithFormat(NSLocalizedString("Uploading %d of %d", comment: ""), count, progress.totalUnitCount)
             case .downloading: localizedAdditionalDescription = String.localizedStringWithFormat(NSLocalizedString("Downloading %d of %d", comment: ""), count, progress.totalUnitCount)
-            case .deleting: localizedAdditionalDescription = String.localizedStringWithFormat(NSLocalizedString("Deleting %d of %d", comment: ""), count, progress.totalUnitCount)
+            case .deleting: localizedAdditionalDescription = "" // Intentionally don't display anything for deleting.
             }
         }
         else
