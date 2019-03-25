@@ -80,6 +80,18 @@ open class MergePolicy: RSTRelationshipPreservingMergePolicy
                 // Assign correct remoteFiles back to databaseObject.
                 databaseObject.remoteFiles = remoteFiles
                 
+            case let databaseObject as ManagedAccount:
+                guard
+                    let snapshot = conflict.snapshots.object(forKey: conflict.databaseObject),
+                    let previousChangeToken = snapshot[#keyPath(ManagedAccount.changeToken)] as? Data
+                else { continue }
+                
+                // If previous change token was non-nil, and the current change token is nil, then restore previous change token.
+                if databaseObject.changeToken == nil
+                {
+                    databaseObject.changeToken = previousChangeToken
+                }
+                
             default: break
             }
         }

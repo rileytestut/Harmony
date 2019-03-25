@@ -35,11 +35,40 @@ public final class SyncCoordinator
     
     public let recordController: RecordController
     
-    public private(set) var account: Account? {
-        didSet {
-            UserDefaults.standard.harmonyAccountName = self.account?.name
+    public var account: Account? {
+        return self.managedAccount?.managedObjectContext?.performAndWait {
+            guard let managedAccount = self.managedAccount else { return nil }
+            
+            let account = Account(account: managedAccount)
+            return account
         }
     }
+    
+    private var managedAccount: ManagedAccount? {
+        guard _managedAccount == nil else { return _managedAccount }
+        
+        let context = self.recordController.newBackgroundContext()
+        _managedAccount = context.performAndWait {
+            do
+            {
+                let accounts = try context.fetch(ManagedAccount.currentAccountFetchRequest())
+                return accounts.first
+            }
+            catch
+            {
+                print("Failed to fetch managed account.", error)
+                return nil
+            }
+        }
+        
+        return _managedAccount
+    }
+    private var _managedAccount: ManagedAccount? {
+        didSet {
+            self._managedAccountContext = self._managedAccount?.managedObjectContext
+        }
+    }
+    private var _managedAccountContext: NSManagedObjectContext?
     
     public private(set) var isAuthenticated = false
     public private(set) var isSyncing = false
@@ -65,11 +94,6 @@ public final class SyncCoordinator
         self.syncOperationQueue.name = "com.rileytestut.Harmony.SyncCoordinator.syncOperationQueue"
         self.syncOperationQueue.qualityOfService = .utility
         self.syncOperationQueue.maxConcurrentOperationCount = 1
-        
-        if let accountName = UserDefaults.standard.harmonyAccountName
-        {
-            self.account = Account(name: accountName)
-        }
     }
     
     deinit
@@ -139,33 +163,48 @@ public extension SyncCoordinator
     
     @discardableResult func sync() -> Progress?
     {
-        guard self.account != nil else { return nil }
+        guard let account = self.managedAccount, let context = account.managedObjectContext else { return nil }
         
-        // If there is already a sync operation waiting to execute, no use adding another one.
-        if self.syncOperationQueue.operationCount > 1, let operation = self.syncOperationQueue.operations.last as? SyncRecordsOperation
-        {
-            return operation.progress
-        }
-        
-        self.isSyncing = true
-        
-        let syncRecordsOperation = SyncRecordsOperation(changeToken: UserDefaults.standard.harmonyChangeToken, coordinator: self)
-        syncRecordsOperation.resultHandler = { [weak syncRecordsOperation] (result) in
-            if let changeToken = syncRecordsOperation?.updatedChangeToken
+        return context.performAndWait {
+            // If there is already a sync operation waiting to execute, no use adding another one.
+            if self.syncOperationQueue.operationCount > 1, let operation = self.syncOperationQueue.operations.last as? SyncRecordsOperation
             {
-                UserDefaults.standard.harmonyChangeToken = changeToken
+                return operation.progress
             }
             
-            NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: result])
+            self.isSyncing = true
             
-            if self.syncOperationQueue.operations.isEmpty
-            {
-                self.isSyncing = false
+            let syncRecordsOperation = SyncRecordsOperation(changeToken: account.changeToken, coordinator: self)
+            syncRecordsOperation.resultHandler = { [weak syncRecordsOperation] (result) in
+                if let changeToken = syncRecordsOperation?.updatedChangeToken
+                {
+                    let context = self.recordController.newBackgroundContext()
+                    context.performAndWait {
+                        let account = account.in(context)
+                        account.changeToken = changeToken
+                        
+                        do
+                        {
+                            try context.save()
+                        }
+                        catch
+                        {
+                            print("Failed to save change token.", error)
+                        }
+                    }
+                }
+                
+                NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: result])
+                
+                if self.syncOperationQueue.operations.isEmpty
+                {
+                    self.isSyncing = false
+                }
             }
+            self.syncOperationQueue.addOperation(syncRecordsOperation)
+            
+            return syncRecordsOperation.syncProgress
         }
-        self.syncOperationQueue.addOperation(syncRecordsOperation)
-        
-        return syncRecordsOperation.syncProgress
     }
 }
 
@@ -203,8 +242,21 @@ public extension SyncCoordinator
             switch result
             {
             case .success(let account):
-                self.account = account
-                self.isAuthenticated = true
+                let context = self.recordController.newBackgroundContext()
+                context.performAndWait {
+                    let account = ManagedAccount(account: account, service: self.service, context: context)
+                    
+                    do
+                    {
+                        try context.save()
+                        
+                        self.isAuthenticated = true
+                    }
+                    catch
+                    {
+                        print("Failed to save account.", account, error)
+                    }
+                }
                 
             case .failure: break
             }
@@ -237,10 +289,8 @@ public extension SyncCoordinator
                 try self.stop()
                 try self.recordController.reset()
                 
-                self.account = nil
+                self._managedAccount = nil
                 self.isAuthenticated = false
-                
-                UserDefaults.standard.harmonyChangeToken = nil
                 
                 completionHandler(.success)
             }

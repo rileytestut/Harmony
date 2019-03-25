@@ -37,6 +37,7 @@
 		BF6C9EF71F9BF7D9001B3F37 /* Homework.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF61F9BF7D9001B3F37 /* Homework.swift */; };
 		BF6C9EF91F9BFA05001B3F37 /* Professor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EF81F9BFA05001B3F37 /* Professor.swift */; };
 		BF6DADDF1F9EB86A00F04D61 /* LocalRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA1C8E21ECD01C100DEA99D /* LocalRecordTests.swift */; };
+		BF713BF0224973AA004A1A2B /* ManagedAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF713BEF224973AA004A1A2B /* ManagedAccount.swift */; };
 		BF7A1FCA1F9D5F610061B187 /* NSManagedObject+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7A1FC91F9D5F610061B187 /* NSManagedObject+Harmony.swift */; };
 		BF7A20111F9D67520061B187 /* CwlPreconditionTesting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF7A20051F9D667B0061B187 /* CwlPreconditionTesting.framework */; };
 		BF81658F20164A280025CA9F /* OperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81658E20164A280025CA9F /* OperationTests.swift */; };
@@ -258,6 +259,7 @@
 		BF6C9EF61F9BF7D9001B3F37 /* Homework.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Homework.swift; sourceTree = "<group>"; };
 		BF6C9EF81F9BFA05001B3F37 /* Professor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Professor.swift; sourceTree = "<group>"; };
 		BF6C9EFB1F9C02C9001B3F37 /* Project1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Project1.pdf; sourceTree = "<group>"; };
+		BF713BEF224973AA004A1A2B /* ManagedAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedAccount.swift; sourceTree = "<group>"; };
 		BF7A1FC91F9D5F610061B187 /* NSManagedObject+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Harmony.swift"; sourceTree = "<group>"; };
 		BF7A1FEE1F9D667A0061B187 /* CwlPreconditionTesting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CwlPreconditionTesting.xcodeproj; path = External/CwlPreconditionTesting/CwlPreconditionTesting.xcodeproj; sourceTree = SOURCE_ROOT; };
 		BF81658E20164A280025CA9F /* OperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationTests.swift; sourceTree = "<group>"; };
@@ -432,6 +434,7 @@
 				BFBDB7C2216EB1F000DC004B /* LocalRecord.swift */,
 				BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */,
 				BF84220B21936E950035340B /* RemoteFile.swift */,
+				BF713BEF224973AA004A1A2B /* ManagedAccount.swift */,
 			);
 			path = "Core Data";
 			sourceTree = "<group>";
@@ -853,6 +856,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -1051,6 +1055,7 @@
 				BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */,
 				BF06AD18222DDD7700994C50 /* RecordEntry.swift in Sources */,
 				BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */,
+				BF713BF0224973AA004A1A2B /* ManagedAccount.swift in Sources */,
 				BFFDBA99216D60EC00AED109 /* FetchRemoteRecordsOperation.swift in Sources */,
 				BFFDBA9B216D649B00AED109 /* UploadRecordOperation.swift in Sources */,
 				BF5D2E6F21B5B895007FACFA /* Errors.swift in Sources */,

@@ -11,9 +11,17 @@ import Foundation
 public struct Account
 {
     public var name: String
-    
-    public init(name: String)
+    public var emailAddress: String?
+        
+    public init(name: String, emailAddress: String?)
     {
         self.name = name
+        self.emailAddress = emailAddress
+    }
+    
+    init(account: ManagedAccount)
+    {
+        self.name = account.name
+        self.emailAddress = account.emailAddress
     }
 }

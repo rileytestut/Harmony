@@ -11,14 +11,6 @@ import Roxas
 
 extension UserDefaults
 {
-    @NSManaged var harmonyChangeToken: Data?
-    
-    @NSManaged var harmonyAccountName: String?
-    
-}
-
-extension UserDefaults
-{
     var isDebugModeEnabled: Bool {
         return UserDefaults.standard.bool(forKey: "com.rileytestut.Harmony.Debug")
     }
