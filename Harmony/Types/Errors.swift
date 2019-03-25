@@ -266,6 +266,7 @@ public enum ServiceError: HarmonyError
     case invalidResponse
     case rateLimitExceeded
     case itemDoesNotExist
+    case connectionFailed(URLError)
     case other(Error)
     
     public var underlyingError: HarmonyError? {
@@ -281,6 +282,7 @@ public enum ServiceError: HarmonyError
         switch error
         {
         case let error as ServiceError: self = error
+        case let error as URLError: self = .connectionFailed(error)
         case let error: self = .other(error)
         }
     }
@@ -332,9 +334,9 @@ extension SyncError
     public var failureReason: String? {
         switch self
         {
-        case .authentication(let error): return error.failureDescription
-        case .fetch(let error): return error.failureDescription
-        case .other(let error): return error.failureDescription
+        case .authentication(let error): return error.failureReason
+        case .fetch(let error): return error.failureReason
+        case .other(let error): return error.failureReason
         case .partial(let results):
             let failures = results.filter {
                 switch $0.value
@@ -478,6 +480,7 @@ extension ServiceError
         case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
         case .rateLimitExceeded: return NSLocalizedString("The network request rate exceeded the server's rate limit.", comment: "")
         case .itemDoesNotExist: return NSLocalizedString("The requested item does not exist.", comment: "")
+        case .connectionFailed(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         case .other(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         }
     }

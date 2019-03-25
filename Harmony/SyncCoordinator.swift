@@ -108,7 +108,14 @@ public extension SyncCoordinator
                     }
                     catch
                     {
-                        completionHandler(.failure(error))
+                        if self.account == nil
+                        {
+                            completionHandler(.success(nil))
+                        }
+                        else
+                        {
+                            completionHandler(.failure(error))
+                        }
                     }
                 }
             }
@@ -132,7 +139,7 @@ public extension SyncCoordinator
     
     @discardableResult func sync() -> Progress?
     {
-        guard self.isAuthenticated else { return nil }
+        guard self.account != nil else { return nil }
         
         // If there is already a sync operation waiting to execute, no use adding another one.
         if self.syncOperationQueue.operationCount > 1, let operation = self.syncOperationQueue.operations.last as? SyncRecordsOperation
@@ -191,7 +198,8 @@ public extension SyncCoordinator
             }            
             return nil
         }
-        operation.resultHandler = { (result) in            
+        operation.resultHandler = { (result) in
+            let result = result.mapError { AuthenticationError($0) }
             switch result
             {
             case .success(let account):
@@ -206,7 +214,7 @@ public extension SyncCoordinator
         
         // Don't add to operation queue, or else it might result in a deadlock
         // if another operation we've started requires reauthentication.
-        operation.ignoreAuthenticationErrors = true
+        operation.requiresAuthentication = false
         operation.start()
     }
     
@@ -220,6 +228,7 @@ public extension SyncCoordinator
             self.service.deauthenticate(completionHandler: completionHandler)
             return nil
         }
+        operation.requiresAuthentication = false
         operation.resultHandler = { (result) in
             do
             {

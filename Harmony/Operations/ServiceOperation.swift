@@ -8,9 +8,9 @@
 
 import Roxas
 
-class ServiceOperation<R, E: Error>: Operation<R, E>
+class ServiceOperation<R, E: Error>: Operation<R, Error>
 {
-    var ignoreAuthenticationErrors = false
+    var requiresAuthentication = true
     
     private let task: (@escaping (Result<R, E>) -> Void) -> Progress?
     
@@ -42,7 +42,31 @@ private extension ServiceOperation
 {
     func performTask()
     {
+        guard !self.isCancelled else {
+            self.result = .failure(GeneralError.cancelled)
+            self.finish()
+            return
+        }
+        
+        guard self.coordinator.isAuthenticated || !self.requiresAuthentication else {
+            self.coordinator.authenticate { (result) in
+                switch result
+                {
+                case .success:
+                    self.performTask()
+                    
+                case .failure(let error):
+                    self.result = .failure(error)
+                    self.finish()
+                }
+            }
+            
+            return
+        }
+        
         self.taskProgress = self.task() { (result) in
+            let result = result.mapError { $0 as Error }
+            
             if let progress = self.taskProgress
             {
                 // Ensure progress is completed.
@@ -78,7 +102,7 @@ private extension ServiceOperation
                     self.performTask()
                 }
             }
-            catch AuthenticationError.tokenExpired.self where !self.didAttemptReauthentication && !self.ignoreAuthenticationErrors
+            catch AuthenticationError.tokenExpired.self where !self.didAttemptReauthentication && self.requiresAuthentication
             {
                 self.didAttemptReauthentication = true
                 
