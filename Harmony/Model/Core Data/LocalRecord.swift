@@ -154,8 +154,22 @@ public class LocalRecord: RecordRepresentation, Codable
             {
                 guard let stringValue = key.stringValue else { continue }
                 
-                let value = try recordContainer.decodeManagedValue(forKey: AnyKey(stringValue: stringValue), entity: entity)
-                recordedObject.setValue(value, forKey: stringValue)
+                do
+                {
+                    let value = try recordContainer.decodeManagedValue(forKey: AnyKey(stringValue: stringValue), entity: entity)
+                    recordedObject.setValue(value, forKey: stringValue)
+                }
+                catch DecodingError.keyNotFound(let key, let context)
+                {
+                    if let attribute = entity.attributesByName[key.stringValue], !attribute.isOptional && attribute.defaultValue == nil
+                    {
+                        throw DecodingError.keyNotFound(key, context)
+                    }
+                    else if let relationship = entity.relationshipsByName[key.stringValue], !relationship.isOptional
+                    {
+                        throw DecodingError.keyNotFound(key, context)
+                    }
+                }
             }
             
             let sha1Hash = try container.decodeIfPresent(String.self, forKey: .sha1Hash)
