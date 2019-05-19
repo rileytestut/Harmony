@@ -175,7 +175,8 @@ private extension FinishDownloadingRecordsOperation
         var fileErrors = [FileError]()
         
         let unknownFiles = files.filter { !filesByIdentifier.keys.contains($0.identifier) }
-        guard unknownFiles.isEmpty else {
+        if !unknownFiles.isEmpty
+        {
             for file in unknownFiles
             {
                 do
@@ -188,10 +189,10 @@ private extension FinishDownloadingRecordsOperation
                     print(error)
                 }
                 
-                fileErrors.append(FileError.unknownFile(file.identifier))
+                //fileErrors.append(FileError.unknownFile(file.identifier))
             }
             
-            throw RecordError.filesFailed(record, fileErrors)
+            //throw RecordError.filesFailed(record, fileErrors)
         }
         
         // Copy existing files to a backup location in case something goes wrong.
@@ -211,7 +212,7 @@ private extension FinishDownloadingRecordsOperation
             }
         }
         
-        guard fileErrors.isEmpty else { throw RecordError.filesFailed(record, fileErrors) }
+//        guard fileErrors.isEmpty else { throw RecordError.filesFailed(record, fileErrors) }
         
         // Replace files.
         for file in files
@@ -257,7 +258,7 @@ private extension FinishDownloadingRecordsOperation
             }
         }
         
-        guard fileErrors.isEmpty else { throw RecordError.filesFailed(record, fileErrors) }
+//        guard fileErrors.isEmpty else { throw RecordError.filesFailed(record, fileErrors) }
         
         // Delete backup files.
         for (_, temporaryURL) in temporaryURLsByFile

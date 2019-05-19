@@ -193,7 +193,8 @@ private extension DownloadRecordOperation
                 if let filesByIdentifier = filesByIdentifier
                 {
                     guard let localFile = filesByIdentifier[remoteFile.identifier] else {
-                        throw FileError.unknownFile(remoteFile.identifier)
+                        continue
+//                        throw FileError.unknownFile(remoteFile.identifier)
                     }
                     
                     do
@@ -259,14 +260,16 @@ private extension DownloadRecordOperation
         
         dispatchGroup.notify(queue: .global()) {
             self.managedObjectContext.perform {
-                if !errors.isEmpty
-                {
-                    completionHandler(.failure(.filesFailed(self.record, errors)))
-                }
-                else
-                {
-                    completionHandler(.success(files))
-                }
+//                if !errors.isEmpty
+//                {
+//                    completionHandler(.failure(.filesFailed(self.record, errors)))
+//                }
+//                else
+//                {
+//                    completionHandler(.success(files))
+//                }
+                
+                completionHandler(.success(files))
             }
         }
     }
