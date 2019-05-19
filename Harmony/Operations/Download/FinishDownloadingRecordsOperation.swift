@@ -132,7 +132,10 @@ private extension FinishDownloadingRecordsOperation
 {
     func updateRelationships(for localRecord: LocalRecord, relationshipObjects: [RecordID: Syncable]) throws
     {
-        guard let recordedObject = localRecord.recordedObject else { throw ValidationError.nilRecordedObject }
+        guard let recordedObject = localRecord.recordedObject else {
+            //throw ValidationError.nilRecordedObject
+            return
+        }
         
         guard let relationships = localRecord.remoteRelationships else { return }
         
@@ -165,7 +168,10 @@ private extension FinishDownloadingRecordsOperation
     
     func updateFiles(for localRecord: LocalRecord, record: AnyRecord) throws
     {
-        guard let recordedObject = localRecord.recordedObject else { throw ValidationError.nilRecordedObject }
+        guard let recordedObject = localRecord.recordedObject else {
+            //throw ValidationError.nilRecordedObject
+            return
+        }
         
         guard let files = localRecord.downloadedFiles else { return }
         
