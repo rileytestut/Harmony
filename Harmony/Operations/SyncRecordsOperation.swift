@@ -15,7 +15,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
 {
     let changeToken: Data?
     
-    let syncProgress = SyncProgress(parent: nil, userInfo: nil)
+    let syncProgress = SyncProgress()
     
     private let dispatchGroup = DispatchGroup()
         
@@ -34,7 +34,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         
         super.init(coordinator: coordinator)
         
-        self.syncProgress.totalUnitCount = 1
+        self.syncProgress.progress.totalUnitCount = 1
         self.operationQueue.maxConcurrentOperationCount = 1
     }
     
@@ -42,7 +42,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
     {
         super.main()
         
-        self.progress.addChild(self.syncProgress, withPendingUnitCount: 1)
+        self.progress.addChild(self.syncProgress.progress, withPendingUnitCount: 1)
         
         self.backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(withName: "com.rileytestut.Harmony.SyncRecordsOperation") { [weak self] in
             guard let identifier = self?.backgroundTaskIdentifier else { return }
@@ -61,7 +61,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
             self?.finish(result, debugTitle: "Fetch Records Result:")
         }
         self.syncProgress.status = .fetchingChanges
-        self.syncProgress.addChild(fetchRemoteRecordsOperation.progress, withPendingUnitCount: 0)
+        self.syncProgress.progress.addChild(fetchRemoteRecordsOperation.progress, withPendingUnitCount: 0)
         
         let conflictRecordsOperation = ConflictRecordsOperation(coordinator: self.coordinator)
         conflictRecordsOperation.resultHandler = { [weak self, unowned conflictRecordsOperation] (result) in
@@ -185,7 +185,7 @@ private extension SyncRecordsOperation
                 return count
             }
             
-            self.syncProgress.totalUnitCount = Int64(recordCount)
+            self.syncProgress.progress.totalUnitCount = Int64(recordCount)
         }
         catch let error as HarmonyError
         {

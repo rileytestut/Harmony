@@ -19,8 +19,10 @@ extension SyncProgress
     }
 }
 
-class SyncProgress: Progress
+class SyncProgress
 {
+    let progress = Progress()
+    
     var status: Status = .fetchingChanges {
         didSet {
             self.updateLocalizedAdditionalDescription()
@@ -44,11 +46,9 @@ class SyncProgress: Progress
     
     private var activeProgressObservation: NSKeyValueObservation?
     
-    override init(parent parentProgressOrNil: Progress?, userInfo userInfoOrNil: [ProgressUserInfoKey : Any]? = nil)
+    init()
     {
-        super.init(parent: parentProgressOrNil, userInfo: userInfoOrNil)
-        
-        self.localizedDescription = NSLocalizedString("Syncing…", comment: "")
+        self.progress.localizedDescription = NSLocalizedString("Syncing…", comment: "")
         self.updateLocalizedAdditionalDescription()
     }
     
@@ -74,6 +74,6 @@ class SyncProgress: Progress
             localizedAdditionalDescription = ""
         }
         
-        self.localizedAdditionalDescription = localizedAdditionalDescription
+        self.progress.localizedAdditionalDescription = localizedAdditionalDescription
     }
 }

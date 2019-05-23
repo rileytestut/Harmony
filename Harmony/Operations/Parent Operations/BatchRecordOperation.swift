@@ -97,12 +97,12 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                         
                         if records.count > 0
                         {
-                            self.syncProgress.addChild(self.progress, withPendingUnitCount: self.progress.totalUnitCount)
+                            self.syncProgress.progress.addChild(self.progress, withPendingUnitCount: self.progress.totalUnitCount)
                             self.syncProgress.activeProgress = self.progress
                         }
                         else
                         {
-                            self.syncProgress.addChild(self.progress, withPendingUnitCount: 0)
+                            self.syncProgress.progress.addChild(self.progress, withPendingUnitCount: 0)
                         }                        
                         
                         self.operationQueue.addOperations(operations, waitUntilFinished: false)

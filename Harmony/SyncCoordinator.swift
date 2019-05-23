@@ -203,7 +203,7 @@ public extension SyncCoordinator
             }
             self.syncOperationQueue.addOperation(syncRecordsOperation)
             
-            return syncRecordsOperation.syncProgress
+            return syncRecordsOperation.syncProgress.progress
         }
     }
 }
