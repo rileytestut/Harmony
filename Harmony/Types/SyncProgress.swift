@@ -35,9 +35,9 @@ class SyncProgress
             
             if let progress = self.activeProgress
             {                
-                self.activeProgressObservation = progress.observe(\.completedUnitCount) { [weak self] (progress, change) in
-                    self?.updateLocalizedAdditionalDescription()
-                }
+//                self.activeProgressObservation = progress.observe(\.completedUnitCount) { [weak self] (progress, change) in
+//                    self?.updateLocalizedAdditionalDescription()
+//                }
             }
             
             self.updateLocalizedAdditionalDescription()
