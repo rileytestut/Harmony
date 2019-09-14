@@ -164,7 +164,10 @@ public class LocalRecord: RecordRepresentation, Codable
             // which would potentially rely on not-yet-connected relationships.
             try self.configure(with: recordedObject, sha1Hash: sha1Hash ?? "")
             
-            self.remoteFiles = try container.decodeIfPresent(Set<RemoteFile>.self, forKey: .files) ?? []
+            let remoteFiles = try container.decodeIfPresent(Set<RemoteFile>.self, forKey: .files) ?? []
+            let filteredRemoteFiles = remoteFiles.filter { !$0.identifier.isEmpty && !$0.remoteIdentifier.isEmpty }
+            
+            self.remoteFiles = Set(filteredRemoteFiles)
             self.remoteRelationships = try container.decodeIfPresent([String: RecordID].self, forKey: .relationships)
         }
         catch
