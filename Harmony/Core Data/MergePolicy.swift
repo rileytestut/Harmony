@@ -72,13 +72,27 @@ open class MergePolicy: RSTRelationshipPreservingMergePolicy
                 }
                 
             case let databaseObject as LocalRecord:
-                guard let remoteFiles = remoteFilesByLocalRecord[databaseObject] else { continue }
+                guard let updatedRemoteFiles = remoteFilesByLocalRecord[databaseObject] else { continue }
+                let previousRemoteFiles = databaseObject.remoteFiles
                 
-                // Set localRecord to nil for all databaseObject.remoteFiles that are not in remoteFiles so that they will be deleted.
-                databaseObject.remoteFiles.lazy.filter { !remoteFiles.contains($0) }.forEach { $0.localRecord = nil }
+                for remoteFile in previousRemoteFiles where !updatedRemoteFiles.contains(remoteFile)
+                {
+                    // Set localRecord to nil for all databaseObject.remoteFiles that are not in remoteFiles so that they will be deleted.
+                    remoteFile.localRecord = nil
+                    databaseObject.remoteFiles.remove(remoteFile)
+                }
                 
-                // Assign correct remoteFiles back to databaseObject.
-                databaseObject.remoteFiles = remoteFiles
+                for remoteFile in updatedRemoteFiles where !previousRemoteFiles.contains(remoteFile)
+                {
+                    databaseObject.remoteFiles.insert(remoteFile)
+                }
+                
+                for remoteFile in updatedRemoteFiles.union(previousRemoteFiles)
+                {
+                    // We _must_ refresh remoteFile, or else Core Data might insert it
+                    // into the database a second time, causing unique constraint failures.
+                    remoteFile.managedObjectContext?.refresh(remoteFile, mergeChanges: false)
+                }
                 
             case let databaseObject as ManagedAccount:
                 guard
