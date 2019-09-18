@@ -18,7 +18,8 @@ extension MergePolicy
         public var errorDescription: String? {
             switch self
             {
-            case .contextLevelConflict: return NSLocalizedString("MergePolicy is only intended to work with database-level conflicts.", comment: "")
+            case .contextLevelConflict:
+                return NSLocalizedString("MergePolicy is only intended to work with database-level conflicts.", comment: "")
             }
         }
     }
@@ -28,9 +29,24 @@ open class MergePolicy: RSTRelationshipPreservingMergePolicy
 {
     open override func resolve(constraintConflicts conflicts: [NSConstraintConflict]) throws
     {
-        guard conflicts.allSatisfy({ $0.databaseObject != nil }) else {
-            try super.resolve(constraintConflicts: conflicts)
-            throw Error.contextLevelConflict
+        for conflict in conflicts
+        {
+            guard conflict.databaseObject == nil else { continue }
+            guard let conflictingObject = conflict.conflictingObjects.first else { continue }
+            
+            let model = conflictingObject.entity.managedObjectModel
+            let harmonyEntities = model.entities(forConfigurationName: NSManagedObjectModel.Configuration.harmony.rawValue) ?? []
+            
+            if harmonyEntities.contains(conflictingObject.entity)
+            {
+                try super.resolve(constraintConflicts: conflicts)
+                throw Error.contextLevelConflict
+            }
+            else
+            {
+                // Only Harmony managed objects cannot be context-level conflicts;
+                // the client's managed objects should _not_ cause us to throw an error.
+            }
         }
         
         var remoteFilesByLocalRecord = [LocalRecord: Set<RemoteFile>]()
