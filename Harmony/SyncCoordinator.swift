@@ -169,7 +169,7 @@ public extension SyncCoordinator
             // If there is already a sync operation waiting to execute, no use adding another one.
             if self.syncOperationQueue.operationCount > 1, let operation = self.syncOperationQueue.operations.last as? SyncRecordsOperation
             {
-                return operation.progress
+                return operation.syncProgress
             }
             
             self.isSyncing = true
