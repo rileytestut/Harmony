@@ -101,15 +101,31 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                             // Only process records that don't have errors.
                             guard let localRecord = try? result.get() else { continue }
                             
+                            var backupFiles: [File: URL]?
+                            
                             do
                             {
-                                try localRecord.recordedObject?.awakeFromSync()
+                                // Copy existing files to a backup location in case something goes wrong.
+                                let files = try self.backupFiles(for: localRecord, record: record)
+                                backupFiles = files
                                 
                                 // Update files after updating relationships (to prevent replacing files prematurely).
                                 try self.updateFiles(for: localRecord, record: record)
+                                
+                                // Awake record after updating files and relationships (since we might need to access them from awakeFromSync).
+                                try localRecord.recordedObject?.awakeFromSync(record)
+                                
+                                // Remove backup files since we no longer need them.
+                                self.removeBackupFiles(files)
                             }
                             catch
                             {
+                                if let backupFiles = backupFiles
+                                {
+                                    // Restore backup files since an error did occur.
+                                    self.restoreBackupFiles(backupFiles)
+                                }
+                                    
                                 handleError(error, record: record, localRecord: localRecord)
                             }
                         }
@@ -162,50 +178,23 @@ private extension FinishDownloadingRecordsOperation
         guard let recordedObject = localRecord.recordedObject else { throw ValidationError.nilRecordedObject }
         
         guard let files = localRecord.downloadedFiles else { return }
-        
-        let temporaryURLsByFile = Dictionary(uniqueKeysWithValues: recordedObject.syncableFiles.lazy.map { ($0, FileManager.default.uniqueTemporaryURL()) })
         let filesByIdentifier = Dictionary(recordedObject.syncableFiles, keyedBy: \.identifier)
         
-        var fileErrors = [FileError]()
-        
         let unknownFiles = files.filter { !filesByIdentifier.keys.contains($0.identifier) }
-        guard unknownFiles.isEmpty else {
-            for file in unknownFiles
-            {
-                do
-                {
-                    // File doesn't match any declared file identifiers, so just delete it.
-                    try FileManager.default.removeItem(at: file.fileURL)
-                }
-                catch
-                {
-                    print(error)
-                }
-                
-                fileErrors.append(FileError.unknownFile(file.identifier))
-            }
-            
-            throw RecordError.filesFailed(record, fileErrors)
-        }
-        
-        // Copy existing files to a backup location in case something goes wrong.
-        for (file, temporaryURL) in temporaryURLsByFile
+        for file in unknownFiles
         {
             do
             {
-                try FileManager.default.copyItem(at: file.fileURL, to: temporaryURL)
-            }
-            catch CocoaError.fileReadNoSuchFile
-            {
-                // Ignore
+                // File doesn't match any declared file identifiers, so just delete it.
+                try FileManager.default.removeItem(at: file.fileURL)
             }
             catch
             {
-                fileErrors.append(FileError(file.identifier, error))
+                print(error)
             }
         }
         
-        guard fileErrors.isEmpty else { throw RecordError.filesFailed(record, fileErrors) }
+        var fileErrors = [FileError]()
         
         // Replace files.
         for file in files
@@ -225,36 +214,71 @@ private extension FinishDownloadingRecordsOperation
             }
             catch
             {
-                // Restore backed-up files.
-                for (file, temporaryURL) in temporaryURLsByFile
-                {
-                    guard FileManager.default.fileExists(atPath: temporaryURL.path) else { continue }
-                    
-                    do
-                    {
-                        if FileManager.default.fileExists(atPath: file.fileURL.path)
-                        {
-                            _ = try FileManager.default.replaceItemAt(file.fileURL, withItemAt: temporaryURL)
-                        }
-                        else
-                        {
-                            try FileManager.default.moveItem(at: temporaryURL, to: file.fileURL)
-                        }
-                    }
-                    catch
-                    {
-                        print(error)
-                    }
-                }
-                
                 fileErrors.append(FileError(file.identifier, error))
             }
         }
         
         guard fileErrors.isEmpty else { throw RecordError.filesFailed(record, fileErrors) }
+    }
+    
+    func backupFiles(for localRecord: LocalRecord, record: AnyRecord) throws -> [File: URL]
+    {
+        guard let recordedObject = localRecord.recordedObject else { throw ValidationError.nilRecordedObject }
+        let temporaryURLsByFile = Dictionary(uniqueKeysWithValues: recordedObject.syncableFiles.lazy.map { ($0, FileManager.default.uniqueTemporaryURL()) })
         
-        // Delete backup files.
-        for (_, temporaryURL) in temporaryURLsByFile
+        var fileErrors = [FileError]()
+        
+        for (file, temporaryURL) in temporaryURLsByFile
+        {
+            do
+            {
+                try FileManager.default.copyItem(at: file.fileURL, to: temporaryURL)
+            }
+            catch CocoaError.fileReadNoSuchFile
+            {
+                // Ignore
+            }
+            catch
+            {
+                fileErrors.append(FileError(file.identifier, error))
+            }
+        }
+        
+        if !fileErrors.isEmpty
+        {
+            throw RecordError.filesFailed(record, fileErrors)
+        }
+        
+        return temporaryURLsByFile
+    }
+    
+    func restoreBackupFiles(_ backupFiles: [File: URL])
+    {
+        for (file, temporaryURL) in backupFiles
+        {
+            guard FileManager.default.fileExists(atPath: temporaryURL.path) else { continue }
+            
+            do
+            {
+                if FileManager.default.fileExists(atPath: file.fileURL.path)
+                {
+                    _ = try FileManager.default.replaceItemAt(file.fileURL, withItemAt: temporaryURL)
+                }
+                else
+                {
+                    try FileManager.default.moveItem(at: temporaryURL, to: file.fileURL)
+                }
+            }
+            catch
+            {
+                print(error)
+            }
+        }
+    }
+    
+    func removeBackupFiles(_ backupFiles: [File: URL])
+    {
+        for (_, temporaryURL) in backupFiles
         {
             guard FileManager.default.fileExists(atPath: temporaryURL.path) else { continue }
             

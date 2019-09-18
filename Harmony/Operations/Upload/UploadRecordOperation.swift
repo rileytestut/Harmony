@@ -40,33 +40,48 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
         
         func upload()
         {
-            self.uploadFiles() { (result) in
+            self.managedObjectContext.perform {
                 do
                 {
-                    let remoteFiles = try result.get()
-                    
                     let localRecord = self.localRecord.in(self.managedObjectContext)
-                    let localRecordRemoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
-                    
-                    for remoteFile in remoteFiles
-                    {
-                        if let cachedFile = localRecordRemoteFilesByIdentifier[remoteFile.identifier]
-                        {
-                            localRecord.remoteFiles.remove(cachedFile)
-                        }
-                        
-                        localRecord.remoteFiles.insert(remoteFile)
-                    }
-                    
-                    self.upload(localRecord) { (result) in
-                        self.result = result
-                        self.finishUpload()
-                    }
+                    try localRecord.recordedObject?.prepareForSync(self.record)
                 }
                 catch
                 {
                     self.result = .failure(RecordError(self.record, error))
                     self.finishUpload()
+                    
+                    return
+                }
+                
+                self.uploadFiles() { (result) in
+                    do
+                    {
+                        let remoteFiles = try result.get()
+                        
+                        let localRecord = self.localRecord.in(self.managedObjectContext)
+                        let localRecordRemoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
+                        
+                        for remoteFile in remoteFiles
+                        {
+                            if let cachedFile = localRecordRemoteFilesByIdentifier[remoteFile.identifier]
+                            {
+                                localRecord.remoteFiles.remove(cachedFile)
+                            }
+                            
+                            localRecord.remoteFiles.insert(remoteFile)
+                        }
+                        
+                        self.upload(localRecord) { (result) in
+                            self.result = result
+                            self.finishUpload()
+                        }
+                    }
+                    catch
+                    {
+                        self.result = .failure(RecordError(self.record, error))
+                        self.finishUpload()
+                    }
                 }
             }
         }
@@ -299,11 +314,9 @@ private extension UploadRecordOperation
             let temporaryContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
             temporaryContext.parent = self.managedObjectContext
             
-            try self.record.perform(in: temporaryContext) { (managedRecord) in
+            self.record.perform(in: temporaryContext) { (managedRecord) in
                 let temporaryLocalRecord = localRecord.in(temporaryContext)
                 managedRecord.localRecord = temporaryLocalRecord
-                
-                try temporaryLocalRecord.recordedObject?.prepareForSync()
                 
                 let record = Record(managedRecord)
                 

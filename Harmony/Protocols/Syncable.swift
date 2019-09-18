@@ -25,8 +25,8 @@ public protocol Syncable: NSManagedObject
     
     var isSyncingEnabled: Bool { get }
     
-    func prepareForSync() throws
-    func awakeFromSync() throws
+    func prepareForSync(_ record: AnyRecord) throws
+    func awakeFromSync(_ record: AnyRecord) throws
 }
 
 public extension Syncable
@@ -56,11 +56,11 @@ public extension Syncable
         return [:]
     }
     
-    func prepareForSync()
+    func prepareForSync(_ record: AnyRecord)
     {
     }
     
-    func awakeFromSync()
+    func awakeFromSync(_ record: AnyRecord)
     {
     }
 }

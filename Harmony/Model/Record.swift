@@ -44,8 +44,12 @@ public class Record<T: NSManagedObject>
         return self.perform { $0.localRecord?.recordedObject?.syncableLocalizedName ?? $0.remoteRecord?.localizedName }
     }
     
-    public var metadata: [HarmonyMetadataKey: String]? {
-        return self.perform { $0.localRecord?.recordedObject?.syncableMetadata ?? $0.remoteRecord?.metadata }
+    public var localMetadata: [HarmonyMetadataKey: String]? {
+        return self.perform { $0.localRecord?.recordedObject?.syncableMetadata }
+    }
+    
+    public var remoteMetadata: [HarmonyMetadataKey: String]? {
+        return self.perform { $0.remoteRecord?.metadata }
     }
     
     public var isConflicted: Bool {
