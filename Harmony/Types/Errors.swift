@@ -229,6 +229,7 @@ public enum FileError: HarmonyError
 {
     case unknownFile(String)
     case doesNotExist(String)
+    case restricted(String)
     case other(String, Error)
     
     public var fileIdentifier: String {
@@ -236,6 +237,7 @@ public enum FileError: HarmonyError
         {
         case .unknownFile(let identifier),
              .doesNotExist(let identifier),
+             .restricted(let identifier),
              .other(let identifier, _):
             return identifier
         }
@@ -256,6 +258,7 @@ public enum FileError: HarmonyError
         {
         case let error as FileError: self = error
         case ServiceError.itemDoesNotExist: self = .doesNotExist(fileIdentifier)
+        case ServiceError.restrictedContent: self = .restricted(fileIdentifier)
         case let error: self = .other(fileIdentifier, error)
         }
     }
@@ -266,6 +269,7 @@ public enum ServiceError: HarmonyError
     case invalidResponse
     case rateLimitExceeded
     case itemDoesNotExist
+    case restrictedContent
     case connectionFailed(URLError)
     case other(Error)
     
@@ -422,7 +426,7 @@ extension RecordError
         case .filesFailed(_, let errors):
             if let error = errors.first, errors.count == 1
             {
-                return String.localizedStringWithFormat("Failed to sync file '%@'.", error.fileIdentifier)
+                return error.failureReason ?? String.localizedStringWithFormat("Failed to sync file '%@'.", error.fileIdentifier)
             }
             else
             {
@@ -443,6 +447,7 @@ extension FileError
         {
         case .doesNotExist: return NSLocalizedString("The file does not exist.", comment: "")
         case .unknownFile: return NSLocalizedString("The file is unknown.", comment: "")
+        case .restricted: return NSLocalizedString("The file has been restricted by the sync provider.", comment: "")
         case .other(_, let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         }
     }
@@ -480,6 +485,7 @@ extension ServiceError
         case .invalidResponse: return NSLocalizedString("The server returned an invalid response.", comment: "")
         case .rateLimitExceeded: return NSLocalizedString("The network request rate exceeded the server's rate limit.", comment: "")
         case .itemDoesNotExist: return NSLocalizedString("The requested item does not exist.", comment: "")
+        case .restrictedContent: return NSLocalizedString("The requested item has been restricted by the sync provider.", comment: "")
         case .connectionFailed(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         case .other(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         }
