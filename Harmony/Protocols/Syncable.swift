@@ -9,6 +9,15 @@
 import Foundation
 import CoreData
 
+public enum ConflictResolution
+{
+    case conflict
+    case local
+    case remote
+    case newest
+    case oldest
+}
+
 public protocol Syncable: NSManagedObject
 {
     static var syncablePrimaryKey: AnyKeyPath { get }
@@ -27,6 +36,8 @@ public protocol Syncable: NSManagedObject
     
     func prepareForSync(_ record: AnyRecord) throws
     func awakeFromSync(_ record: AnyRecord) throws
+    
+    func resolveConflict(_ record: AnyRecord) -> ConflictResolution
 }
 
 public extension Syncable
@@ -62,6 +73,11 @@ public extension Syncable
     
     func awakeFromSync(_ record: AnyRecord)
     {
+    }
+    
+    func resolveConflict(_ record: AnyRecord) -> ConflictResolution
+    {
+        return .conflict
     }
 }
 
