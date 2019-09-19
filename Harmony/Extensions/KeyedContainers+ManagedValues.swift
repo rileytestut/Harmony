@@ -74,7 +74,7 @@ extension KeyedDecodingContainer
         case .UUIDAttributeType: value = try decode(UUID.self, forKey: key)
         case .URIAttributeType: value = try decode(URL.self, forKey: key)
             
-        case .transformableAttributeType where attribute.valueTransformerName == nil:
+        case .transformableAttributeType where attribute.valueTransformerName == nil || attribute.valueTransformerName == NSValueTransformerName.secureUnarchiveFromDataTransformerName.rawValue:
             let anyNSCodable = try decode(AnyNSCodable.self, forKey: key)
             value = anyNSCodable?.value
             
