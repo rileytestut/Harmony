@@ -210,13 +210,13 @@ public extension SyncCoordinator
 
 public extension SyncCoordinator
 {
-    func authenticate(presentingViewController: UIViewController? = nil, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
+    func authenticate(presentingViewController: UIViewController? = nil, accessTokenString: String? = nil, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
     {
         guard self.isStarted else {
             self.start { (result) in
                 switch result
                 {
-                case .success: self.authenticate(presentingViewController: presentingViewController, completionHandler: completionHandler)
+                case .success: self.authenticate(presentingViewController: presentingViewController, accessTokenString: accessTokenString, completionHandler: completionHandler)
                 case .failure(let error): completionHandler(.failure(AuthenticationError(error)))
                 }
             }
@@ -229,6 +229,10 @@ public extension SyncCoordinator
                 if let presentingViewController = presentingViewController
                 {
                     self.service.authenticate(withPresentingViewController: presentingViewController, completionHandler: completionHandler)
+                }
+                else if let accessTokenString = accessTokenString
+                {
+                    self.service.authenticateManually(withAccessToken: accessTokenString, completionHandler: completionHandler)
                 }
                 else
                 {

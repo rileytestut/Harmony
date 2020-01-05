@@ -15,7 +15,9 @@ public protocol Service
     var identifier: String { get }
     
     func authenticate(withPresentingViewController viewController: UIViewController, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
+    func authenticateManually(withAccessToken accessToken: String, completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
     func authenticateInBackground(completionHandler: @escaping (Result<Account, AuthenticationError>) -> Void)
+    func getAccessToken() -> String?
     
     func deauthenticate(completionHandler: @escaping (Result<Void, DeauthenticationError>) -> Void)
     

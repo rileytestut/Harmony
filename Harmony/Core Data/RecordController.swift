@@ -88,7 +88,12 @@ public final class RecordController: RSTPersistentContainer
     
     public override class func defaultDirectoryURL() -> URL
     {
+        #if os(tvOS)
+        // tvOS restricts usage of the applicationSupportDirectory and only allows us to write to the cachesDirectory
+        let harmonyDirectory = FileManager.default.cachesDirectory.appendingPathComponent("com.rileytestut.Harmony", isDirectory: true)
+        #else
         let harmonyDirectory = FileManager.default.applicationSupportDirectory.appendingPathComponent("com.rileytestut.Harmony", isDirectory: true)
+        #endif
         return harmonyDirectory
     }
     
