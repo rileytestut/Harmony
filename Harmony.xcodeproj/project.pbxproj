@@ -20,6 +20,7 @@
 		BF0B5BAA202123B00074CFB9 /* Roxas.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		BF1D94891F9C1C38004216B9 /* Roxas.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1D948A1F9C1C38004216B9 /* Roxas.framework */; };
 		BF1D94921F9C24DC004216B9 /* XCAssert+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */; };
+		BF1EAE0A2453AA6C0051D00B /* AnyCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1EAE092453AA6C0051D00B /* AnyCodable.swift */; };
 		BF37289B21B9DE1B008BFB5B /* Result+Success.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFB9B1D200ED96700A8F673 /* Result+Success.swift */; };
 		BF3856331FA00624002DFFC5 /* RecordControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */; };
 		BF3915CA2180F68C00AF74E5 /* ConflictRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */; };
@@ -245,6 +246,7 @@
 		BF1D948A1F9C1C38004216B9 /* Roxas.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Roxas.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF1D948B1F9C1CF6004216B9 /* RecordControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordControllerTests.swift; sourceTree = "<group>"; };
 		BF1D94911F9C24DC004216B9 /* XCAssert+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCAssert+Harmony.swift"; sourceTree = "<group>"; };
+		BF1EAE092453AA6C0051D00B /* AnyCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodable.swift; sourceTree = "<group>"; };
 		BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConflictRecordOperation.swift; sourceTree = "<group>"; };
 		BF4EE59321AC901500FA648D /* FinishDownloadingRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishDownloadingRecordsOperation.swift; sourceTree = "<group>"; };
 		BF4EE59721AC968600FA648D /* FinishUploadingRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishUploadingRecordsOperation.swift; sourceTree = "<group>"; };
@@ -729,6 +731,7 @@
 			children = (
 				BF5D2E6E21B5B895007FACFA /* Errors.swift */,
 				BFF1A6BB2244276B00CF89AE /* SyncProgress.swift */,
+				BF1EAE092453AA6C0051D00B /* AnyCodable.swift */,
 			);
 			path = Types;
 			sourceTree = "<group>";
@@ -1021,6 +1024,7 @@
 				BF9A36682162ED0800F8EE91 /* SyncRecordsOperation.swift in Sources */,
 				BFECF58121912203006DB8F5 /* UploadRecordsOperation.swift in Sources */,
 				BFBDB7C6216ECC8500DC004B /* RecordRepresentation.swift in Sources */,
+				BF1EAE0A2453AA6C0051D00B /* AnyCodable.swift in Sources */,
 				BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */,
 				BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */,
 				BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */,

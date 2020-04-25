@@ -54,6 +54,8 @@ public class LocalRecord: RecordRepresentation, Codable
     @NSManaged var versionIdentifier: String?
     @NSManaged var versionDate: Date?
     
+    @NSManaged var additionalProperties: [String: Any]?
+    
     /* Relationships */
     @NSManaged var remoteFiles: Set<RemoteFile>
     
@@ -149,13 +151,33 @@ public class LocalRecord: RecordRepresentation, Codable
             
             recordedObject.syncableIdentifier = identifier
             
+            var additionalProperties = [String: Any]()
+            
+            let allValues = try container.decode([String: AnyCodable].self, forKey: .record)
+            let supportedKeys = Set(recordedObject.syncableKeys.compactMap { $0.stringValue })
+            
             let recordContainer = try container.nestedContainer(keyedBy: AnyKey.self, forKey: .record)
-            for key in recordedObject.syncableKeys
+            for (key, value) in allValues
             {
-                guard let stringValue = key.stringValue else { continue }
-                
-                let value = try recordContainer.decodeManagedValue(forKey: AnyKey(stringValue: stringValue), entity: entity)
-                recordedObject.setValue(value, forKey: stringValue)
+                if supportedKeys.contains(key)
+                {
+                    let value = try recordContainer.decodeManagedValue(forKey: AnyKey(stringValue: key), entity: entity)
+                    recordedObject.setValue(value, forKey: key)
+                }
+                else
+                {
+                    additionalProperties[key] = value.value
+                }
+            }
+            
+            if !additionalProperties.isEmpty
+            {
+                self.additionalProperties = additionalProperties
+            }
+            else
+            {
+                // Explicitly set to nil so it replaces cached value when merging.
+                self.additionalProperties = nil
             }
             
             let sha1Hash = try container.decodeIfPresent(String.self, forKey: .sha1Hash)
@@ -196,10 +218,11 @@ public class LocalRecord: RecordRepresentation, Codable
         guard let recordedObject = self.recordedObject else { throw ValidationError.nilRecordedObject }
         
         var recordContainer = container.nestedContainer(keyedBy: AnyKey.self, forKey: .record)
-        for key in recordedObject.syncableKeys
+        
+        let syncableKeys = Set(recordedObject.syncableKeys.compactMap { $0.stringValue })
+        for key in syncableKeys
         {
-            guard let stringValue = key.stringValue else { continue }
-            guard let value = recordedObject.value(forKeyPath: stringValue) else { continue }
+            guard let value = recordedObject.value(forKeyPath: key) else { continue }
             
             // Because `value` is statically typed as Any, there is no bridging conversion from Objective-C types such as NSString to their Swift equivalent.
             // Since these Objective-C types don't conform to Codable, the below check always fails:
@@ -208,7 +231,7 @@ public class LocalRecord: RecordRepresentation, Codable
             // As a workaround, we attempt to encode all syncableKey values, and just ignore the ones that fail.
             do
             {
-                try recordContainer.encodeManagedValue(value, forKey: AnyKey(stringValue: stringValue), entity: recordedObject.entity)
+                try recordContainer.encodeManagedValue(value, forKey: AnyKey(stringValue: key), entity: recordedObject.entity)
             }
             catch EncodingError.invalidValue
             {
@@ -218,6 +241,13 @@ public class LocalRecord: RecordRepresentation, Codable
             {
                 throw error
             }
+        }
+        
+        for (key, value) in self.additionalProperties ?? [:]
+        {
+            // Only include additional properties that don't conflict with existing ones.
+            guard !syncableKeys.contains(key) else { continue }
+            try recordContainer.encode(AnyCodable(value), forKey: AnyKey(stringValue: key))
         }
         
         let relationships = recordedObject.syncableRelationshipObjects.mapValues { (relationshipObject) -> RecordID? in
