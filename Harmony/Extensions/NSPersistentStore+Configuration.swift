@@ -10,7 +10,7 @@ import CoreData
 
 extension NSManagedObjectModel
 {
-    enum Configuration: String
+    public enum Configuration: String
     {
         case harmony = "Harmony"
         case external = "External"
@@ -19,7 +19,7 @@ extension NSManagedObjectModel
 
 extension NSPersistentStore
 {
-    var configuration: NSManagedObjectModel.Configuration? {
+    public var configuration: NSManagedObjectModel.Configuration? {
         let configuration = NSManagedObjectModel.Configuration(rawValue: self.configurationName)
         return configuration
     }
