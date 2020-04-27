@@ -13,7 +13,7 @@ Pod::Spec.new do |spec|
   spec.source_files  = "Harmony/**/*.{h,m,swift}"
   spec.public_header_files = "Harmony/Harmony.h"
   spec.header_mappings_dir = ""
-  spec.resources = "Harmony/**/*.xcdatamodeld"
+  spec.resources = "Harmony/**/*.xcdatamodeld", "Harmony/**/*.xcmappingmodel"
   
   spec.dependency 'Roxas'
   

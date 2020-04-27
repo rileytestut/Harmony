@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF0499841F9AE06400E0EFEE /* Harmony.xcdatamodeld */; };
 		BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0499921F9AEEE900E0EFEE /* Syncable.swift */; };
 		BF061DB01FDBB86800908884 /* AnyKeyPath+StringValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */; };
 		BF06AD08222DD97900994C50 /* NSManagedObjectContext+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF06AD07222DD97900994C50 /* NSManagedObjectContext+Harmony.swift */; };
@@ -30,6 +29,8 @@
 		BF4EE59A21AC97D700FA648D /* PrepareUploadingRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59921AC97D700FA648D /* PrepareUploadingRecordsOperation.swift */; };
 		BF4EE59C21AC997A00FA648D /* ManagedRecord+Uploading.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */; };
 		BF5D2E6F21B5B895007FACFA /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5D2E6E21B5B895007FACFA /* Errors.swift */; };
+		BF6153D12453D103004BEF00 /* Harmony.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF6153CE2453D103004BEF00 /* Harmony.xcdatamodeld */; };
+		BF6153EB2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel in Sources */ = {isa = PBXBuildFile; fileRef = BF6153EA2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel */; };
 		BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63A1A421A4B53100EE8F61 /* Version.swift */; };
 		BF6C0587201FBE9B00271895 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */; };
 		BF6C9EEE1F9BF373001B3F37 /* HarmonyTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */; };
@@ -237,7 +238,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		BF0499851F9AE06400E0EFEE /* Harmony.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Harmony.xcdatamodel; sourceTree = "<group>"; };
 		BF0499921F9AEEE900E0EFEE /* Syncable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Syncable.swift; sourceTree = "<group>"; };
 		BF061DAF1FDBB86800908884 /* AnyKeyPath+StringValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyKeyPath+StringValue.swift"; sourceTree = "<group>"; };
 		BF06AD07222DD97900994C50 /* NSManagedObjectContext+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSManagedObjectContext+Harmony.swift"; sourceTree = "<group>"; };
@@ -253,6 +253,9 @@
 		BF4EE59921AC97D700FA648D /* PrepareUploadingRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrepareUploadingRecordsOperation.swift; sourceTree = "<group>"; };
 		BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ManagedRecord+Uploading.swift"; sourceTree = "<group>"; };
 		BF5D2E6E21B5B895007FACFA /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		BF6153CF2453D103004BEF00 /* Harmony 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Harmony 2.xcdatamodel"; sourceTree = "<group>"; };
+		BF6153D02453D103004BEF00 /* Harmony.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Harmony.xcdatamodel; sourceTree = "<group>"; };
+		BF6153EA2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcmappingmodel; path = HarmonyToHarmony2.xcmappingmodel; sourceTree = "<group>"; };
 		BF63A1A421A4B53100EE8F61 /* Version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Version.swift; sourceTree = "<group>"; };
 		BF6C0579201FBE9B00271895 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BF6C9EED1F9BF373001B3F37 /* HarmonyTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyTestCase.swift; sourceTree = "<group>"; };
@@ -430,13 +433,14 @@
 		BF30432F1FD3A0260053E884 /* Core Data */ = {
 			isa = PBXGroup;
 			children = (
-				BF0499841F9AE06400E0EFEE /* Harmony.xcdatamodeld */,
+				BF6153CE2453D103004BEF00 /* Harmony.xcdatamodeld */,
 				BFF0169620040FD300210A38 /* ManagedRecord.swift */,
 				BFBDB7C5216ECC8500DC004B /* RecordRepresentation.swift */,
 				BFBDB7C2216EB1F000DC004B /* LocalRecord.swift */,
 				BFBDB7B3216EB1EF00DC004B /* RemoteRecord.swift */,
 				BF84220B21936E950035340B /* RemoteFile.swift */,
 				BF713BEF224973AA004A1A2B /* ManagedAccount.swift */,
+				BF6153DE2453D18C004BEF00 /* Migrations */,
 			);
 			path = "Core Data";
 			sourceTree = "<group>";
@@ -497,6 +501,14 @@
 				BFE4EAB41FDB8E6400855951 /* RemoteRecordTests.swift */,
 			);
 			path = Private;
+			sourceTree = "<group>";
+		};
+		BF6153DE2453D18C004BEF00 /* Migrations */ = {
+			isa = PBXGroup;
+			children = (
+				BF6153EA2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel */,
+			);
+			path = Migrations;
 			sourceTree = "<group>";
 		};
 		BF6C9EEB1F9BF206001B3F37 /* Model */ = {
@@ -1013,6 +1025,7 @@
 			files = (
 				BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */,
 				BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */,
+				BF6153EB2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,
 				BFBC13A221827D15001A321F /* KeyedContainers+ManagedValues.swift in Sources */,
@@ -1026,7 +1039,6 @@
 				BFBDB7C6216ECC8500DC004B /* RecordRepresentation.swift in Sources */,
 				BF1EAE0A2453AA6C0051D00B /* AnyCodable.swift in Sources */,
 				BFF0169720040FD300210A38 /* ManagedRecord.swift in Sources */,
-				BF04998A1F9AE06400E0EFEE /* Harmony.xcdatamodeld in Sources */,
 				BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */,
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BF4EE59821AC968600FA648D /* FinishUploadingRecordsOperation.swift in Sources */,
@@ -1062,6 +1074,7 @@
 				BF713BF0224973AA004A1A2B /* ManagedAccount.swift in Sources */,
 				BFFDBA99216D60EC00AED109 /* FetchRemoteRecordsOperation.swift in Sources */,
 				BFFDBA9B216D649B00AED109 /* UploadRecordOperation.swift in Sources */,
+				BF6153D12453D103004BEF00 /* Harmony.xcdatamodeld in Sources */,
 				BF5D2E6F21B5B895007FACFA /* Errors.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1435,12 +1448,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		BF0499841F9AE06400E0EFEE /* Harmony.xcdatamodeld */ = {
+		BF6153CE2453D103004BEF00 /* Harmony.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				BF0499851F9AE06400E0EFEE /* Harmony.xcdatamodel */,
+				BF6153CF2453D103004BEF00 /* Harmony 2.xcdatamodel */,
+				BF6153D02453D103004BEF00 /* Harmony.xcdatamodel */,
 			);
-			currentVersion = BF0499851F9AE06400E0EFEE /* Harmony.xcdatamodel */;
+			currentVersion = BF6153CF2453D103004BEF00 /* Harmony 2.xcdatamodel */;
 			path = Harmony.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
