@@ -59,10 +59,13 @@ private extension DeleteRecordOperation
     func deleteRemoteFiles(completionHandler: @escaping (Result<Void, RecordError>) -> Void)
     {
         self.record.perform { (managedRecord) -> Void in
-            // If local record doesn't exist, we don't treat it as an error and just say it succeeded.
-            guard let localRecord = managedRecord.localRecord else { return completionHandler(.success) }
+            // If local record or remote files don't exist, we don't treat it as an error and just say it succeeded.
+            guard let localRecord = managedRecord.localRecord, !localRecord.remoteFiles.isEmpty else {
+                self.progress.completedUnitCount += 1
+                return completionHandler(.success)
+            }
             
-            let filesProgress = Progress(totalUnitCount: Int64(localRecord.remoteFiles.count), parent: self.progress, pendingUnitCount: 2)
+            let filesProgress = Progress(totalUnitCount: Int64(localRecord.remoteFiles.count), parent: self.progress, pendingUnitCount: 1)
             
             var errors = [FileError]()
             let dispatchGroup = DispatchGroup()
@@ -129,8 +132,9 @@ private extension DeleteRecordOperation
                 
                 completionHandler(.success)
             }
-            catch RecordError.doesNotExist
+            catch RecordError.doesNotExist, RecordError.other(_, ValidationError.nilRemoteRecord)
             {
+                // If remote record doesn't exist, we don't treat it as an error and just say it succeeded.
                 completionHandler(.success)
             }
             catch
