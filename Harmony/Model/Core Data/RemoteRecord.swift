@@ -18,7 +18,17 @@ public class RemoteRecord: RecordRepresentation
     @NSManaged public var author: String?
     @NSManaged public var localizedName: String?
     
-    @NSManaged var metadata: [HarmonyMetadataKey: String]
+    @nonobjc var metadata: [HarmonyMetadataKey: String] {
+        get {
+            return self._metadata.reduce(into: [:]) { $0[HarmonyMetadataKey($1.key)] = $1.value }
+        }
+        set {
+            self._metadata = newValue.reduce(into: [:]) { $0[$1.key.rawValue] = $1.value }
+        }
+        
+    }
+    @NSManaged @objc(metadata)
+    private var _metadata: [String: String]
     
     @NSManaged var versionIdentifier: String
     @NSManaged var versionDate: Date

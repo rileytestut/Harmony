@@ -6,7 +6,7 @@
 //  Copyright © 2017 Riley Testut. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import CoreData
 
 public extension SyncCoordinator

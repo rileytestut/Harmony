@@ -9,6 +9,23 @@
 import Foundation
 import CoreData
 
+import UIKit
+
+public struct HarmonyMetadataKey: RawRepresentable, Hashable, Codable
+{
+    public var rawValue: String
+    
+    public init(rawValue: String)
+    {
+        self.rawValue = rawValue
+    }
+    
+    public init(_ rawValue: String)
+    {
+        self.rawValue = rawValue
+    }
+}
+
 public protocol Service
 {
     var localizedName: String { get }
