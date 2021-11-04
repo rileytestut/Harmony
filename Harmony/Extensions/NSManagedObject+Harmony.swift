@@ -12,8 +12,14 @@ public extension NSManagedObjectModel
 {
     class func harmonyModel(byMergingWith managedObjectModels: [NSManagedObjectModel]) -> NSManagedObjectModel?
     {
+        #if SWIFT_PACKAGE
+        let unwrappedModelURL = Bundle.module.url(forResource: "Harmony", withExtension: "momd")
+        #else
+        let unwrappedModelURL = Bundle(for: RecordController.self).url(forResource: "Harmony", withExtension: "momd")
+        #endif
+        
         guard
-            let modelURL = Bundle(for: RecordController.self).url(forResource: "Harmony", withExtension: "momd"),
+            let modelURL = unwrappedModelURL,
             let harmonyModel = NSManagedObjectModel(contentsOf: modelURL)
         else
         {
