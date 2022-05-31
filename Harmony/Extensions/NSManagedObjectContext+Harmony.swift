@@ -73,15 +73,15 @@ extension NSManagedObjectContext
         
         let fetchRequest = T.fetchRequest() as! NSFetchRequest<T>
         fetchRequest.predicate = predicate
-        fetchRequest.fetchBatchSize = 100
         fetchRequest.propertiesToFetch = [#keyPath(ManagedRecord.recordedObjectType), #keyPath(ManagedRecord.recordedObjectIdentifier)]
         
-        // For some reason, not explicitly calling performAndWait may cause Core Data threading assertion failures
-        // ...even if we already called this method from a context's perform(AndWait) closure.
-        return try self.performAndWait {
-            // Filter out any records that happen to have a matching recordedObjectIdentifier, but not matching recordedObjectType.
-            let records = try self.fetch(fetchRequest).filter { recordIDs.contains($0.recordID) }
-            return records
-        }
+        // fetchBatchSize doesn't work from Swift without workarounds (due to NSArray bridging).
+        // However, attempting to use it anyway may cause Core Data threading violations.
+        // As a temporary workaround, just disable setting fetchBatchSize for now.
+        // fetchRequest.fetchBatchSize = 100
+        
+        // Filter out any records that happen to have a matching recordedObjectIdentifier, but not matching recordedObjectType.
+        let records = try self.fetch(fetchRequest).filter { recordIDs.contains($0.recordID) }
+        return records
     }
 }
