@@ -733,7 +733,7 @@
 				BF4EE59221AC8FF500FA648D /* Download */,
 				BF9A367A21630F3600F8EE91 /* Delete */,
 				BF4EE59521AC960700FA648D /* Conflict */,
-				BF4EE59621AC963300FA648D /* Misc. */,
+				BF4EE59621AC963300FA648D /* Misc */,
 			);
 			path = Operations;
 			sourceTree = "<group>";
