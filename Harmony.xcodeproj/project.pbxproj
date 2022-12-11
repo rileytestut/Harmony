@@ -475,13 +475,13 @@
 			path = Conflict;
 			sourceTree = "<group>";
 		};
-		BF4EE59621AC963300FA648D /* Misc. */ = {
+		BF4EE59621AC963300FA648D /* Misc */ = {
 			isa = PBXGroup;
 			children = (
 				BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */,
 				BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */,
 			);
-			path = Misc.;
+			path = Misc;
 			sourceTree = "<group>";
 		};
 		BF5784001FB17B9200BD043C /* Extensions */ = {
