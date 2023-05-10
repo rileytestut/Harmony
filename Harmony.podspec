@@ -25,7 +25,7 @@ Pod::Spec.new do |spec|
   spec.subspec 'Harmony-Drive' do |drive|
     drive.source_files  = "Backends/Drive/Harmony-Drive/**/*.swift"
     drive.dependency 'GoogleAPIClientForREST/Drive', '~> 1.3.0'
-    drive.dependency 'GoogleSignIn', '~> 4.4.0'
+    drive.dependency 'GoogleSignIn', '~> 5.0'
   end
   
 end
