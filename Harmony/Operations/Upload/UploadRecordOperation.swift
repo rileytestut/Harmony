@@ -60,17 +60,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
                         let remoteFiles = try result.get()
                         
                         let localRecord = self.localRecord.in(self.managedObjectContext)
-                        let localRecordRemoteFilesByIdentifier = Dictionary(localRecord.remoteFiles, keyedBy: \.identifier)
-                        
-                        for remoteFile in remoteFiles
-                        {
-                            if let cachedFile = localRecordRemoteFilesByIdentifier[remoteFile.identifier]
-                            {
-                                localRecord.remoteFiles.remove(cachedFile)
-                            }
-                            
-                            localRecord.remoteFiles.insert(remoteFile)
-                        }
+                        localRecord.remoteFiles = remoteFiles
                         
                         self.upload(localRecord) { (result) in
                             self.result = result
@@ -185,11 +175,21 @@ private extension UploadRecordOperation
                 {
                     let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
                     
-                    let remoteFile = remoteFilesByIdentifier[file.identifier]
-                    guard remoteFile?.sha1Hash != hash else {
-                        // Hash is the same, so don't upload file.
-                        self.progress.completedUnitCount += 1
-                        continue
+                    if let remoteFile = remoteFilesByIdentifier[file.identifier]
+                    {
+                        // There is already an uploaded file with this identifier, so compare hashes.
+                        
+                        guard remoteFile.sha1Hash != hash else {
+                            // Hash is the same, so don't upload file.
+                            self.progress.completedUnitCount += 1
+                            
+                            self.managedObjectContext.performAndWait {
+                                let remoteFile = remoteFile.in(self.managedObjectContext)
+                                remoteFiles.insert(remoteFile)
+                            }
+                            
+                            continue
+                        }
                     }
                     
                     dispatchGroup.enter()
