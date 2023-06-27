@@ -33,6 +33,7 @@ public protocol Service
     func updateMetadata(_ metadata: [HarmonyMetadataKey: Any], for record: AnyRecord, completionHandler: @escaping (Result<Void, RecordError>) -> Void) -> Progress
     
     func fetchVersions(for record: AnyRecord, completionHandler: @escaping (Result<[Version], RecordError>) -> Void) -> Progress
+    func fetchVersions(for remoteFile: RemoteFile, completionHandler: @escaping (Result<[Version], FileError>) -> Void) -> Progress
 }
 
 public func ==(lhs: Service, rhs: Service) -> Bool

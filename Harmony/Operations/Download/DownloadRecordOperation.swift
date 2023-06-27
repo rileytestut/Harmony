@@ -32,35 +32,44 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
             print("Started downloading record: ", self.record.recordID)
         }
         
+        // Download record.
         self.downloadRecord { (result) in
-            do
+            switch result
             {
-                let localRecord = try result.get()
+            case .failure(let error):
+                self.result = .failure(error)
+                self.finishDownload()
                 
-                self.downloadFiles(for: localRecord) { (result) in
-                    self.managedObjectContext.perform {
-                        do
-                        {
-                            let files = try result.get()
-                            localRecord.downloadedFiles = files
-                            
-                            self.result = .success(localRecord)
-                        }
-                        catch
-                        {
-                            self.result = .failure(RecordError(self.record, error))
-                            
-                            localRecord.removeFromContext()
-                        }
-                        
+            case .success(let localRecord):
+                
+                // Verify localRecord.remoteFiles doesn't contain duplicates.
+                self.verifyRemoteFiles(for: localRecord) { (result) in
+                    switch result
+                    {
+                    case .failure(let error):
+                        self.result = .failure(error)
+                        localRecord.removeFromContext()
                         self.finishDownload()
+                        
+                    case .success:
+                        
+                        // Download remote files.
+                        self.downloadFiles(for: localRecord) { (result) in
+                            switch result
+                            {
+                            case .failure(let error):
+                                self.result = .failure(error)
+                                localRecord.removeFromContext()
+                                
+                            case .success(let files):
+                                localRecord.downloadedFiles = files
+                                self.result = .success(localRecord)
+                            }
+                            
+                            self.finishDownload()
+                        }
                     }
                 }
-            }
-            catch
-            {
-                self.result = .failure(RecordError(self.record, error))
-                self.finishDownload()
             }
         }
     }
@@ -266,6 +275,104 @@ private extension DownloadRecordOperation
                 else
                 {
                     completionHandler(.success(files))
+                }
+            }
+        }
+    }
+    
+    func verifyRemoteFiles(for localRecord: LocalRecord, completion: @escaping (Result<Void, RecordError>) -> Void)
+    {
+        // Due to a previous bug, some records may have been uploaded with duplicate file entries.
+        // To handle this, we check all downloaded records to see if they contain duplicate files,
+        // and if they do we choose the "correct" version by comparing against all file versions,
+        // then finally we remove the "wrong" duplicates.
+        
+        var remoteFiles = Set<RemoteFile>()
+        var errors = [FileError]()
+        
+        let dispatchGroup = DispatchGroup()
+        
+        // Group all files with same identifier together so we can fix duplicate entries.
+        let remoteFilesGroupedByRemoteID = Dictionary(grouping: localRecord.remoteFiles) { $0.identifier } // remoteIdentifier is NOT guaranteed to be case-sensitive (e.g. Dropbox)
+        
+        for (identifier, duplicateFiles) in remoteFilesGroupedByRemoteID
+        {
+            // Ignore groups with 0 items (if there are any).
+            guard let remoteFile = duplicateFiles.first else { continue }
+            
+            if duplicateFiles.count == 1
+            {
+                // No duplicates, so return file directly.
+                remoteFiles.insert(remoteFile)
+            }
+            else
+            {
+                // Duplicates, so determine which one is correct by comparing against all remote file versions.
+                
+                dispatchGroup.enter()
+                
+                let operation = ServiceOperation<[Version], FileError>(coordinator: self.coordinator) { (completionHandler) in
+                    return self.managedObjectContext.performAndWait {
+                        // Assume all files with same identifier also have same remoteIdentifier.
+                        return self.service.fetchVersions(for: remoteFile, completionHandler: completionHandler)
+                    }
+                }
+                operation.resultHandler = { (result) in
+                    self.managedObjectContext.perform {
+                        do
+                        {
+                            let versions = try result.get()
+                            let sortedVersionIDs = NSOrderedSet(array: versions.sorted { $0.date < $1.date }.map { $0.identifier })
+                            
+                            // Remove all files that don't match any remote versions.
+                            let filteredFiles = duplicateFiles.filter { sortedVersionIDs.contains($0.versionIdentifier) }
+                            
+                            let sortedFiles = filteredFiles.sorted { (fileA, fileB) in
+                                let indexA = sortedVersionIDs.index(of: fileA.versionIdentifier)
+                                let indexB = sortedVersionIDs.index(of: fileB.versionIdentifier)
+                                return indexA < indexB
+                            }
+                            
+                            // If multiple valid files remain, choose the newest one.
+                            guard let newestFile = sortedFiles.last else { throw FileError.doesNotExist(remoteFile.identifier) }
+                            remoteFiles.insert(newestFile)
+                        }
+                        catch
+                        {
+                            errors.append(FileError(remoteFile.identifier, error))
+                        }
+                        
+                        dispatchGroup.leave()
+                    }
+                }
+                
+                self.operationQueue.addOperation(operation)
+            }
+        }
+        
+        dispatchGroup.notify(queue: .global()) {
+            self.managedObjectContext.perform {
+                if !errors.isEmpty
+                {
+                    completion(.failure(.filesFailed(self.record, errors)))
+                }
+                else
+                {
+                    if remoteFiles != localRecord.remoteFiles
+                    {
+                        // Only update if values have changed, just to be safe, since this method is just a bug fix.
+                        
+                        for remoteFile in localRecord.remoteFiles where !remoteFiles.contains(remoteFile)
+                        {
+                            // Remove duplicate remote file.
+                            remoteFile.localRecord = nil
+                            remoteFile.managedObjectContext?.delete(remoteFile)
+                        }
+                        
+                        localRecord.remoteFiles = remoteFiles
+                    }
+                    
+                    completion(.success)
                 }
             }
         }
