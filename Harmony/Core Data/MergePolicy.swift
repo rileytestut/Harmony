@@ -49,7 +49,7 @@ open class MergePolicy: RSTRelationshipPreservingMergePolicy
             }
         }
         
-        var remoteFilesByLocalRecord = [LocalRecord: Set<RemoteFile>]()
+        var remoteFileIDsByLocalRecordID = [RecordID: Set<RemoteFile.ID>]()
         
         for conflict in conflicts
         {
@@ -61,7 +61,8 @@ open class MergePolicy: RSTRelationshipPreservingMergePolicy
                     temporaryObject.changedValues().keys.contains(#keyPath(LocalRecord.remoteFiles))
                 else { continue }
                 
-                remoteFilesByLocalRecord[databaseObject] = temporaryObject.remoteFiles
+                let fileIDs = temporaryObject.remoteFiles.map { $0.fileID }
+                remoteFileIDsByLocalRecordID[databaseObject.recordID] = Set(fileIDs)
                 
             default: break
             }
@@ -88,27 +89,26 @@ open class MergePolicy: RSTRelationshipPreservingMergePolicy
                 }
                 
             case let databaseObject as LocalRecord:
-                guard let updatedRemoteFiles = remoteFilesByLocalRecord[databaseObject] else { continue }
-                let previousRemoteFiles = databaseObject.remoteFiles
+                guard let expectedRemoteFileIDs = remoteFileIDsByLocalRecordID[databaseObject.recordID] else { continue }
                 
-                for remoteFile in previousRemoteFiles where !updatedRemoteFiles.contains(remoteFile)
+                var remoteFilesByID = [RemoteFile.ID: RemoteFile]()
+                
+                for remoteFile in databaseObject.remoteFiles
                 {
-                    // Set localRecord to nil for all databaseObject.remoteFiles that are not in remoteFiles so that they will be deleted.
-                    remoteFile.localRecord = nil
-                    databaseObject.remoteFiles.remove(remoteFile)
+                    if expectedRemoteFileIDs.contains(remoteFile.fileID), !remoteFilesByID.keys.contains(remoteFile.fileID)
+                    {
+                        // File is expected, and there is not another file with same identifier, so we can keep it.
+                        remoteFilesByID[remoteFile.fileID] = remoteFile
+                    }
+                    else
+                    {
+                        // Set localRecord to nil for all databaseObject.remoteFiles that are duplicates or not in expectedRemoteFileIDs so that they will be deleted.
+                        remoteFile.localRecord = nil
+                        remoteFile.managedObjectContext?.delete(remoteFile)
+                    }
                 }
                 
-                for remoteFile in updatedRemoteFiles where !previousRemoteFiles.contains(remoteFile)
-                {
-                    databaseObject.remoteFiles.insert(remoteFile)
-                }
-                
-                for remoteFile in updatedRemoteFiles.union(previousRemoteFiles)
-                {
-                    // We _must_ refresh remoteFile, or else Core Data might insert it
-                    // into the database a second time, causing unique constraint failures.
-                    remoteFile.managedObjectContext?.refresh(remoteFile, mergeChanges: false)
-                }
+                databaseObject.remoteFiles = Set(remoteFilesByID.values)
                 
             case let databaseObject as ManagedAccount:
                 guard

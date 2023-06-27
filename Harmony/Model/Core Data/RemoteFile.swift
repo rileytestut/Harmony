@@ -19,6 +19,20 @@ extension RemoteFile
         case versionIdentifier
         case size
     }
+    
+    public struct ID: Hashable
+    {
+        public var identifier: String
+        public var remoteIdentifier: String
+        public var versionIdentifier: String
+        
+        public init(identifier: String, remoteIdentifier: String, versionIdentifier: String)
+        {
+            self.identifier = identifier
+            self.remoteIdentifier = remoteIdentifier
+            self.versionIdentifier = versionIdentifier
+        }
+    }
 }
 
 @objc(RemoteFile)
@@ -32,6 +46,10 @@ public class RemoteFile: NSManagedObject, Codable
     @NSManaged public var versionIdentifier: String
     
     @NSManaged public var localRecord: LocalRecord?
+    
+    public var fileID: ID {
+        ID(identifier: self.identifier, remoteIdentifier: self.remoteIdentifier, versionIdentifier: self.versionIdentifier)
+    }
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
