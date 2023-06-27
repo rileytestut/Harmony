@@ -36,31 +36,27 @@ extension Record
     
     class func remoteRelationshipRecordIDs(for records: [Record<T>], in context: NSManagedObjectContext) throws -> Set<RecordID>
     {
-        let predicates = records.flatMap { (record) -> [NSPredicate] in
+        let remoteRecordIDs = records.flatMap { (record) -> [RecordID] in
             record.perform { (managedRecord) in
                 guard let localRecord = managedRecord.localRecord, let recordedObject = localRecord.recordedObject else { return [] }
                 
-                let predicates = recordedObject.syncableRelationshipObjects.values.compactMap { (relationshipObject) -> NSPredicate? in
+                let recordIDs = recordedObject.syncableRelationshipObjects.values.compactMap { (relationshipObject) -> RecordID? in
                     guard let identifier = relationshipObject.syncableIdentifier else { return nil }
                     
-                    return NSPredicate(format: "%K == %@ AND %K == %@",
-                                       #keyPath(RemoteRecord.recordedObjectType), relationshipObject.syncableType,
-                                       #keyPath(RemoteRecord.recordedObjectIdentifier), identifier)
+                    let recordID = RecordID(type: relationshipObject.syncableType, identifier: identifier)
+                    return recordID
                 }
                 
-                return predicates
+                return recordIDs
             }
         }
         
-        let fetchRequest = RemoteRecord.fetchRequest() as NSFetchRequest<RemoteRecord>
-        fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
-        fetchRequest.propertiesToFetch = [#keyPath(RemoteRecord.recordedObjectType), #keyPath(RemoteRecord.recordedObjectIdentifier)]
-        
         do
         {
-            let remoteRecords = try context.fetch(fetchRequest)
+            let remoteRecords: [RemoteRecord] = try context.fetchRecords(for: Set(remoteRecordIDs))
             
-            let recordIDs = Set(remoteRecords.lazy.map { RecordID(type: $0.recordedObjectType, identifier: $0.recordedObjectIdentifier) })
+            // Return the recordIDs that actually exist in context.
+            let recordIDs = Set(remoteRecords.lazy.map { $0.recordID })
             return recordIDs
         }
         catch

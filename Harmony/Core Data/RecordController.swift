@@ -271,6 +271,8 @@ public extension RecordController
     
     func fetchRecords<RecordType: NSManagedObject, U: Collection>(for recordedObjects: U) throws -> Set<Record<RecordType>> where U.Element == RecordType
     {
+        //TODO: Fix fetching more than 1000 records due to SQLite query limits.
+        
         let predicates = recordedObjects.compactMap { (recordedObject) -> NSPredicate? in
             guard let syncableManagedObject = recordedObject as? Syncable, let identifier = syncableManagedObject.syncableIdentifier else { return nil }
             
@@ -468,12 +470,9 @@ private extension RecordController
                 return objectID.uriRepresentation()
             })
             
-            
             // Fetch local records for syncable managed objects
-            let predicates = recordedObjectURIs.map { NSPredicate(format: "%K == %@", #keyPath(LocalRecord.recordedObjectURI), $0 as NSURL) }
-            
             let fetchRequest = LocalRecord.fetchRequest() as NSFetchRequest<LocalRecord>
-            fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+            fetchRequest.predicate = NSPredicate(format: "%K IN %@", #keyPath(LocalRecord.recordedObjectURI), recordedObjectURIs)
             
             let localRecords = try context.fetch(fetchRequest)
             
