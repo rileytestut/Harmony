@@ -163,7 +163,7 @@ public extension SyncCoordinator
     
     @discardableResult func sync() -> Progress?
     {
-        guard let account = self.managedAccount, let context = account.managedObjectContext else { return nil }
+        guard let account = self.managedAccount, let context = account.managedObjectContext, self.recordController.isSeeded else { return nil }
         
         return context.performAndWait {
             // If there is already a sync operation waiting to execute, no use adding another one.
