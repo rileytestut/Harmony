@@ -24,7 +24,7 @@ class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation>
         super.main()
     }
     
-    override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], Error>) -> Void)
+    override func prepare(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], Error>) -> Void)
     {
         for record in records
         {

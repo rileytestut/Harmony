@@ -57,7 +57,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                 var remainingRecordsCount = records.count
                 let remainingRecordsOutputQueue = DispatchQueue(label: "com.rileytestut.BatchRecordOperation.remainingRecordsOutputQueue")
                 
-                self.process(records, in: fetchContext) { (result) in
+                self.prepare(records, in: fetchContext) { (result) in
                     do
                     {
                         let records = try result.get()
@@ -160,7 +160,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
         }
     }
     
-    func process(_ records: [Record<NSManagedObject>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[Record<NSManagedObject>], Error>) -> Void)
+    func prepare(_ records: [Record<NSManagedObject>], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[Record<NSManagedObject>], Error>) -> Void)
     {
         completionHandler(.success(records))
     }

@@ -22,7 +22,7 @@ class UploadRecordsOperation: BatchRecordOperation<RemoteRecord, UploadRecordOpe
         super.main()
     }
     
-    override func process(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], Error>) -> Void)
+    override func prepare(_ records: [AnyRecord], in context: NSManagedObjectContext, completionHandler: @escaping (Result<[AnyRecord], Error>) -> Void)
     {
         let operation = PrepareUploadingRecordsOperation(records: records, coordinator: coordinator, context: context)
         operation.resultHandler = { (result) in
