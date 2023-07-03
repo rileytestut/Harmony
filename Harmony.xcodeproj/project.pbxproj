@@ -101,6 +101,8 @@
 		BFFDBA9B216D649B00AED109 /* UploadRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */; };
 		BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95137521657437007EF10C /* DownloadRecordOperation.swift */; };
 		BFFDBA9F216D74FC00AED109 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3396B1FD3A4DF006FACAD /* File.swift */; };
+		D5AC7C3E2A4E17B700EF0E76 /* VerifyConflictedRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5AC7C322A4E17B700EF0E76 /* VerifyConflictedRecordsOperation.swift */; };
+		D5AC7C522A4E474D00EF0E76 /* ValidateRecordHashesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5AC7C452A4E22B500EF0E76 /* ValidateRecordHashesOperation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -329,6 +331,8 @@
 		BFFB9B1D200ED96700A8F673 /* Result+Success.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+Success.swift"; sourceTree = "<group>"; };
 		BFFB9B20200EDED900A8F673 /* FetchRemoteRecordsOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRemoteRecordsOperationTests.swift; sourceTree = "<group>"; };
 		BFFB9B23200EDF2200A8F673 /* MockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockService.swift; sourceTree = "<group>"; };
+		D5AC7C322A4E17B700EF0E76 /* VerifyConflictedRecordsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VerifyConflictedRecordsOperation.swift; sourceTree = "<group>"; };
+		D5AC7C452A4E22B500EF0E76 /* ValidateRecordHashesOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidateRecordHashesOperation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -471,6 +475,8 @@
 			children = (
 				BF3915C92180F68C00AF74E5 /* ConflictRecordOperation.swift */,
 				BFDDC10B2194F337009732B7 /* ConflictRecordsOperation.swift */,
+				D5AC7C322A4E17B700EF0E76 /* VerifyConflictedRecordsOperation.swift */,
+				D5AC7C452A4E22B500EF0E76 /* ValidateRecordHashesOperation.swift */,
 			);
 			path = Conflict;
 			sourceTree = "<group>";
@@ -1025,6 +1031,7 @@
 			files = (
 				BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */,
 				BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */,
+				D5AC7C522A4E474D00EF0E76 /* ValidateRecordHashesOperation.swift in Sources */,
 				BF6153EB2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,
@@ -1058,6 +1065,7 @@
 				BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */,
 				BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */,
 				BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */,
+				D5AC7C3E2A4E17B700EF0E76 /* VerifyConflictedRecordsOperation.swift in Sources */,
 				BFFDBA9A216D642500AED109 /* BatchRecordOperation.swift in Sources */,
 				BF9A36662162EB3700F8EE91 /* SyncCoordinator.swift in Sources */,
 				BFFB9B1B200ED7EA00A8F673 /* Service.swift in Sources */,

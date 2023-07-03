@@ -67,12 +67,6 @@ private extension ServiceOperation
         self.taskProgress = self.task() { (result) in
             let result = result.mapError { $0 as Error }
             
-            if let progress = self.taskProgress
-            {
-                // Ensure progress is completed.
-                progress.completedUnitCount = progress.totalUnitCount
-            }
-            
             // We must append .self to our Error enum cases for pattern matching to work.
             // Otherwise, the compiler (incorrectly) defaults to using normal enum pattern matching
             // and won't call our custom pattern matching operator.
@@ -81,6 +75,12 @@ private extension ServiceOperation
             do
             {
                 _ = try result.get()
+                
+                if let progress = self.taskProgress
+                {
+                    // Ensure progress is completed.
+                    progress.completedUnitCount = progress.totalUnitCount
+                }
                 
                 self.result = result
                 self.finish()
@@ -95,7 +95,7 @@ private extension ServiceOperation
                 
                 print("Retrying request after delay:", self.retryDelay)
                 
-                self.progress.completedUnitCount -= 1
+                self.progress.completedUnitCount = 0
                 
                 DispatchQueue.global().asyncAfter(deadline: .now() + self.retryDelay) {
                     self.retryDelay = self.retryDelay * 2

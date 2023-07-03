@@ -14,9 +14,9 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
 {
     private var localRecord: LocalRecord!
     
-    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, ignoreConflict: Bool, context: NSManagedObjectContext) throws
     {
-        try super.init(record: record, coordinator: coordinator, context: context)
+        try super.init(record: record, coordinator: coordinator, ignoreConflict: ignoreConflict, context: context)
         
         try self.record.perform { (managedRecord) in
             guard let localRecord = managedRecord.localRecord else {

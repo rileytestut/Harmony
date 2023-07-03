@@ -9,7 +9,26 @@
 import Foundation
 import CoreData
 
-class RecordOperation<ResultType>: Operation<ResultType, RecordError>
+protocol RecordOperationProtocol<ResultType>: Foundation.Operation, ProgressReporting
+{
+    associatedtype ResultType
+    
+    var isBatchOperation: Bool { get set }
+    var resultHandler: ((Result<ResultType, RecordError>) -> Void)? { get set }
+    
+    init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, ignoreConflict: Bool, context: NSManagedObjectContext) throws
+    init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+}
+
+extension RecordOperationProtocol
+{
+    init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+    {
+        try self.init(record: record, coordinator: coordinator, ignoreConflict: false, context: context)
+    }
+}
+
+class RecordOperation<ResultType>: Operation<ResultType, RecordError>, RecordOperationProtocol
 {
     let record: AnyRecord
     let managedObjectContext: NSManagedObjectContext
@@ -20,10 +39,14 @@ class RecordOperation<ResultType>: Operation<ResultType, RecordError>
         return true
     }
     
-    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, ignoreConflict: Bool = false, context: NSManagedObjectContext) throws
     {
         let record = AnyRecord(record)
-        guard !record.isConflicted else { throw RecordError.conflicted(record) }
+        
+        if !ignoreConflict && record.isConflicted
+        {
+            throw RecordError.conflicted(record)
+        }
         
         self.record = record
         

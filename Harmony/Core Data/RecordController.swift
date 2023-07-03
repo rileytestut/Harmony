@@ -520,6 +520,7 @@ private extension RecordController
         }
         catch
         {
+            //TODO: Record error somehow?
             print(error)
         }
     }

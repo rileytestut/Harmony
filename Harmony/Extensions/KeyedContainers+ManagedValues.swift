@@ -102,7 +102,7 @@ extension KeyedDecodingContainer
 
 extension KeyedEncodingContainer
 {
-    mutating func encodeManagedValue(_ managedValue: Any?, forKey key: Key, entity: NSEntityDescription) throws
+    mutating func encodeManagedValue(_ managedValue: Any?, forKey key: Key, isEncodingForHashing: Bool, entity: NSEntityDescription) throws
     {
         let context = EncodingError.Context(codingPath: self.codingPath + [key], debugDescription: "Managed object's property \(key.stringValue) could not be encoded.")
         
@@ -126,6 +126,32 @@ extension KeyedEncodingContainer
             case (.binaryDataAttributeType, let value as Data): try self.encode(value, forKey: key)
             case (.UUIDAttributeType, let value as UUID): try self.encode(value, forKey: key)
             case (.URIAttributeType, let value as URL): try self.encode(value, forKey: key)
+                
+            case (.transformableAttributeType, let value as String) where isEncodingForHashing:
+                try self.encode(value, forKey: key)
+                
+            case (.transformableAttributeType, let value as URL) where isEncodingForHashing:
+                try self.encode(value, forKey: key)
+                
+            case (.transformableAttributeType, let value as Codable) where isEncodingForHashing:
+                try self.encode(value, forKey: key)
+                
+            case (.transformableAttributeType, let value) where isEncodingForHashing:
+                if let transformerName = attribute.valueTransformerName,
+                   let transformer = ValueTransformer(forName: NSValueTransformerName(transformerName)),
+                   let data = transformer.transformedValue(value) as? Data
+                {
+                    try self.encode(data, forKey: key)
+                }
+                else if let nsCodable = value as? NSCoding
+                {
+                    let anyNSCodable = AnyNSCodable(value: nsCodable)
+                    try self.encode(anyNSCodable, forKey: key)
+                }
+                else
+                {
+                    throw EncodingError.invalidValue(value, context)
+                }
                 
             case (.transformableAttributeType, let value as NSCoding):
                 let anyNSCodable = AnyNSCodable(value: value)

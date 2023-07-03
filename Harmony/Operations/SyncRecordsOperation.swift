@@ -51,7 +51,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         
         NotificationCenter.default.post(name: SyncCoordinator.didStartSyncingNotification, object: nil)
         
-        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator, recordController: self.recordController)
+        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator)
         fetchRemoteRecordsOperation.resultHandler = { [weak self] (result) in
             if case .success(_, let changeToken) = result
             {
@@ -68,6 +68,24 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
             self?.finishRecordOperation(conflictRecordsOperation, result: result, debugTitle: "Conflict Result:")
         }
         conflictRecordsOperation.syncProgress = self.syncProgress
+        
+        let verifyConflictedRecordsOperation = VerifyConflictedRecordsOperation(coordinator: self.coordinator)
+        verifyConflictedRecordsOperation.resultHandler = { [weak self, unowned verifyConflictedRecordsOperation] (result) in
+            self?.finishRecordOperation(verifyConflictedRecordsOperation, result: result, debugTitle: "Verify Conflicts Result:")
+//            do
+//            {
+//                let overrideResults = try result.get()
+//                conflictRecordsOperation?.overrideResults = overrideResults
+//            }
+//            catch
+//            {
+//                self?.result = .failure(.fetch(.other(error))) // TODO: Make proper error type
+//                self?.finish()
+//            }
+//            
+//            self?.dispatchGroup.leave()
+        }
+        verifyConflictedRecordsOperation.syncProgress = self.syncProgress
         
         let uploadRecordsOperation = UploadRecordsOperation(coordinator: self.coordinator)
         uploadRecordsOperation.resultHandler = { [weak self, unowned uploadRecordsOperation] (result) in
@@ -87,7 +105,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         }
         deleteRecordsOperation.syncProgress = self.syncProgress
         
-        let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
+        let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, verifyConflictedRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
         for operation in operations
         {
             self.dispatchGroup.enter()
@@ -105,12 +123,19 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
                 
                 do
                 {
-                    let records = try context.fetch(fetchRequest)
+                    let records = try context.fetch(fetchRequest).map(Record.init)
                     
                     for record in records
                     {
-                        let record = Record<NSManagedObject>(record)
-                        self.recordResults[record] = .failure(RecordError.conflicted(record))
+                        let previousResult = self.recordResults[record]
+                        switch previousResult
+                        {
+                        case .failure:
+                            break // Leave existing error in place.
+                            
+                        case .success, nil:
+                            self.recordResults[record] = .failure(RecordError.conflicted(record))
+                        }
                     }
                 }
                 catch
@@ -205,9 +230,9 @@ private extension SyncRecordsOperation
     func finishRecordOperation<R, T>(_ operation: BatchRecordOperation<R, T>, result: Result<[AnyRecord: Result<R, RecordError>], Error>, debugTitle: String)
     {
         // Map operation.recordResults to use Result<Void, RecordError>.
-        let recordResults = operation.recordResults.mapValues { (result) in
+        let recordResults = operation.processedResults?.mapValues { (result) in
             result.map { _ in () }
-        }
+        } ?? [:]
         
         print(debugTitle, result)
         
@@ -215,7 +240,15 @@ private extension SyncRecordsOperation
         {
             for (record, result) in recordResults
             {
-                self.recordResults[record] = result
+                let previousResult = self.recordResults[record]
+                switch (previousResult, result)
+                {
+                case (.failure, .failure): break // Keep original error if there were multiple for this record.
+                case (.failure, .success): break // Prefer failures over successes
+                case (.success, .success): break // No change
+                case (.success, .failure): self.recordResults[record] = result // Replace successes with failures
+                case (nil, _): self.recordResults[record] = result // No value, so assign whatever
+                }
             }
             
             _ = try result.get()

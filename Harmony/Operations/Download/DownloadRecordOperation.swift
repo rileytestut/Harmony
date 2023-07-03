@@ -15,9 +15,14 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
 {
     var version: Version?
     
-    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+    var skipDownloadingFiles = false
+    
+    //TODO: Update predicate to include potentially conflicted
+//    var isPotentiallyConflicted: Bool = false
+    
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, ignoreConflict: Bool, context: NSManagedObjectContext) throws
     {
-        try super.init(record: record, coordinator: coordinator, context: context)
+        try super.init(record: record, coordinator: coordinator, ignoreConflict: ignoreConflict, context: context)
         
         // Record itself = 1 unit, files = 3 units.
         self.progress.totalUnitCount = 4
@@ -30,6 +35,15 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
         if UserDefaults.standard.isDebugModeEnabled
         {
             print("Started downloading record: ", self.record.recordID)
+        }
+        
+        self.record.perform { managedRecord in
+            let localRecord = managedRecord.localRecord
+            let remoteRecord = managedRecord.remoteRecord
+            
+            let test = (localRecord?.status, remoteRecord?.status)
+            print("[RSTLog] Upload Record Statues:", test)
+            let i = 0
         }
         
         // Download record.
@@ -175,6 +189,16 @@ private extension DownloadRecordOperation
     
     func downloadFiles(for localRecord: LocalRecord, completionHandler: @escaping (Result<Set<File>, RecordError>) -> Void)
     {
+        guard !self.skipDownloadingFiles else {
+            localRecord.skippedDownloadingFiles = true
+            return completionHandler(.success([]))
+        }
+        
+//        guard !self.isPotentiallyConflicted else {
+//            localRecord.skippedDownloadingFiles = true
+//            return completionHandler(.success([]))
+//        }
+        
         // Retrieve files from self.record.localRecord because file URLs may depend on relationships that haven't been downloaded yet.
         // If self.record.localRecord doesn't exist, we can just assume we should download all files.
         let filesByIdentifier = self.record.perform { (managedRecord) -> [String: File]? in

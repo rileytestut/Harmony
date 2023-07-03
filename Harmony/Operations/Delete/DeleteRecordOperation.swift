@@ -11,9 +11,9 @@ import CoreData
 
 class DeleteRecordOperation: RecordOperation<Void>
 {
-    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, ignoreConflict: Bool, context: NSManagedObjectContext) throws
     {
-        try super.init(record: record, coordinator: coordinator, context: context)
+        try super.init(record: record, coordinator: coordinator, ignoreConflict: ignoreConflict, context: context)
         
         // Remote record = 2 units, local record = 1 unit.
         self.progress.totalUnitCount = 3

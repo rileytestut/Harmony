@@ -270,6 +270,7 @@ public enum ServiceError: HarmonyError
     case rateLimitExceeded
     case itemDoesNotExist
     case restrictedContent
+    case insufficentSpace
     case connectionFailed(URLError)
     case other(Error)
     
@@ -486,6 +487,7 @@ extension ServiceError
         case .rateLimitExceeded: return NSLocalizedString("The network request rate exceeded the server's rate limit.", comment: "")
         case .itemDoesNotExist: return NSLocalizedString("The requested item does not exist.", comment: "")
         case .restrictedContent: return NSLocalizedString("The requested item has been restricted by the sync provider.", comment: "")
+        case .insufficentSpace: return NSLocalizedString("There is not enough available space to upload this item.", comment: "")
         case .connectionFailed(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         case .other(let error as NSError): return error.localizedFailureReason ?? error.localizedDescription
         }

@@ -13,12 +13,12 @@ class UpdateRecordMetadataOperation: RecordOperation<Void>
 {
     var metadata = [HarmonyMetadataKey: Any]()
     
-    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
+    required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, ignoreConflict: Bool, context: NSManagedObjectContext) throws
     {
         self.metadata[.recordedObjectType] = record.recordID.type
         self.metadata[.recordedObjectIdentifier] = record.recordID.identifier
         
-        try super.init(record: record, coordinator: coordinator, context: context)
+        try super.init(record: record, coordinator: coordinator, ignoreConflict: ignoreConflict, context: context)
     }
     
     override func main()

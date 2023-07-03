@@ -28,7 +28,9 @@ extension ManagedRecord
             case (.normal?, nil): self = .upload
                 
             case (.updated?, .normal?): self = .upload
-            case (.updated?, .updated?): self = .conflict
+            case (.updated?, .updated?):
+                self = .conflict
+                
             case (.updated?, .deleted?): self = .upload
             case (.updated?, nil): self = .upload
                 
@@ -87,8 +89,20 @@ extension ManagedRecord
         return compoundPredicate
     }
     
+    class var potentiallyConflictedPredicate: NSPredicate {
+        let missingVersionPredicate = NSPredicate(format: "%K != nil AND %K == nil AND %K != nil",
+                                                  #keyPath(ManagedRecord.localRecord),
+                                                  #keyPath(ManagedRecord.localRecord.versionIdentifier),
+                                                  #keyPath(ManagedRecord.remoteRecord))
+        
+        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [missingVersionPredicate, self.mismatchedHashesPredicate])
+        return compoundPredicate
+    }
+    
     private class var mismatchedVersionsPredicate: NSPredicate {
-        let predicate = NSPredicate(format: "%K != %K", #keyPath(ManagedRecord.localRecord.versionIdentifier), #keyPath(ManagedRecord.remoteRecord.versionIdentifier))
+        let predicate = NSPredicate(format: "%K != nil AND %K != %K",
+                                    #keyPath(ManagedRecord.localRecord.versionIdentifier),
+                                    #keyPath(ManagedRecord.localRecord.versionIdentifier), #keyPath(ManagedRecord.remoteRecord.versionIdentifier))
         return predicate
     }
     

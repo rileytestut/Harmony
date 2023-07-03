@@ -83,6 +83,13 @@ public class LocalRecord: RecordRepresentation, Codable
     var downloadedFiles: Set<File>?
     var remoteRelationships: [String: RecordID]?
     
+    var skippedDownloadingFiles = false
+//    var isPotentiallyConflicted: Bool {
+//        guard let remoteRecord = self.managedRecord?.remoteRecord else { return false }
+//        
+//        return self.version == nil && self.sha1Hash != remoteRecord.sha1Hash
+//    }
+    
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
         super.init(entity: entity, insertInto: context)
@@ -228,10 +235,16 @@ public class LocalRecord: RecordRepresentation, Codable
             // Since these Objective-C types don't conform to Codable, the below check always fails:
             // guard let codableValue = value as? Codable else { continue }
             
+            if self.recordedObjectIdentifier == "BC2112DD-5B57-49B7-9C3D-EFCE74A0069F"
+            {
+                print("[RSTLog] Feebas 1")
+            }
+            
             // As a workaround, we attempt to encode all syncableKey values, and just ignore the ones that fail.
             do
             {
-                try recordContainer.encodeManagedValue(value, forKey: AnyKey(stringValue: key), entity: recordedObject.entity)
+                let isEncodingForHashing = encoder.userInfo[.isEncodingForHashing] as? Bool ?? false
+                try recordContainer.encodeManagedValue(value, forKey: AnyKey(stringValue: key), isEncodingForHashing: isEncodingForHashing, entity: recordedObject.entity)
             }
             catch EncodingError.invalidValue
             {
@@ -241,14 +254,26 @@ public class LocalRecord: RecordRepresentation, Codable
             {
                 throw error
             }
+            
+            if self.recordedObjectIdentifier == "BC2112DD-5B57-49B7-9C3D-EFCE74A0069F"
+            {
+                print("[RSTLog] Feebas 2")
+            }
         }
         
-        for (key, value) in self.additionalProperties ?? [:]
-        {
-            // Only include additional properties that don't conflict with existing ones.
-            guard !syncableKeys.contains(key) else { continue }
-            try recordContainer.encode(AnyCodable(value), forKey: AnyKey(stringValue: key))
-        }
+//        if let isEncodingForHashing = encoder.userInfo[.isEncodingForHashing] as? Bool, isEncodingForHashing
+//        {
+//            
+//        }
+//        else
+//        {
+            for (key, value) in self.additionalProperties ?? [:]
+            {
+                // Only include additional properties that don't conflict with existing ones.
+                guard !syncableKeys.contains(key) else { continue }
+                try recordContainer.encode(AnyCodable(value), forKey: AnyKey(stringValue: key))
+            }
+//        }
         
         let relationships = recordedObject.syncableRelationshipObjects.mapValues { (relationshipObject) -> RecordID? in
             guard let identifier = relationshipObject.syncableIdentifier else { return nil }
@@ -261,24 +286,41 @@ public class LocalRecord: RecordRepresentation, Codable
         
         if let isEncodingForHashing = encoder.userInfo[.isEncodingForHashing] as? Bool, isEncodingForHashing
         {
-            // If encoding for hashing, we need to hash the _local_ files, not the remote files.
-            
-            var hashes = [String: String]()
-            
-            for file in recordedObject.syncableFiles
+            if self.skippedDownloadingFiles
             {
-                do
+                // We skipped (delayed?) downloading files, so use remoteFiles as our file hashes for encoding
+                // since there are no locl files.
+                
+                var hashes = [String: String]()
+                
+                for remoteFile in self.remoteFiles
                 {
-                    let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
-                    hashes[file.identifier] = hash
+                    hashes[remoteFile.identifier] = remoteFile.sha1Hash
                 }
-                catch CocoaError.fileNoSuchFile
-                {
-                    // File doesn't exist (which is valid), so just continue along.
-                }
+                
+                try container.encode(hashes, forKey: .files)
             }
-            
-            try container.encode(hashes, forKey: .files)
+            else
+            {
+                // If encoding for hashing, we need to hash the _local_ files, not the remote files.
+                
+                var hashes = [String: String]()
+                
+                for file in recordedObject.syncableFiles
+                {
+                    do
+                    {
+                        let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
+                        hashes[file.identifier] = hash
+                    }
+                    catch CocoaError.fileNoSuchFile
+                    {
+                        // File doesn't exist (which is valid), so just continue along.
+                    }
+                }
+                
+                try container.encode(hashes, forKey: .files)
+            }
         }
         else
         {
@@ -339,6 +381,13 @@ extension LocalRecord
         let data = try encoder.encode(self)
         
         let sha1Hash = RSTHasher.sha1Hash(of: data)
+        
+        if self.recordedObjectIdentifier == "730AD61B-E724-4914-AAE6-9E3200174AFC"
+        {
+            let json = String(decoding: data, as: UTF8.self)
+            print("[RSTLog] InputMapping Json:", json)
+        }
+        
         self.sha1Hash = sha1Hash
     }
 }
