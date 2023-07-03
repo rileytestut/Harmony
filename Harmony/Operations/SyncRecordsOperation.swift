@@ -51,7 +51,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         
         NotificationCenter.default.post(name: SyncCoordinator.didStartSyncingNotification, object: nil)
         
-        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator, recordController: self.recordController)
+        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator)
         fetchRemoteRecordsOperation.resultHandler = { [weak self] (result) in
             if case .success(_, let changeToken) = result
             {

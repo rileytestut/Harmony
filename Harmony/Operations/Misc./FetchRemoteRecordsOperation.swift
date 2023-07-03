@@ -17,7 +17,7 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
         return true
     }
     
-    init(changeToken: Data?, coordinator: SyncCoordinator, recordController: RecordController)
+    init(changeToken: Data?, coordinator: SyncCoordinator)
     {
         self.changeToken = changeToken
         
