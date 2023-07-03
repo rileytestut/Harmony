@@ -104,7 +104,7 @@ public class Record<T: NSManagedObject>
 
 extension Record
 {
-    public func perform<T>(in context: NSManagedObjectContext? = nil, closure: @escaping (ManagedRecord) -> T) -> T
+    public func perform<Value>(in context: NSManagedObjectContext? = nil, closure: @escaping (ManagedRecord) -> Value) -> Value
     {
         if let context = context ?? self.managedRecordContext
         {
@@ -119,7 +119,7 @@ extension Record
         }
     }
     
-    public func perform<T>(in context: NSManagedObjectContext? = nil, closure: @escaping (ManagedRecord) throws -> T) throws -> T
+    public func perform<Value>(in context: NSManagedObjectContext? = nil, closure: @escaping (ManagedRecord) throws -> Value) throws -> Value
     {
         if let context = context ?? self.managedRecordContext
         {
