@@ -69,6 +69,12 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         }
         conflictRecordsOperation.syncProgress = self.syncProgress
         
+        let verifyConflictedRecordsOperation = VerifyConflictedRecordsOperation(coordinator: self.coordinator)
+        verifyConflictedRecordsOperation.resultHandler = { [weak self, unowned verifyConflictedRecordsOperation] (result) in
+            self?.finishRecordOperation(verifyConflictedRecordsOperation, result: result, debugTitle: "Verify Conflicts Result:")
+        }
+        verifyConflictedRecordsOperation.syncProgress = self.syncProgress
+        
         let uploadRecordsOperation = UploadRecordsOperation(coordinator: self.coordinator)
         uploadRecordsOperation.resultHandler = { [weak self, unowned uploadRecordsOperation] (result) in
             self?.finishRecordOperation(uploadRecordsOperation, result: result, debugTitle: "Upload Result:")
@@ -87,7 +93,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         }
         deleteRecordsOperation.syncProgress = self.syncProgress
         
-        let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
+        let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, verifyConflictedRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
         for operation in operations
         {
             self.dispatchGroup.enter()
@@ -105,12 +111,16 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
                 
                 do
                 {
-                    let records = try context.fetch(fetchRequest)
+                    let records = try context.fetch(fetchRequest).map(Record.init)
                     
                     for record in records
                     {
-                        let record = Record<NSManagedObject>(record)
-                        self.recordResults[record] = .failure(RecordError.conflicted(record))
+                        let previousResult = self.recordResults[record]
+                        switch previousResult
+                        {
+                        case .failure: break // Don't replace existing error if there is one.
+                        case .success, nil: self.recordResults[record] = .failure(RecordError.conflicted(record))
+                        }
                     }
                 }
                 catch
@@ -215,7 +225,20 @@ private extension SyncRecordsOperation
         {
             for (record, result) in recordResults
             {
-                self.recordResults[record] = result
+                let previousResult = self.recordResults[record]
+                switch (previousResult, result)
+                {
+                case (.failure, .failure): break // Keep original error if there were multiple for this record.
+                case (.failure, .success): break // Prefer keeping errors over successes.
+                case (.success, .success): break // No change, ignore.
+                case (.success, .failure):
+                    // Always replace successes with errors.
+                    self.recordResults[record] = result
+                    
+                case (nil, _):
+                    // No previous value, so assign no matter what.
+                    self.recordResults[record] = result
+                }
             }
             
             _ = try result.get()

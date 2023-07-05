@@ -101,6 +101,8 @@
 		BFFDBA9B216D649B00AED109 /* UploadRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9A367B21630F5000F8EE91 /* UploadRecordOperation.swift */; };
 		BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF95137521657437007EF10C /* DownloadRecordOperation.swift */; };
 		BFFDBA9F216D74FC00AED109 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3396B1FD3A4DF006FACAD /* File.swift */; };
+		D53405652A534A100024F075 /* VerifyConflictedRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405642A534A100024F075 /* VerifyConflictedRecordOperation.swift */; };
+		D53405722A534F8E0024F075 /* VerifyConflictedRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405712A534F8E0024F075 /* VerifyConflictedRecordsOperation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -329,6 +331,8 @@
 		BFFB9B1D200ED96700A8F673 /* Result+Success.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+Success.swift"; sourceTree = "<group>"; };
 		BFFB9B20200EDED900A8F673 /* FetchRemoteRecordsOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRemoteRecordsOperationTests.swift; sourceTree = "<group>"; };
 		BFFB9B23200EDF2200A8F673 /* MockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockService.swift; sourceTree = "<group>"; };
+		D53405642A534A100024F075 /* VerifyConflictedRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyConflictedRecordOperation.swift; sourceTree = "<group>"; };
+		D53405712A534F8E0024F075 /* VerifyConflictedRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyConflictedRecordsOperation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -733,6 +737,7 @@
 				BF4EE59221AC8FF500FA648D /* Download */,
 				BF9A367A21630F3600F8EE91 /* Delete */,
 				BF4EE59521AC960700FA648D /* Conflict */,
+				D53405732A53753F0024F075 /* Verify Conflicts */,
 				BF4EE59621AC963300FA648D /* Misc. */,
 			);
 			path = Operations;
@@ -763,6 +768,15 @@
 				BFFB9B23200EDF2200A8F673 /* MockService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		D53405732A53753F0024F075 /* Verify Conflicts */ = {
+			isa = PBXGroup;
+			children = (
+				D53405642A534A100024F075 /* VerifyConflictedRecordOperation.swift */,
+				D53405712A534F8E0024F075 /* VerifyConflictedRecordsOperation.swift */,
+			);
+			path = "Verify Conflicts";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1023,6 +1037,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D53405652A534A100024F075 /* VerifyConflictedRecordOperation.swift in Sources */,
 				BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */,
 				BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */,
 				BF6153EB2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel in Sources */,
@@ -1071,6 +1086,7 @@
 				BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */,
 				BF06AD18222DDD7700994C50 /* RecordEntry.swift in Sources */,
 				BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */,
+				D53405722A534F8E0024F075 /* VerifyConflictedRecordsOperation.swift in Sources */,
 				BF713BF0224973AA004A1A2B /* ManagedAccount.swift in Sources */,
 				BFFDBA99216D60EC00AED109 /* FetchRemoteRecordsOperation.swift in Sources */,
 				BFFDBA9B216D649B00AED109 /* UploadRecordOperation.swift in Sources */,

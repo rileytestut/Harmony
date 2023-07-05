@@ -83,6 +83,8 @@ public class LocalRecord: RecordRepresentation, Codable
     var downloadedFiles: Set<File>?
     var remoteRelationships: [String: RecordID]?
     
+    var isMetadataOnly: Bool = false
+    
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
         super.init(entity: entity, insertInto: context)
@@ -261,20 +263,33 @@ public class LocalRecord: RecordRepresentation, Codable
         
         if let isEncodingForHashing = encoder.userInfo[.isEncodingForHashing] as? Bool, isEncodingForHashing
         {
-            // If encoding for hashing, we need to hash the _local_ files, not the remote files.
-            
             var hashes = [String: String]()
             
-            for file in recordedObject.syncableFiles
+            if self.isMetadataOnly
             {
-                do
+                // This record is just the metadata (a.k.a. no downloaded files),
+                // so use existing remoteFiles hashes for encoding.
+                
+                for remoteFile in self.remoteFiles
                 {
-                    let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
-                    hashes[file.identifier] = hash
+                    hashes[remoteFile.identifier] = remoteFile.sha1Hash
                 }
-                catch CocoaError.fileNoSuchFile
+            }
+            else
+            {
+                // If encoding for hashing, we need to hash the _local_ files, not the remote files.
+                
+                for file in recordedObject.syncableFiles
                 {
-                    // File doesn't exist (which is valid), so just continue along.
+                    do
+                    {
+                        let hash = try RSTHasher.sha1HashOfFile(at: file.fileURL)
+                        hashes[file.identifier] = hash
+                    }
+                    catch CocoaError.fileNoSuchFile
+                    {
+                        // File doesn't exist (which is valid), so just continue along.
+                    }
                 }
             }
             

@@ -105,18 +105,26 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                             
                             do
                             {
-                                // Copy existing files to a backup location in case something goes wrong.
-                                let files = try self.backupFiles(for: localRecord, record: record)
-                                backupFiles = files
-                                
-                                // Update files after updating relationships (to prevent replacing files prematurely).
-                                try self.updateFiles(for: localRecord, record: record)
-                                
-                                // Awake record after updating files and relationships (since we might need to access them from awakeFromSync).
-                                try localRecord.recordedObject?.awakeFromSync(record)
-                                
-                                // Remove backup files since we no longer need them.
-                                self.removeBackupFiles(files)
+                                if localRecord.isMetadataOnly
+                                {
+                                    // No downloaded files, so just awake recordedObject.
+                                    try localRecord.recordedObject?.awakeFromSync(record)
+                                }
+                                else
+                                {
+                                    // Copy existing files to a backup location in case something goes wrong.
+                                    let files = try self.backupFiles(for: localRecord, record: record)
+                                    backupFiles = files
+                                    
+                                    // Update files after updating relationships (to prevent replacing files prematurely).
+                                    try self.updateFiles(for: localRecord, record: record)
+                                    
+                                    // Awake record after updating files and relationships (since we might need to access them from awakeFromSync).
+                                    try localRecord.recordedObject?.awakeFromSync(record)
+                                    
+                                    // Remove backup files since we no longer need them.
+                                    self.removeBackupFiles(files)
+                                }
                             }
                             catch
                             {

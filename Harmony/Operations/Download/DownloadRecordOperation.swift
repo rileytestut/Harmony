@@ -14,6 +14,7 @@ import Roxas
 class DownloadRecordOperation: RecordOperation<LocalRecord>
 {
     var version: Version?
+    var downloadRecordMetadataOnly: Bool = false
     
     required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
     {
@@ -175,6 +176,12 @@ private extension DownloadRecordOperation
     
     func downloadFiles(for localRecord: LocalRecord, completionHandler: @escaping (Result<Set<File>, RecordError>) -> Void)
     {
+        guard !self.downloadRecordMetadataOnly else {
+            localRecord.isMetadataOnly = true
+            self.progress.completedUnitCount += 3
+            return completionHandler(.success([]))
+        }
+        
         // Retrieve files from self.record.localRecord because file URLs may depend on relationships that haven't been downloaded yet.
         // If self.record.localRecord doesn't exist, we can just assume we should download all files.
         let filesByIdentifier = self.record.perform { (managedRecord) -> [String: File]? in
