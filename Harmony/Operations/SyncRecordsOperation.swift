@@ -53,7 +53,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         
         let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator)
         fetchRemoteRecordsOperation.resultHandler = { [weak self] (result) in
-            if case .success(_, let changeToken) = result
+            if case .success((_, let changeToken)) = result
             {
                 self?.updatedChangeToken = changeToken
             }
