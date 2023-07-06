@@ -46,6 +46,7 @@ public final class SyncCoordinator
     
     private var managedAccount: ManagedAccount? {
         guard _managedAccount == nil else { return _managedAccount }
+        guard self.recordController.isStarted else { return nil }
         
         let context = self.recordController.newBackgroundContext()
         _managedAccount = context.performAndWait {
