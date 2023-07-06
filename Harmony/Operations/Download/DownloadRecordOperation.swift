@@ -302,7 +302,7 @@ private extension DownloadRecordOperation
         // Group all files with same identifier together so we can fix duplicate entries.
         let remoteFilesGroupedByRemoteID = Dictionary(grouping: localRecord.remoteFiles) { $0.identifier } // remoteIdentifier is NOT guaranteed to be case-sensitive (e.g. Dropbox)
         
-        for (identifier, duplicateFiles) in remoteFilesGroupedByRemoteID
+        for (_, duplicateFiles) in remoteFilesGroupedByRemoteID
         {
             // Ignore groups with 0 items (if there are any).
             guard let remoteFile = duplicateFiles.first else { continue }
