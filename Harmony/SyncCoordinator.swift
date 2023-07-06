@@ -207,17 +207,32 @@ public extension SyncCoordinator
             return
         }
         
+        if let presentingViewController
+        {
+            // Extra precaution to ensure we are signed out before signing-in with another account.
+            guard !self.isAuthenticated else {
+                self.deauthenticate { result in
+                    switch result
+                    {
+                    case .failure(let error): completionHandler(.failure(AuthenticationError(error)))
+                    case .success: self.authenticate(presentingViewController: presentingViewController, completionHandler: completionHandler)
+                    }
+                }
+                return
+            }
+        }
+        
         let operation = ServiceOperation<Account, AuthenticationError>(coordinator: self) { (completionHandler) -> Progress? in
-            DispatchQueue.main.async {
-                if let presentingViewController = presentingViewController
-                {
+            if let presentingViewController = presentingViewController
+            {
+                DispatchQueue.main.async {
                     self.service.authenticate(withPresentingViewController: presentingViewController, completionHandler: completionHandler)
                 }
-                else
-                {
-                    self.service.authenticateInBackground(completionHandler: completionHandler)
-                }
-            }            
+            }
+            else
+            {
+                self.service.authenticateInBackground(completionHandler: completionHandler)
+            }
             return nil
         }
         operation.resultHandler = { (result) in
