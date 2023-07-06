@@ -175,25 +175,7 @@ public extension SyncCoordinator
             self.isSyncing = true
             
             let syncRecordsOperation = SyncRecordsOperation(changeToken: account.changeToken, coordinator: self)
-            syncRecordsOperation.resultHandler = { [weak syncRecordsOperation] (result) in
-                if let changeToken = syncRecordsOperation?.updatedChangeToken
-                {
-                    let context = self.recordController.newBackgroundContext()
-                    context.performAndWait {
-                        let account = account.in(context)
-                        account.changeToken = changeToken
-                        
-                        do
-                        {
-                            try context.save()
-                        }
-                        catch
-                        {
-                            print("Failed to save change token.", error)
-                        }
-                    }
-                }
-                
+            syncRecordsOperation.resultHandler = { (result) in
                 NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: result])
                 
                 if self.syncOperationQueue.operations.isEmpty

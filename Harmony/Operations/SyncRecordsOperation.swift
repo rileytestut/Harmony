@@ -19,9 +19,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
     
     private let dispatchGroup = DispatchGroup()
         
-    private(set) var updatedChangeToken: Data?
     private var backgroundTaskIdentifier: UIBackgroundTaskIdentifier?
-    
     private var recordResults = [Record<NSManagedObject>: Result<Void, RecordError>]()
     
     override var isAsynchronous: Bool {
@@ -59,11 +57,6 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         
         let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator)
         fetchRemoteRecordsOperation.resultHandler = { [weak self] (result) in
-            if case .success((_, let changeToken)) = result
-            {
-                self?.updatedChangeToken = changeToken
-            }
-            
             self?.finishFetchChangesOperation(result, debugTitle: "Fetch Records Result:")
         }
         self.syncProgress.status = .fetchingChanges
@@ -212,6 +205,14 @@ private extension SyncRecordsOperation
         self.finishOperation(result, debugTitle: debugTitle) { (_, changeToken) in
             let context = self.recordController.newBackgroundContext()
             let recordCount = try context.performAndWait { () -> Int in
+                
+                if let managedAccount = try context.fetch(ManagedAccount.currentAccountFetchRequest()).first
+                {
+                    // First, save change token.
+                    managedAccount.changeToken = changeToken
+                    try context.save()
+                }
+                
                 let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
                 fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [ConflictRecordsOperation.predicate,
                                                                                             UploadRecordsOperation.predicate,
