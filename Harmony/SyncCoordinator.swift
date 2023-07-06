@@ -51,7 +51,7 @@ public final class SyncCoordinator
         _managedAccount = context.performAndWait {
             do
             {
-                let accounts = try context.fetch(ManagedAccount.currentAccountFetchRequest())
+                let accounts = try context.fetch(ManagedAccount.currentAccountFetchRequest(for: self.service))
                 return accounts.first
             }
             catch

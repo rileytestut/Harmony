@@ -206,7 +206,7 @@ private extension SyncRecordsOperation
             let context = self.recordController.newBackgroundContext()
             let recordCount = try context.performAndWait { () -> Int in
                 
-                if let managedAccount = try context.fetch(ManagedAccount.currentAccountFetchRequest()).first
+                if let managedAccount = try context.fetch(ManagedAccount.currentAccountFetchRequest(for: self.service)).first
                 {
                     // First, save change token.
                     managedAccount.changeToken = changeToken

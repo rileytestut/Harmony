@@ -42,9 +42,10 @@ extension ManagedAccount
         return NSFetchRequest<ManagedAccount>(entityName: "ManagedAccount")
     }
     
-    @nonobjc class func currentAccountFetchRequest() -> NSFetchRequest<ManagedAccount>
+    @nonobjc class func currentAccountFetchRequest(for service: Service) -> NSFetchRequest<ManagedAccount>
     {
         let fetchRequest = self.fetchRequest() as NSFetchRequest<ManagedAccount>
+        fetchRequest.predicate = NSPredicate(format: "%K == %@", #keyPath(ManagedAccount.serviceIdentifier), service.identifier)
         fetchRequest.fetchLimit = 1
         fetchRequest.returnsObjectsAsFaults = false
         
