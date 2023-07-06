@@ -1,5 +1,5 @@
 //
-//  VerifyConflictedRecordsOperation.swift
+//  RepairRecordsOperation.swift
 //  Harmony
 //
 //  Created by Riley Testut on 7/3/23.
@@ -9,15 +9,16 @@
 import Foundation
 import CoreData
 
-class VerifyConflictedRecordsOperation: BatchRecordOperation<Void, VerifyConflictedRecordOperation>
+class RepairRecordsOperation: BatchRecordOperation<Void, RepairRecordOperation>
 {
     override class var predicate: NSPredicate {
-        return ManagedRecord.unverifiedConflictedRecordsPredicate
+        // Records with nil localRecord.version need to be "repaired".
+        return ManagedRecord.repairRecordsPredicate
     }
     
     override func main()
     {
-        self.syncProgress.status = .fetchingChanges
+        self.syncProgress.status = .preparing
         
         super.main()
     }

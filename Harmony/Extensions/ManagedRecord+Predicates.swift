@@ -87,19 +87,12 @@ extension ManagedRecord
         return compoundPredicate
     }
     
-    class var unverifiedConflictedRecordsPredicate: NSPredicate {
-        // Unverified conflicted records are records that:
-        // a) are conflicted
-        // b) have both local and remote records, but localRecord.version == nil
-        // c) have mismatched hashes
-        
-        let missingLocalVersionPredicate = NSPredicate(format: "%K != nil AND %K == nil AND %K != nil",
-                                                       #keyPath(ManagedRecord.localRecord),
-                                                       #keyPath(ManagedRecord.localRecord.versionIdentifier),
-                                                       #keyPath(ManagedRecord.remoteRecord))
-        
-        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [self.conflictedRecordsPredicate, missingLocalVersionPredicate, self.mismatchedHashesPredicate])
-        return compoundPredicate
+    class var repairRecordsPredicate: NSPredicate {
+        let predicate = NSPredicate(format: "%K != nil AND %K == nil AND %K != nil",
+                                                             #keyPath(ManagedRecord.localRecord),
+                                                             #keyPath(ManagedRecord.localRecord.versionIdentifier),
+                                                             #keyPath(ManagedRecord.remoteRecord))
+        return predicate
     }
     
     private class var mismatchedVersionsPredicate: NSPredicate {

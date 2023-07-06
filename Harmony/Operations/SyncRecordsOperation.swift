@@ -68,11 +68,11 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         }
         conflictRecordsOperation.syncProgress = self.syncProgress
         
-        let verifyConflictedRecordsOperation = VerifyConflictedRecordsOperation(coordinator: self.coordinator)
-        verifyConflictedRecordsOperation.resultHandler = { [weak self] (result) in
+        let repairRecordsOperation = RepairRecordsOperation(coordinator: self.coordinator)
+        repairRecordsOperation.resultHandler = { [weak self] (result) in
             self?.finishRecordOperation(result, debugTitle: "Verify Conflicts Result:")
         }
-        verifyConflictedRecordsOperation.syncProgress = self.syncProgress
+        repairRecordsOperation.syncProgress = self.syncProgress
         
         let uploadRecordsOperation = UploadRecordsOperation(coordinator: self.coordinator)
         uploadRecordsOperation.resultHandler = { [weak self] (result) in
@@ -92,7 +92,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         }
         deleteRecordsOperation.syncProgress = self.syncProgress
         
-        let operations = [seedRecordControllerOperation, fetchRemoteRecordsOperation, conflictRecordsOperation, verifyConflictedRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
+        let operations = [seedRecordControllerOperation, fetchRemoteRecordsOperation, conflictRecordsOperation, repairRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
         for operation in operations
         {
             self.dispatchGroup.enter()
