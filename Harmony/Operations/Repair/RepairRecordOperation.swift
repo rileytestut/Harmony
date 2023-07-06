@@ -106,9 +106,9 @@ class RepairRecordOperation: RecordOperation<Void>
                                 // This is equivalent to a fresh sync from server.
                                 localRecord.sha1Hash = remoteRecord.sha1Hash
                                 
-                                // Assign both statuses to normal to prevent unnecessary sync operations.
-                                localRecord.status = .normal
-                                remoteRecord.status = .normal
+                                // DON'T update statuses to ensure we sync changes that happened in the meantime.
+                                // localRecord.status = .normal
+                                // remoteRecord.status = .normal
                                 
                                 // No longer conflicted.
                                 managedRecord.isConflicted = false
