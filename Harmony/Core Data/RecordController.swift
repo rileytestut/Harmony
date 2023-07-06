@@ -11,44 +11,20 @@ import CoreData
 
 import Roxas
 
+private let isHarmonySeededKey = "harmony_isSeeded"
+
 extension Notification.Name
 {
     static let recordControllerDidProcessUpdates = Notification.Name("recordControllerDidProcessUpdates")
 }
 
-extension RecordController
-{
-    public enum Error: Swift.Error
-    {
-        case noEntities
-    }
-}
-
 public final class RecordController: RSTPersistentContainer
 {
-    public private(set) var isSeeded: Bool {
-        get {
-            guard let metadata = self.persistentStoreCoordinator.persistentStores.first?.metadata else { return false }
-            
-            let isSeeded = metadata["harmony_isSeeded"] as? Bool
-            return isSeeded ?? false
-        }
-        set {
-            guard let store = self.persistentStoreCoordinator.persistentStores.first else { return }
-            store.metadata["harmony_isSeeded"] = newValue
-            
-            // Must save a context for store metadata to update.
-            self.performBackgroundTask { (context) in
-                do
-                {
-                    try context.save()
-                }
-                catch
-                {
-                    print("Failed to update store metadata:", error)
-                }
-            }
-        }
+    public var isSeeded: Bool {
+        guard let metadata = self.persistentStoreCoordinator.persistentStores.first?.metadata else { return false }
+        
+        let isSeeded = metadata[isHarmonySeededKey] as? Bool
+        return isSeeded ?? false
     }
     
     public private(set) var isStarted = false
@@ -195,60 +171,11 @@ internal extension RecordController
         {
             // Ignore
         }
-        
-        self.isSeeded = false
     }
 }
 
 public extension RecordController
 {
-    @discardableResult func seedFromPersistentContainer(completionHandler: @escaping (Result<Void, Swift.Error>) -> Void) -> Progress
-    {
-        let progress = Progress(totalUnitCount: 0)
-        
-        guard let entities = self.managedObjectModel.entities(forConfigurationName: NSManagedObjectModel.Configuration.external.rawValue) else {
-            completionHandler(.failure(Error.noEntities))
-            return progress
-        }
-        
-        let syncableEntityNames = entities.lazy.filter { NSClassFromString($0.managedObjectClassName) is Syncable.Type }.compactMap { $0.name }
-        progress.totalUnitCount = Int64(syncableEntityNames.count)
-        
-        self.performBackgroundTask { (context) in
-            do
-            {
-                for name in syncableEntityNames
-                {
-                    let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: name)
-                    fetchRequest.fetchBatchSize = 50
-                    
-                    let managedObjects = try context.fetch(fetchRequest)
-                    let objectIDs = managedObjects.lazy.compactMap { $0 as? Syncable }.filter { $0.isSyncingEnabled }.map { $0.objectID }
-                    
-                    // Create new local records for any syncable managed objects, but ignore existing local records.
-                    self.updateLocalRecords(for: objectIDs, status: .normal, in: context, ignoreExistingRecords: true)
-                    
-                    progress.completedUnitCount += 1
-                }
-                
-                if UserDefaults.standard.isDebugModeEnabled
-                {
-                    self.printRecords()
-                }
-                
-                self.isSeeded = true
-                
-                completionHandler(.success)
-            }
-            catch
-            {
-                completionHandler(.failure(error))
-            }
-        }
-        
-        return progress
-    }
-
     func updateRecord<T: Syncable>(for managedObject: T)
     {
         guard let context = self.processingContext else { return }
@@ -331,7 +258,7 @@ extension RecordController
         }
     }
     
-    public func printRecords()
+    func printRecords()
     {
         let context = self.newBackgroundContext()
         context.performAndWait {
@@ -377,11 +304,31 @@ extension RecordController
             print("Remote Files:", remoteFiles.count, remoteFiles.map { $0.localRecord?.objectID.uriRepresentation().lastPathComponent ?? "nil" })
         }
     }
+    
+    func setIsSeeded(_ isSeeded: Bool, completionHandler: @escaping (Result<Void, DatabaseError>) -> Void)
+    {
+        guard let store = self.persistentStoreCoordinator.persistentStores.first else { return completionHandler(.failure(DatabaseError.notLoaded)) }
+        store.metadata[isHarmonySeededKey] = isSeeded
+        
+        // Must save a context for store metadata to update.
+        self.performBackgroundTask { (context) in
+            do
+            {
+                try context.save()
+                completionHandler(.success)
+            }
+            catch
+            {
+                print("Failed to update store metadata:", error)
+                completionHandler(.failure(DatabaseError(error)))
+            }
+        }
+    }
 }
 
-private extension RecordController
+extension RecordController
 {
-    func updateManagedRecords<T: Collection & CVarArg, RecordType: RecordRepresentation>(for recordIDs: T, keyPath: ReferenceWritableKeyPath<ManagedRecord, RecordType?>, in context: NSManagedObjectContext)
+    private func updateManagedRecords<T: Collection & CVarArg, RecordType: RecordRepresentation>(for recordIDs: T, keyPath: ReferenceWritableKeyPath<ManagedRecord, RecordType?>, in context: NSManagedObjectContext)
         where T.Element == NSManagedObjectID
     {
         func configure(_ managedRecord: ManagedRecord, with recordRepresentation: RecordType)
@@ -451,8 +398,8 @@ private extension RecordController
             print(error)
         }
     }
-    
-    func updateLocalRecords<T: Collection>(for recordedObjectIDs: T, status: RecordStatus, in context: NSManagedObjectContext, ignoreExistingRecords: Bool = false) where T.Element == NSManagedObjectID
+
+    internal func updateLocalRecords<T: Collection>(for recordedObjectIDs: T, status: RecordStatus, in context: NSManagedObjectContext, ignoreExistingRecords: Bool = false) where T.Element == NSManagedObjectID
     {
         func configure(_ localRecord: LocalRecord, with status: RecordStatus)
         {

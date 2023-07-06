@@ -103,6 +103,7 @@
 		BFFDBA9F216D74FC00AED109 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3396B1FD3A4DF006FACAD /* File.swift */; };
 		D53405652A534A100024F075 /* VerifyConflictedRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405642A534A100024F075 /* VerifyConflictedRecordOperation.swift */; };
 		D53405722A534F8E0024F075 /* VerifyConflictedRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405712A534F8E0024F075 /* VerifyConflictedRecordsOperation.swift */; };
+		D5C4DF6D2A56101B004376D4 /* SeedRecordControllerOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -333,6 +334,7 @@
 		BFFB9B23200EDF2200A8F673 /* MockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockService.swift; sourceTree = "<group>"; };
 		D53405642A534A100024F075 /* VerifyConflictedRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyConflictedRecordOperation.swift; sourceTree = "<group>"; };
 		D53405712A534F8E0024F075 /* VerifyConflictedRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyConflictedRecordsOperation.swift; sourceTree = "<group>"; };
+		D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedRecordControllerOperation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -484,6 +486,7 @@
 			children = (
 				BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */,
 				BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */,
+				D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */,
 			);
 			path = Misc.;
 			sourceTree = "<group>";
@@ -1040,6 +1043,7 @@
 				D53405652A534A100024F075 /* VerifyConflictedRecordOperation.swift in Sources */,
 				BFD0E2E5217FD02B006945CF /* RecordOperation.swift in Sources */,
 				BF63A1A521A4B53100EE8F61 /* Version.swift in Sources */,
+				D5C4DF6D2A56101B004376D4 /* SeedRecordControllerOperation.swift in Sources */,
 				BF6153EB2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel in Sources */,
 				BFFB9B18200ED72E00A8F673 /* Operation.swift in Sources */,
 				BF95135F21653F2B007EF10C /* JSONDecoder+ManagedObjectContext.swift in Sources */,

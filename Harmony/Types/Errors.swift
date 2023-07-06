@@ -65,6 +65,7 @@ public enum GeneralError: HarmonyError
 public enum SyncError: HarmonyError
 {
     case authentication(AuthenticationError)
+    case prepare(DatabaseError)
     case fetch(FetchError)
     case partial([AnyRecord: Result<Void, RecordError>])
     case other(HarmonyError)
@@ -73,6 +74,7 @@ public enum SyncError: HarmonyError
         switch self
         {
         case .authentication(let error): return error
+        case .prepare(let error): return error
         case .fetch(let error): return error
         case .partial: return nil
         case .other(let error): return error
@@ -85,6 +87,7 @@ public enum SyncError: HarmonyError
         {
         case let error as SyncError: self = error
         case let error as AuthenticationError: self = SyncError.authentication(error)
+        case let error as DatabaseError: self = SyncError.prepare(error)
         case let error as FetchError: self = SyncError.fetch(error)
         default: self = SyncError.other(error)
         }
@@ -93,12 +96,15 @@ public enum SyncError: HarmonyError
 
 public enum DatabaseError: HarmonyError
 {
+    case notLoaded
+    case noEntities
     case corrupted(Error)
     case other(Error)
     
     public var underlyingError: HarmonyError? {
         switch self
         {
+        case .notLoaded, .noEntities: return nil
         case .corrupted(let error): return error as? HarmonyError
         case .other(let error): return error as? HarmonyError
         }
@@ -339,6 +345,7 @@ extension SyncError
         switch self
         {
         case .authentication(let error): return error.failureReason
+        case .prepare(let error): return error.failureReason
         case .fetch(let error): return error.failureReason
         case .other(let error): return error.failureReason
         case .partial(let results):
@@ -458,6 +465,7 @@ extension DatabaseError
     public var failureDescription: String {
         switch self
         {
+        case .notLoaded, .noEntities: return NSLocalizedString("Failed to prepare syncing database.", comment: "")
         case .corrupted: return NSLocalizedString("The syncing database is corrupted.", comment: "")
         case .other(let error as NSError): return error.localizedFailureDescription ?? error.localizedDescription
         }
@@ -466,6 +474,8 @@ extension DatabaseError
     public var failureReason: String? {
         switch self
         {
+        case .notLoaded: return NSLocalizedString("The syncing database is not loaded.", comment: "")
+        case .noEntities: return NSLocalizedString("There are no Core Data entities with “External” configuration.", comment: "")
         case .corrupted(let error as NSError),
              .other(let error as NSError):
             return error.localizedFailureReason ?? error.localizedDescription

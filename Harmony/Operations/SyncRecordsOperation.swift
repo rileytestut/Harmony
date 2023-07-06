@@ -51,6 +51,12 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         
         NotificationCenter.default.post(name: SyncCoordinator.didStartSyncingNotification, object: nil)
         
+        let seedRecordControllerOperation = SeedRecordControllerOperation(coordinator: self.coordinator)
+        seedRecordControllerOperation.resultHandler = { [weak self] (result) in
+            self?.finishOperation(result, debugTitle: "Seed RecordController Result:")
+        }
+        self.syncProgress.addChild(seedRecordControllerOperation.progress, withPendingUnitCount: 0)
+        
         let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator)
         fetchRemoteRecordsOperation.resultHandler = { [weak self] (result) in
             if case .success((_, let changeToken)) = result
@@ -58,42 +64,42 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
                 self?.updatedChangeToken = changeToken
             }
             
-            self?.finish(result, debugTitle: "Fetch Records Result:")
+            self?.finishFetchChangesOperation(result, debugTitle: "Fetch Records Result:")
         }
         self.syncProgress.status = .fetchingChanges
         self.syncProgress.addChild(fetchRemoteRecordsOperation.progress, withPendingUnitCount: 0)
         
         let conflictRecordsOperation = ConflictRecordsOperation(coordinator: self.coordinator)
-        conflictRecordsOperation.resultHandler = { [weak self, unowned conflictRecordsOperation] (result) in
-            self?.finishRecordOperation(conflictRecordsOperation, result: result, debugTitle: "Conflict Result:")
+        conflictRecordsOperation.resultHandler = { [weak self] (result) in
+            self?.finishRecordOperation(result, debugTitle: "Conflict Result:")
         }
         conflictRecordsOperation.syncProgress = self.syncProgress
         
         let verifyConflictedRecordsOperation = VerifyConflictedRecordsOperation(coordinator: self.coordinator)
-        verifyConflictedRecordsOperation.resultHandler = { [weak self, unowned verifyConflictedRecordsOperation] (result) in
-            self?.finishRecordOperation(verifyConflictedRecordsOperation, result: result, debugTitle: "Verify Conflicts Result:")
+        verifyConflictedRecordsOperation.resultHandler = { [weak self] (result) in
+            self?.finishRecordOperation(result, debugTitle: "Verify Conflicts Result:")
         }
         verifyConflictedRecordsOperation.syncProgress = self.syncProgress
         
         let uploadRecordsOperation = UploadRecordsOperation(coordinator: self.coordinator)
-        uploadRecordsOperation.resultHandler = { [weak self, unowned uploadRecordsOperation] (result) in
-            self?.finishRecordOperation(uploadRecordsOperation, result: result, debugTitle: "Upload Result:")
+        uploadRecordsOperation.resultHandler = { [weak self] (result) in
+            self?.finishRecordOperation(result, debugTitle: "Upload Result:")
         }
         uploadRecordsOperation.syncProgress = self.syncProgress
         
         let downloadRecordsOperation = DownloadRecordsOperation(coordinator: self.coordinator)
-        downloadRecordsOperation.resultHandler = { [weak self, unowned downloadRecordsOperation] (result) in
-            self?.finishRecordOperation(downloadRecordsOperation, result: result, debugTitle: "Download Result:")
+        downloadRecordsOperation.resultHandler = { [weak self] (result) in
+            self?.finishRecordOperation(result, debugTitle: "Download Result:")
         }
         downloadRecordsOperation.syncProgress = self.syncProgress
         
         let deleteRecordsOperation = DeleteRecordsOperation(coordinator: self.coordinator)
-        deleteRecordsOperation.resultHandler = { [weak self, unowned deleteRecordsOperation] (result) in
-            self?.finishRecordOperation(deleteRecordsOperation, result: result, debugTitle: "Delete Result:")
+        deleteRecordsOperation.resultHandler = { [weak self] (result) in
+            self?.finishRecordOperation(result, debugTitle: "Delete Result:")
         }
         deleteRecordsOperation.syncProgress = self.syncProgress
         
-        let operations = [fetchRemoteRecordsOperation, conflictRecordsOperation, verifyConflictedRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
+        let operations = [seedRecordControllerOperation, fetchRemoteRecordsOperation, conflictRecordsOperation, verifyConflictedRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
         for operation in operations
         {
             self.dispatchGroup.enter()
@@ -177,25 +183,14 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
 
 private extension SyncRecordsOperation
 {
-    func finish<T, U: HarmonyError>(_ result: Result<T, U>, debugTitle: String)
+    func finishOperation<T, U: HarmonyError>(_ result: Result<T, U>, debugTitle: String, perform: ((T) throws -> Void)? = nil)
     {
+        print(debugTitle, result)
+        
         do
         {
-            _ = try result.get()
-            
-            let context = self.recordController.newBackgroundContext()
-            let recordCount = try context.performAndWait { () -> Int in
-                let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
-                fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [ConflictRecordsOperation.predicate,
-                                                                                            UploadRecordsOperation.predicate,
-                                                                                            DownloadRecordsOperation.predicate,
-                                                                                            DeleteRecordsOperation.predicate])
-                
-                let count = try context.count(for: fetchRequest)
-                return count
-            }
-            
-            self.syncProgress.totalUnitCount = Int64(recordCount)
+            let value = try result.get()
+            try perform?(value)
         }
         catch let error as HarmonyError
         {
@@ -212,17 +207,36 @@ private extension SyncRecordsOperation
         self.dispatchGroup.leave()
     }
     
-    func finishRecordOperation<R, T>(_ operation: BatchRecordOperation<R, T>, result: Result<[AnyRecord: Result<R, RecordError>], Error>, debugTitle: String)
+    func finishFetchChangesOperation<T: HarmonyError>(_ result: Result<(Set<RemoteRecord>, Data), T>, debugTitle: String)
     {
-        // Map operation.recordResults to use Result<Void, RecordError>.
-        let recordResults = operation.recordResults.mapValues { (result) in
-            result.map { _ in () }
+        self.finishOperation(result, debugTitle: debugTitle) { (_, changeToken) in
+            let context = self.recordController.newBackgroundContext()
+            let recordCount = try context.performAndWait { () -> Int in
+                let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
+                fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [ConflictRecordsOperation.predicate,
+                                                                                            UploadRecordsOperation.predicate,
+                                                                                            DownloadRecordsOperation.predicate,
+                                                                                            DeleteRecordsOperation.predicate])
+                
+                let count = try context.count(for: fetchRequest)
+                return count
+            }
+            
+            self.syncProgress.totalUnitCount = Int64(recordCount)
         }
-        
+    }
+    
+    func finishRecordOperation<T>(_ result: Result<[AnyRecord: Result<T, RecordError>], Error>, debugTitle: String)
+    {
         print(debugTitle, result)
         
         do
         {
+            // Map recordResults to use Result<Void, RecordError>.
+            let recordResults = try result.get().mapValues { (result) in
+                result.map { _ in () }
+            }
+            
             for (record, result) in recordResults
             {
                 let previousResult = self.recordResults[record]
@@ -240,8 +254,6 @@ private extension SyncRecordsOperation
                     self.recordResults[record] = result
                 }
             }
-            
-            _ = try result.get()
         }
         catch
         {
