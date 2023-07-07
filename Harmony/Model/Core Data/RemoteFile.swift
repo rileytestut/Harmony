@@ -56,10 +56,15 @@ public class RemoteFile: NSManagedObject, Codable
         super.init(entity: entity, insertInto: context)
     }
     
-    public init(remoteIdentifier: String, versionIdentifier: String, size: Int, metadata: [HarmonyMetadataKey: String], context: NSManagedObjectContext) throws
+    public convenience init(remoteIdentifier: String, versionIdentifier: String, size: Int, metadata: [HarmonyMetadataKey: String], context: NSManagedObjectContext) throws
     {
         guard let identifier = metadata[.relationshipIdentifier], let sha1Hash = metadata[.sha1Hash] else { throw ValidationError.invalidMetadata(metadata) }
         
+        try self.init(identifier: identifier, remoteIdentifier: remoteIdentifier, versionIdentifier: versionIdentifier, sha1Hash: sha1Hash, size: size, context: context)
+    }
+    
+    public init(identifier: String, remoteIdentifier: String, versionIdentifier: String, sha1Hash: String, size: Int, context: NSManagedObjectContext) throws
+    {
         super.init(entity: RemoteFile.entity(), insertInto: context)
         
         self.identifier = identifier

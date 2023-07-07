@@ -9,6 +9,28 @@
 import Foundation
 import CoreData
 
+fileprivate extension RemoteFile
+{
+    struct Values: Hashable
+    {
+        var identifier: String
+        var remoteIdentifier: String
+        var versionIdentifier: String
+        var sha1Hash: String
+        var size: Int
+        
+    }
+    
+    var values: Values {
+        Values(identifier: self.identifier, remoteIdentifier: self.remoteIdentifier, versionIdentifier: self.versionIdentifier, sha1Hash: self.sha1Hash, size: Int(self.size))
+    }
+    
+    convenience init(values: Values, context: NSManagedObjectContext) throws
+    {
+        try self.init(identifier: values.identifier, remoteIdentifier: values.remoteIdentifier, versionIdentifier: values.versionIdentifier, sha1Hash: values.sha1Hash, size: values.size, context: context)
+    }
+}
+
 class RepairRecordOperation: RecordOperation<Void>
 {
     private let temporaryContext: NSManagedObjectContext
@@ -69,13 +91,13 @@ class RepairRecordOperation: RecordOperation<Void>
                 {
                     let downloadedRecord = try result.get()
                     
-                    var encodedRemoteFiles: Data?
+                    var remoteFileValues: Set<RemoteFile.Values>?
                     var recalculatedRemoteHash: String?
                     
                     if self.hasFiles
                     {
-                        // Encode because we can't insert these into self.managedObjectContext directly.
-                        encodedRemoteFiles = try JSONEncoder().encode(downloadedRecord.remoteFiles)
+                        // Cache values because we can't insert downloadedRecord.remoteFiles into self.managedObjectContext directly.
+                        remoteFileValues = Set(downloadedRecord.remoteFiles.map { $0.values })
                     }
                     
                     if self.hasMismatchedHashes
@@ -87,13 +109,10 @@ class RepairRecordOperation: RecordOperation<Void>
                     try self.record.perform(in: self.managedObjectContext) { managedRecord in
                         guard let localRecord = managedRecord.localRecord, let remoteRecord = managedRecord.remoteRecord else { return }
                         
-                        if let encodedRemoteFiles
+                        if let remoteFileValues
                         {
-                            let decoder = JSONDecoder()
-                            decoder.managedObjectContext = self.managedObjectContext
-                            
-                            let decodedFiles = try decoder.decode(Set<RemoteFile>.self, from: encodedRemoteFiles)
-                            localRecord.remoteFiles = decodedFiles
+                            let remoteFiles = try remoteFileValues.map { try RemoteFile(values: $0, context: self.managedObjectContext) }
+                            localRecord.remoteFiles = Set(remoteFiles)
                         }
                         
                         if let recalculatedRemoteHash
