@@ -12,6 +12,8 @@ public struct Account
 {
     public var name: String
     public var emailAddress: String?
+    
+    internal var changeToken: Data?
         
     public init(name: String, emailAddress: String?)
     {
@@ -23,5 +25,6 @@ public struct Account
     {
         self.name = account.name
         self.emailAddress = account.emailAddress
+        self.changeToken = account.changeToken
     }
 }

@@ -44,9 +44,9 @@ public final class SyncCoordinator
         }
     }
     
-    private var managedAccount: ManagedAccount? {
-        guard _managedAccount == nil else { return _managedAccount }
+    internal var managedAccount: ManagedAccount? {
         guard self.recordController.isStarted else { return nil }
+        guard _managedAccount == nil else { return _managedAccount }
         
         let context = self.recordController.newBackgroundContext()
         _managedAccount = context.performAndWait {
@@ -175,7 +175,7 @@ public extension SyncCoordinator
             
             self.isSyncing = true
             
-            let syncRecordsOperation = SyncRecordsOperation(changeToken: account.changeToken, coordinator: self)
+            let syncRecordsOperation = SyncRecordsOperation(coordinator: self)
             syncRecordsOperation.resultHandler = { (result) in
                 NotificationCenter.default.post(name: SyncCoordinator.didFinishSyncingNotification, object: self, userInfo: [SyncCoordinator.syncResultKey: result])
                 

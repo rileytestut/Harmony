@@ -13,8 +13,6 @@ import Roxas
 
 class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, RecordError>], SyncError>
 {
-    let changeToken: Data?
-    
     let syncProgress = SyncProgress(parent: nil, userInfo: nil)
     
     private let dispatchGroup = DispatchGroup()
@@ -26,10 +24,8 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         return true
     }
     
-    init(changeToken: Data?, coordinator: SyncCoordinator)
+    override init(coordinator: SyncCoordinator)
     {
-        self.changeToken = changeToken
-        
         super.init(coordinator: coordinator)
         
         self.syncProgress.totalUnitCount = 1
@@ -55,7 +51,8 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         }
         self.syncProgress.addChild(seedRecordControllerOperation.progress, withPendingUnitCount: 0)
         
-        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: self.changeToken, coordinator: self.coordinator)
+        let changeToken = self.coordinator.account?.changeToken
+        let fetchRemoteRecordsOperation = FetchRemoteRecordsOperation(changeToken: changeToken, coordinator: self.coordinator)
         fetchRemoteRecordsOperation.resultHandler = { [weak self] (result) in
             self?.finishFetchChangesOperation(result, debugTitle: "Fetch Records Result:")
         }
@@ -203,16 +200,18 @@ private extension SyncRecordsOperation
     func finishFetchChangesOperation<T: HarmonyError>(_ result: Result<(Set<RemoteRecord>, Data), T>, debugTitle: String)
     {
         self.finishOperation(result, debugTitle: debugTitle) { (_, changeToken) in
-            let context = self.recordController.newBackgroundContext()
-            let recordCount = try context.performAndWait { () -> Int in
-                
-                if let managedAccount = try context.fetch(ManagedAccount.currentAccountFetchRequest(for: self.service)).first
-                {
-                    // First, save change token.
+            
+            if let managedAccount = try self.coordinator.managedAccount, let context = managedAccount.managedObjectContext
+            {
+                // First, save change token.
+                try context.performAndWait {
                     managedAccount.changeToken = changeToken
                     try context.save()
                 }
-                
+            }
+            
+            let context = self.recordController.newBackgroundContext()
+            let recordCount = try context.performAndWait { () -> Int in
                 let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
                 fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [ConflictRecordsOperation.predicate,
                                                                                             UploadRecordsOperation.predicate,
