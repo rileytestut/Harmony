@@ -9,28 +9,6 @@
 import Foundation
 import CoreData
 
-fileprivate extension RemoteFile
-{
-    struct Values: Hashable
-    {
-        var identifier: String
-        var remoteIdentifier: String
-        var versionIdentifier: String
-        var sha1Hash: String
-        var size: Int
-        
-    }
-    
-    var values: Values {
-        Values(identifier: self.identifier, remoteIdentifier: self.remoteIdentifier, versionIdentifier: self.versionIdentifier, sha1Hash: self.sha1Hash, size: Int(self.size))
-    }
-    
-    convenience init(values: Values, context: NSManagedObjectContext) throws
-    {
-        try self.init(identifier: values.identifier, remoteIdentifier: values.remoteIdentifier, versionIdentifier: values.versionIdentifier, sha1Hash: values.sha1Hash, size: values.size, context: context)
-    }
-}
-
 class RepairRecordOperation: RecordOperation<Void>
 {
     private let temporaryContext: NSManagedObjectContext

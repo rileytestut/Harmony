@@ -20,18 +20,33 @@ extension RemoteFile
         case size
     }
     
-    public struct ID: Hashable
+    struct ID: Hashable
     {
-        public var identifier: String
-        public var remoteIdentifier: String
-        public var versionIdentifier: String
-        
-        public init(identifier: String, remoteIdentifier: String, versionIdentifier: String)
-        {
-            self.identifier = identifier
-            self.remoteIdentifier = remoteIdentifier
-            self.versionIdentifier = versionIdentifier
-        }
+        var identifier: String
+        var remoteIdentifier: String
+        var versionIdentifier: String
+    }
+    
+    struct Values: Hashable
+    {
+        var identifier: String
+        var remoteIdentifier: String
+        var versionIdentifier: String
+        var sha1Hash: String
+        var size: Int
+    }
+    
+    var fileID: ID {
+        ID(identifier: self.identifier, remoteIdentifier: self.remoteIdentifier, versionIdentifier: self.versionIdentifier)
+    }
+    
+    var values: Values {
+        Values(identifier: self.identifier, remoteIdentifier: self.remoteIdentifier, versionIdentifier: self.versionIdentifier, sha1Hash: self.sha1Hash, size: Int(self.size))
+    }
+    
+    convenience init(values: Values, context: NSManagedObjectContext) throws
+    {
+        try self.init(identifier: values.identifier, remoteIdentifier: values.remoteIdentifier, versionIdentifier: values.versionIdentifier, sha1Hash: values.sha1Hash, size: values.size, context: context)
     }
 }
 
@@ -46,10 +61,6 @@ public class RemoteFile: NSManagedObject, Codable
     @NSManaged public var versionIdentifier: String
     
     @NSManaged public var localRecord: LocalRecord?
-    
-    public var fileID: ID {
-        ID(identifier: self.identifier, remoteIdentifier: self.remoteIdentifier, versionIdentifier: self.versionIdentifier)
-    }
     
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {

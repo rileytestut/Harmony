@@ -367,17 +367,45 @@ public extension SyncCoordinator
         let progress = Progress.discreteProgress(totalUnitCount: 1)
         
         let context = self.recordController.newBackgroundContext()
+        let childContext = self.recordController.newBackgroundContext(withParent: context)
+        
+        let remoteFileValues = record.perform { managedRecord -> Set<RemoteFile.Values>? in
+            guard let localRecord = managedRecord.localRecord else { return nil }
+            return Set(localRecord.remoteFiles.lazy.map { $0.values })
+        }
         
         do
         {
-            let operation = try DownloadRecordOperation(record: record, coordinator: self, context: context)
+            // Use childContext because DownloadRecordOperation automatically saves, and we want to assign remoteFiles first.
+            let operation = try DownloadRecordOperation(record: record, coordinator: self, context: childContext)
             operation.version = version
             operation.resultHandler = { (result) in
                 do
                 {
-                    _ = try result.get()
+                    let localRecord = try result.get()
+                    
+                    for remoteFile in localRecord.remoteFiles
+                    {
+                        // Remove references to downloaded remoteFiles since they (probably) aren't the latest versions.
+                        remoteFile.localRecord = nil
+                        childContext.delete(remoteFile)
+                    }
+                    
+                    if let remoteFileValues
+                    {
+                        // Replace remoteFiles with cached remoteFiles, which should be the latest versions.
+                        let remoteFiles = try remoteFileValues.map { try RemoteFile(values: $0, context: childContext) }
+                        localRecord.remoteFiles = Set(remoteFiles)
+                    }
+                    
+                    // Save changes to parent context.
+                    try childContext.save()
+                    
+                    // Save changes to disk.
+                    try context.performAndWait {
+                        try context.save()
+                    }
 
-                    let context = self.recordController.newBackgroundContext()
                     try record.perform(in: context) { (managedRecord) in
                         
                         // Mark as updated so we can upload restored version on next sync.
