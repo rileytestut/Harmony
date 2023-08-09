@@ -272,6 +272,12 @@ private extension DownloadRecordOperation
             
             self.operationQueue.isSuspended = false
         }
+        else
+        {
+            return self.managedObjectContext.perform {
+                completionHandler(.failure(.filesFailed(self.record, errors)))
+            }
+        }
         
         dispatchGroup.notify(queue: .global()) {
             self.managedObjectContext.perform {
