@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import OSLog
 
 import Roxas
 
@@ -101,6 +102,12 @@ internal extension RecordController
         let dispatchGroup = DispatchGroup()
         self.persistentStoreDescriptions.forEach { _ in dispatchGroup.enter() }
         
+        if self.isMigrationRequired
+        {
+            // Explicitly migrate LocalRecord URIs whenever a database migration occurs.
+            UserDefaults.standard.isLocalRecordMigrationRequired = true
+        }
+                
         self.loadPersistentStores { (description, error) in
             if let error = error, databaseError == nil
             {
@@ -108,6 +115,36 @@ internal extension RecordController
             }
             
             dispatchGroup.leave()
+        }
+        
+        if self.shouldAddStoresAsynchronously
+        {
+            dispatchGroup.notify(queue: DispatchQueue.global(qos: .userInitiated)) {
+                prepare()
+            }
+        }
+        else
+        {
+            dispatchGroup.wait()
+            prepare()
+        }
+        
+        func prepare()
+        {
+            guard databaseError == nil else {
+                finish()
+                return
+            }
+            
+            self.migrateLocalRecordURIsIfNeeded { result in
+                switch result
+                {
+                case .failure(let error): databaseError = error
+                case .success: break
+                }
+                
+                finish()
+            }
         }
         
         func finish()
@@ -132,18 +169,6 @@ internal extension RecordController
             {
                 completionHandler(.failure(DatabaseError.corrupted(error)))
             }
-        }
-        
-        if self.shouldAddStoresAsynchronously
-        {
-            dispatchGroup.notify(queue: DispatchQueue.global(qos: .userInitiated)) {
-                finish()
-            }
-        }
-        else
-        {
-            dispatchGroup.wait()
-            finish()
         }
     }
     
@@ -170,6 +195,94 @@ internal extension RecordController
         catch CocoaError.fileNoSuchFile
         {
             // Ignore
+        }
+    }
+}
+
+private extension RecordController
+{
+    func migrateLocalRecordURIsIfNeeded(completionHandler: @escaping (Result<Void, Error>) -> Void)
+    {
+        guard UserDefaults.standard.isLocalRecordMigrationRequired, #available(iOS 14, *) else { return completionHandler(.success) }
+        
+        Logger.migration.info("Migrating Local Record URIs due to database migration...")
+        
+        self.performBackgroundTask { context in
+            do
+            {
+                let fetchRequest = LocalRecord.fetchRequest()
+                fetchRequest.propertiesToFetch = [#keyPath(LocalRecord.recordedObjectType), #keyPath(LocalRecord.recordedObjectIdentifier), #keyPath(LocalRecord.recordedObjectURI)]
+                
+                let localRecords = try context.fetch(fetchRequest)
+                let localRecordsByType = Dictionary(grouping: localRecords) { $0.recordedObjectType }
+                
+                for (recordType, localRecords) in localRecordsByType
+                {
+                    try autoreleasepool {
+                        guard
+                            let entity = NSEntityDescription.entity(forEntityName: recordType, in: context),
+                            let managedObjectClass = NSClassFromString(entity.managedObjectClassName) as? Syncable.Type,
+                            let primaryKeyPath = managedObjectClass.syncablePrimaryKey.stringValue
+                        else {
+                            throw ValidationError.unknownRecordType(recordType)
+                        }
+                        
+                        let recordedObjectIDs = localRecords.map { $0.recordedObjectIdentifier }
+                        
+                        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: recordType)
+                        fetchRequest.predicate = NSPredicate(format: "%K IN %@", primaryKeyPath, recordedObjectIDs)
+                        fetchRequest.propertiesToFetch = [primaryKeyPath]
+                        
+                        let recordedObjects = try context.fetch(fetchRequest)
+                        let recordedObjectsByRecordID = recordedObjects.lazy.compactMap { (recordedObject) -> (RecordID, Syncable)? in
+                            guard let syncableObject = recordedObject as? Syncable, let identifier = syncableObject.syncableIdentifier else { return nil }
+                            
+                            let recordID = RecordID(type: recordType, identifier: identifier)
+                            return (recordID, syncableObject)
+                        }.reduce(into: [:]) { $0[$1.0] = $1.1 }
+                        
+                        for localRecord in localRecords
+                        {
+                            try autoreleasepool {
+                                if let recordedObject = recordedObjectsByRecordID[localRecord.recordID]
+                                {
+                                    if recordedObject.objectID != localRecord.recordedObjectID
+                                    {
+                                        Logger.migration.debug("Changing \(localRecord.recordID, privacy: .public)'s URI from \(localRecord.recordedObjectID?.uriRepresentation().absoluteString ?? "nil", privacy: .public) to \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
+                                        
+                                        localRecord.recordedObjectURI = recordedObject.objectID.uriRepresentation()
+                                    }
+                                    else
+                                    {
+                                        Logger.migration.debug("\(localRecord.recordID, privacy: .public)'s URI is the same: \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
+                                    }
+                                }
+                                else
+                                {
+                                    // recordedObject no longer exists in client database, so delete LocalRecord.
+                                    // This may cause recodedObject to be re-downloaded again, if it still exists remotely.
+                                    Logger.migration.error("Deleting LocalRecord \(localRecord.recordID, privacy: .public) because its recordedObject could not be found.")
+                                    
+                                    context.delete(localRecord)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                try context.save()
+                
+                UserDefaults.standard.isLocalRecordMigrationRequired = false
+                
+                Logger.migration.info("Finished migrating Local Record URIs!")
+                
+                completionHandler(.success)
+                
+            }
+            catch
+            {
+                completionHandler(.failure(error))
+            }
         }
     }
 }

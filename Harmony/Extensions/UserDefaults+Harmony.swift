@@ -14,4 +14,7 @@ extension UserDefaults
     var isDebugModeEnabled: Bool {
         return UserDefaults.standard.bool(forKey: "com.rileytestut.Harmony.Debug")
     }
+    
+    @NSManaged @objc(harmony_requiresLocalRecordMigration)
+    var isLocalRecordMigrationRequired: Bool
 }

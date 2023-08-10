@@ -105,6 +105,7 @@
 		D53405722A534F8E0024F075 /* RepairRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405712A534F8E0024F075 /* RepairRecordsOperation.swift */; };
 		D5B87E9E2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel in Sources */ = {isa = PBXBuildFile; fileRef = D5B87E9D2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel */; };
 		D5C4DF6D2A56101B004376D4 /* SeedRecordControllerOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */; };
+		D5CDCCB72A85734C00E22131 /* OSLog+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5CDCCB62A85734C00E22131 /* OSLog+Harmony.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -338,6 +339,7 @@
 		D5B87E8A2A84645100BA1226 /* Harmony 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Harmony 3.xcdatamodel"; sourceTree = "<group>"; };
 		D5B87E9D2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcmappingmodel; path = Harmony2ToHarmony3.xcmappingmodel; sourceTree = "<group>"; };
 		D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedRecordControllerOperation.swift; sourceTree = "<group>"; };
+		D5CDCCB62A85734C00E22131 /* OSLog+Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OSLog+Harmony.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -565,6 +567,7 @@
 				BFDDC10D219504AA009732B7 /* UserDefaults+Harmony.swift */,
 				BF4EE59B21AC997A00FA648D /* ManagedRecord+Uploading.swift */,
 				BFFB9B1D200ED96700A8F673 /* Result+Success.swift */,
+				D5CDCCB62A85734C00E22131 /* OSLog+Harmony.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1094,6 +1097,7 @@
 				BF4EE59C21AC997A00FA648D /* ManagedRecord+Uploading.swift in Sources */,
 				BFBDB7C4216EB1F000DC004B /* LocalRecord.swift in Sources */,
 				BF06AD18222DDD7700994C50 /* RecordEntry.swift in Sources */,
+				D5CDCCB72A85734C00E22131 /* OSLog+Harmony.swift in Sources */,
 				BF0499931F9AEEE900E0EFEE /* Syncable.swift in Sources */,
 				D53405722A534F8E0024F075 /* RepairRecordsOperation.swift in Sources */,
 				BF713BF0224973AA004A1A2B /* ManagedAccount.swift in Sources */,
