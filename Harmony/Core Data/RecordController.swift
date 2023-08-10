@@ -102,6 +102,24 @@ internal extension RecordController
         let dispatchGroup = DispatchGroup()
         self.persistentStoreDescriptions.forEach { _ in dispatchGroup.enter() }
         
+        var isPreviouslySeeded = false
+        if let description = self.persistentStoreDescriptions.first, let storeURL = description.url
+        {
+            do
+            {
+                let metadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(ofType: description.type, at: storeURL)
+                isPreviouslySeeded = metadata[isHarmonySeededKey] as? Bool ?? false
+            }
+            catch CocoaError.fileReadNoSuchFile
+            {
+                // Ignore
+            }
+            catch
+            {
+                print("Failed to determine if RecordController is seeded.", error)
+            }
+        }
+        
         if self.isMigrationRequired
         {
             // Explicitly migrate LocalRecord URIs whenever a database migration occurs.
@@ -136,14 +154,33 @@ internal extension RecordController
                 return
             }
             
-            self.migrateLocalRecordURIsIfNeeded { result in
-                switch result
-                {
-                case .failure(let error): databaseError = error
-                case .success: break
-                }
+            if isPreviouslySeeded && !self.isSeeded
+            {
+                // Previously seeded, but not anymore, so re-assign.
                 
-                finish()
+                isPreviouslySeeded = false // Prevent infinite recursion if setIsSeeded() fails.
+                
+                self.setIsSeeded(true) { result in
+                    switch result
+                    {
+                    case .failure(let error): databaseError = error
+                    case .success: break
+                    }
+                    
+                    prepare()
+                }
+            }
+            else
+            {
+                self.migrateLocalRecordURIsIfNeeded { result in
+                    switch result
+                    {
+                    case .failure(let error): databaseError = error
+                    case .success: break
+                    }
+                    
+                    finish()
+                }
             }
         }
         
