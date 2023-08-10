@@ -13,7 +13,7 @@ import CoreData
 public class ManagedRecord: NSManagedObject, RecordEntry
 {
     /* Properties */
-    @NSManaged var isConflicted: Bool
+    @NSManaged public var isConflicted: Bool
     
     @NSManaged var isSyncingEnabled: Bool
     
