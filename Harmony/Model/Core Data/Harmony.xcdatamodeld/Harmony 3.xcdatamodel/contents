@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19E287" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22203.2" systemVersion="22F66" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="LocalRecord" representedClassName="LocalRecord" syncable="YES">
         <attribute name="additionalProperties" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
         <attribute name="modificationDate" attributeType="Date"/>
@@ -37,6 +37,7 @@
         </uniquenessConstraints>
     </entity>
     <entity name="ManagedRecord" representedClassName="ManagedRecord" syncable="YES">
+        <attribute name="flags" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="isConflicted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isSyncingEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="recordedObjectIdentifier" attributeType="String"/>
@@ -94,11 +95,4 @@
         <memberEntity name="RemoteFile"/>
         <memberEntity name="ManagedAccount"/>
     </configuration>
-    <elements>
-        <element name="LocalRecord" positionX="93.01953125" positionY="273.0234375" width="128" height="208"/>
-        <element name="ManagedAccount" positionX="288" positionY="360" width="128" height="105"/>
-        <element name="ManagedRecord" positionX="298.4375" positionY="225.49609375" width="128" height="133"/>
-        <element name="RemoteFile" positionX="288" positionY="378" width="128" height="135"/>
-        <element name="RemoteRecord" positionX="488.2578125" positionY="272.56640625" width="128" height="255"/>
-    </elements>
 </model>

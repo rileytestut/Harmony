@@ -103,6 +103,7 @@
 		BFFDBA9F216D74FC00AED109 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3396B1FD3A4DF006FACAD /* File.swift */; };
 		D53405652A534A100024F075 /* RepairRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405642A534A100024F075 /* RepairRecordOperation.swift */; };
 		D53405722A534F8E0024F075 /* RepairRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405712A534F8E0024F075 /* RepairRecordsOperation.swift */; };
+		D5B87E9E2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel in Sources */ = {isa = PBXBuildFile; fileRef = D5B87E9D2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel */; };
 		D5C4DF6D2A56101B004376D4 /* SeedRecordControllerOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */; };
 /* End PBXBuildFile section */
 
@@ -334,6 +335,8 @@
 		BFFB9B23200EDF2200A8F673 /* MockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockService.swift; sourceTree = "<group>"; };
 		D53405642A534A100024F075 /* RepairRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepairRecordOperation.swift; sourceTree = "<group>"; };
 		D53405712A534F8E0024F075 /* RepairRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepairRecordsOperation.swift; sourceTree = "<group>"; };
+		D5B87E8A2A84645100BA1226 /* Harmony 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Harmony 3.xcdatamodel"; sourceTree = "<group>"; };
+		D5B87E9D2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcmappingmodel; path = Harmony2ToHarmony3.xcmappingmodel; sourceTree = "<group>"; };
 		D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedRecordControllerOperation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -514,6 +517,7 @@
 			isa = PBXGroup;
 			children = (
 				BF6153EA2453D1A5004BEF00 /* HarmonyToHarmony2.xcmappingmodel */,
+				D5B87E9D2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel */,
 			);
 			path = Migrations;
 			sourceTree = "<group>";
@@ -1075,6 +1079,7 @@
 				BFDDC0FC2194F065009732B7 /* DeleteRecordsOperation.swift in Sources */,
 				BF91BA67201FB7EC004498F3 /* NSError+LocalizedFailureDescription.swift in Sources */,
 				BFECF5792190DFBF006DB8F5 /* HarmonyMetadataKey+Keys.swift in Sources */,
+				D5B87E9E2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel in Sources */,
 				BFFDBA9C216D649B00AED109 /* DownloadRecordOperation.swift in Sources */,
 				BF951374216559C6007EF10C /* ManagedRecord+Predicates.swift in Sources */,
 				BFFDBA9A216D642500AED109 /* BatchRecordOperation.swift in Sources */,
@@ -1471,10 +1476,11 @@
 		BF6153CE2453D103004BEF00 /* Harmony.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				D5B87E8A2A84645100BA1226 /* Harmony 3.xcdatamodel */,
 				BF6153CF2453D103004BEF00 /* Harmony 2.xcdatamodel */,
 				BF6153D02453D103004BEF00 /* Harmony.xcdatamodel */,
 			);
-			currentVersion = BF6153CF2453D103004BEF00 /* Harmony 2.xcdatamodel */;
+			currentVersion = D5B87E8A2A84645100BA1226 /* Harmony 3.xcdatamodel */;
 			path = Harmony.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
