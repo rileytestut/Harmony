@@ -9,6 +9,16 @@
 import Foundation
 import CoreData
 
+public struct RecordFlags: OptionSet
+{
+    public let rawValue: Int64
+    
+    public init(rawValue: Int64)
+    {
+        self.rawValue = rawValue
+    }
+}
+
 @objc(ManagedRecord)
 public class ManagedRecord: NSManagedObject, RecordEntry
 {
@@ -16,6 +26,13 @@ public class ManagedRecord: NSManagedObject, RecordEntry
     @NSManaged public var isConflicted: Bool
     
     @NSManaged var isSyncingEnabled: Bool
+    
+    // Upper 32-bits reserved for internal Harmony flags.
+    @nonobjc var flags: RecordFlags {
+        get { RecordFlags(rawValue: self._flags) }
+        set { self._flags = newValue.rawValue }
+    }
+    @NSManaged @objc(flags) private(set) var _flags: Int64
     
     @NSManaged public internal(set) var recordedObjectType: String
     @NSManaged public internal(set) var recordedObjectIdentifier: String
