@@ -116,11 +116,12 @@ class FinishDownloadingRecordsOperation: Operation<[AnyRecord: Result<LocalRecor
                                     let files = try self.backupFiles(for: localRecord, record: record)
                                     backupFiles = files
                                     
+                                    // Awake record after updating relationships (since we might need to access them from awakeFromSync).
+                                    // Awake _before_ updating files, in case recordedObject makes changes that affect where files are stored.
+                                    try localRecord.recordedObject?.awakeFromSync(record)
+                                    
                                     // Update files after updating relationships (to prevent replacing files prematurely).
                                     try self.updateFiles(for: localRecord, record: record)
-                                    
-                                    // Awake record after updating files and relationships (since we might need to access them from awakeFromSync).
-                                    try localRecord.recordedObject?.awakeFromSync(record)
                                     
                                     // Remove backup files since we no longer need them.
                                     self.removeBackupFiles(files)
