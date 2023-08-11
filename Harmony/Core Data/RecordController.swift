@@ -285,13 +285,13 @@ private extension RecordController
                                 {
                                     if recordedObject.objectID != localRecord.recordedObjectID
                                     {
-                                        Logger.migration.debug("Changing \(localRecord.recordID, privacy: .public)'s URI from \(localRecord.recordedObjectID?.uriRepresentation().absoluteString ?? "nil", privacy: .public) to \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
+                                        Logger.migration.notice("Changing \(localRecord.recordID, privacy: .public)'s URI from \(localRecord.recordedObjectID?.uriRepresentation().absoluteString ?? "nil", privacy: .public) to \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
                                         
                                         localRecord.recordedObjectURI = recordedObject.objectID.uriRepresentation()
                                     }
                                     else
                                     {
-                                        Logger.migration.debug("\(localRecord.recordID, privacy: .public)'s URI is the same: \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
+                                        Logger.migration.notice("\(localRecord.recordID, privacy: .public)'s URI is the same: \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
                                     }
                                 }
                                 else
