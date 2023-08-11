@@ -33,7 +33,7 @@ public class ManagedRecord: NSManagedObject, RecordEntry
     @NSManaged var isSyncingEnabled: Bool
     
     // Upper 32-bits reserved for internal Harmony flags.
-    @nonobjc var flags: RecordFlags {
+    @nonobjc public var flags: RecordFlags {
         get { RecordFlags(rawValue: self._flags) }
         set { self._flags = newValue.rawValue }
     }
