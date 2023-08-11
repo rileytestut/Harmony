@@ -95,6 +95,13 @@ extension ManagedRecord
         return predicate
     }
     
+    class var updateRecordsMetadataPredicate: NSPredicate {
+        let predicate = NSPredicate(format: "(%K & %i) != 0", #keyPath(ManagedRecord._flags), RecordFlags.pendingMetadataUpdate.rawValue)
+        
+        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate, self.syncableRecordsPredicate])
+        return compoundPredicate
+    }
+    
     private class var mismatchedVersionsPredicate: NSPredicate {
         let predicate = NSPredicate(format: "%K != %K", #keyPath(ManagedRecord.localRecord.versionIdentifier), #keyPath(ManagedRecord.remoteRecord.versionIdentifier))
         return predicate

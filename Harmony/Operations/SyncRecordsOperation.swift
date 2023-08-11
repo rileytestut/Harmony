@@ -77,6 +77,12 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         }
         uploadRecordsOperation.syncProgress = self.syncProgress
         
+        let updateRecordsMetadataOperation = UpdateRecordsMetadataOperation(coordinator: self.coordinator)
+        updateRecordsMetadataOperation.resultHandler = { [weak self] (result) in
+            self?.finishRecordOperation(result, debugTitle: "Update Metadata Result:")
+        }
+        updateRecordsMetadataOperation.syncProgress = self.syncProgress
+        
         let downloadRecordsOperation = DownloadRecordsOperation(coordinator: self.coordinator)
         downloadRecordsOperation.resultHandler = { [weak self] (result) in
             self?.finishRecordOperation(result, debugTitle: "Download Result:")
@@ -89,7 +95,8 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
         }
         deleteRecordsOperation.syncProgress = self.syncProgress
         
-        let operations = [seedRecordControllerOperation, fetchRemoteRecordsOperation, conflictRecordsOperation, repairRecordsOperation, uploadRecordsOperation, downloadRecordsOperation, deleteRecordsOperation]
+        let operations = [seedRecordControllerOperation, fetchRemoteRecordsOperation, conflictRecordsOperation, repairRecordsOperation,
+                          uploadRecordsOperation, updateRecordsMetadataOperation, downloadRecordsOperation, deleteRecordsOperation]
         for operation in operations
         {
             self.dispatchGroup.enter()

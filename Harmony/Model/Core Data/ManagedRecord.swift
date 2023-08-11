@@ -19,6 +19,11 @@ public struct RecordFlags: OptionSet
     }
 }
 
+extension RecordFlags
+{
+    static let pendingMetadataUpdate = RecordFlags(rawValue: 1 << 32)
+}
+
 @objc(ManagedRecord)
 public class ManagedRecord: NSManagedObject, RecordEntry
 {
@@ -44,6 +49,14 @@ public class ManagedRecord: NSManagedObject, RecordEntry
     private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?)
     {
         super.init(entity: entity, insertInto: context)
+    }
+}
+
+public extension ManagedRecord
+{
+    func setNeedsMetadataUpdate()
+    {
+        self.flags.insert(.pendingMetadataUpdate)
     }
 }
 

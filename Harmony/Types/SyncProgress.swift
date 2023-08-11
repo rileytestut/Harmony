@@ -15,6 +15,7 @@ extension SyncProgress
         case fetchingChanges
         case preparing
         case uploading
+        case updating
         case downloading
         case deleting
     }
@@ -67,6 +68,7 @@ class SyncProgress: Progress
             case .fetchingChanges: localizedAdditionalDescription = ""
             case .preparing: localizedAdditionalDescription = String(format: NSLocalizedString("Preparing %d of %d…", comment: ""), count, progress.totalUnitCount)
             case .uploading: localizedAdditionalDescription = String.localizedStringWithFormat(NSLocalizedString("Uploading %d of %d", comment: ""), count, progress.totalUnitCount)
+            case .updating: localizedAdditionalDescription = String(format: NSLocalizedString("Updating %d of %d…", comment: ""), count, progress.totalUnitCount)
             case .downloading: localizedAdditionalDescription = String.localizedStringWithFormat(NSLocalizedString("Downloading %d of %d", comment: ""), count, progress.totalUnitCount)
             case .deleting: localizedAdditionalDescription = "" // Intentionally don't display anything for deleting.
             }

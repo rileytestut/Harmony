@@ -11,12 +11,14 @@ import CoreData
 
 class UpdateRecordMetadataOperation: RecordOperation<Void>
 {
-    var metadata = [HarmonyMetadataKey: Any]()
+    var metadata: [HarmonyMetadataKey: Any]
     
     required init<T: NSManagedObject>(record: Record<T>, coordinator: SyncCoordinator, context: NSManagedObjectContext) throws
     {
-        self.metadata[.recordedObjectType] = record.recordID.type
-        self.metadata[.recordedObjectIdentifier] = record.recordID.identifier
+        var metadata = record.localMetadata ?? [:]
+        metadata[.recordedObjectType] = record.recordID.type
+        metadata[.recordedObjectIdentifier] = record.recordID.identifier
+        self.metadata = metadata
         
         try super.init(record: record, coordinator: coordinator, context: context)
     }
@@ -32,6 +34,11 @@ class UpdateRecordMetadataOperation: RecordOperation<Void>
             do
             {
                 try result.get()
+                
+                self.record.perform(in: self.managedObjectContext) { managedRecord in
+                    // Remove flag since we successfully updated metadata.
+                    managedRecord.flags.remove(.pendingMetadataUpdate)
+                }
                 
                 self.result = .success
             }

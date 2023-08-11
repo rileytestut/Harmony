@@ -103,6 +103,7 @@
 		BFFDBA9F216D74FC00AED109 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3396B1FD3A4DF006FACAD /* File.swift */; };
 		D53405652A534A100024F075 /* RepairRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405642A534A100024F075 /* RepairRecordOperation.swift */; };
 		D53405722A534F8E0024F075 /* RepairRecordsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53405712A534F8E0024F075 /* RepairRecordsOperation.swift */; };
+		D548F26F2A86A86700A4D96C /* UpdateRecordsMetadataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D548F26E2A86A86700A4D96C /* UpdateRecordsMetadataOperation.swift */; };
 		D5B87E9E2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel in Sources */ = {isa = PBXBuildFile; fileRef = D5B87E9D2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel */; };
 		D5C4DF6D2A56101B004376D4 /* SeedRecordControllerOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */; };
 		D5CDCCB72A85734C00E22131 /* OSLog+Harmony.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5CDCCB62A85734C00E22131 /* OSLog+Harmony.swift */; };
@@ -336,6 +337,7 @@
 		BFFB9B23200EDF2200A8F673 /* MockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockService.swift; sourceTree = "<group>"; };
 		D53405642A534A100024F075 /* RepairRecordOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepairRecordOperation.swift; sourceTree = "<group>"; };
 		D53405712A534F8E0024F075 /* RepairRecordsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepairRecordsOperation.swift; sourceTree = "<group>"; };
+		D548F26E2A86A86700A4D96C /* UpdateRecordsMetadataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateRecordsMetadataOperation.swift; sourceTree = "<group>"; };
 		D5B87E8A2A84645100BA1226 /* Harmony 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Harmony 3.xcdatamodel"; sourceTree = "<group>"; };
 		D5B87E9D2A8464FB00BA1226 /* Harmony2ToHarmony3.xcmappingmodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcmappingmodel; path = Harmony2ToHarmony3.xcmappingmodel; sourceTree = "<group>"; };
 		D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedRecordControllerOperation.swift; sourceTree = "<group>"; };
@@ -490,7 +492,6 @@
 			isa = PBXGroup;
 			children = (
 				BFFB9B15200ED58100A8F673 /* FetchRemoteRecordsOperation.swift */,
-				BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */,
 				D5C4DF6C2A56101B004376D4 /* SeedRecordControllerOperation.swift */,
 			);
 			path = Misc.;
@@ -748,6 +749,7 @@
 				BF9A367A21630F3600F8EE91 /* Delete */,
 				BF4EE59521AC960700FA648D /* Conflict */,
 				D53405732A53753F0024F075 /* Repair */,
+				D548F2932A86D3D400A4D96C /* Metadata */,
 				BF4EE59621AC963300FA648D /* Misc. */,
 			);
 			path = Operations;
@@ -787,6 +789,15 @@
 				D53405712A534F8E0024F075 /* RepairRecordsOperation.swift */,
 			);
 			path = Repair;
+			sourceTree = "<group>";
+		};
+		D548F2932A86D3D400A4D96C /* Metadata */ = {
+			isa = PBXGroup;
+			children = (
+				BFECF57E21911950006DB8F5 /* UpdateRecordMetadataOperation.swift */,
+				D548F26E2A86A86700A4D96C /* UpdateRecordsMetadataOperation.swift */,
+			);
+			path = Metadata;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1068,6 +1079,7 @@
 				BFECF57F21911950006DB8F5 /* UpdateRecordMetadataOperation.swift in Sources */,
 				BFD0E2E3217FCED3006945CF /* DeleteRecordOperation.swift in Sources */,
 				BF4EE59821AC968600FA648D /* FinishUploadingRecordsOperation.swift in Sources */,
+				D548F26F2A86A86700A4D96C /* UpdateRecordsMetadataOperation.swift in Sources */,
 				BF4EE59421AC901500FA648D /* FinishDownloadingRecordsOperation.swift in Sources */,
 				BFDDC10C2194F337009732B7 /* ConflictRecordsOperation.swift in Sources */,
 				BFA4134B2194CDA90001D71A /* Dictionary+Sequence.swift in Sources */,
