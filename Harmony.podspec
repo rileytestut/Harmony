@@ -4,7 +4,7 @@ Pod::Spec.new do |spec|
   spec.summary      = "iOS Syncing Framework"
   spec.description  = "iOS framework that automatically syncs Core Data databases across different backends."
   spec.homepage     = "https://github.com/rileytestut/Harmony"
-  spec.platform     = :ios, "12.0"
+  spec.platform     = :ios, "14.0"
   spec.source       = { :git => "https://github.com/rileytestut/Harmony.git" }
 
   spec.author             = { "Riley Testut" => "riley@rileytestut.com" }
