@@ -77,7 +77,7 @@ public final class RecordController: RSTPersistentContainer
         }
         catch
         {
-            print("Failed to stop RecordController.", error)
+            Logger.sync.error("Failed to stop RecordController. \(error.localizedDescription, privacy: .public)")
         }
     }
 }
@@ -94,7 +94,7 @@ internal extension RecordController
         }
         catch
         {
-            print(error)
+            Logger.sync.error("Failed to start RecordController. \(error.localizedDescription, privacy: .public)")
         }
         
         var databaseError: Swift.Error?
@@ -116,7 +116,7 @@ internal extension RecordController
             }
             catch
             {
-                print("Failed to determine if RecordController is seeded.", error)
+                Logger.sync.error("Failed to determine if RecordController is seeded. \(error.localizedDescription, privacy: .public)")
             }
         }
         
@@ -411,10 +411,11 @@ extension RecordController
     func printRecords()
     {
         let context = self.newBackgroundContext()
-        context.performAndWait {
+        context.performAndWait { () -> Void in
             let fetchRequest = ManagedRecord.fetchRequest() as NSFetchRequest<ManagedRecord>
             
             let records = try! context.fetch(fetchRequest)
+            var output = ""
             
             for record in records
             {
@@ -445,13 +446,21 @@ extension RecordController
                     string += " RR: nil"
                 }
                 
-                print(string)
+                if !output.isEmpty
+                {
+                    output += "\n"
+                }
+                
+                output += string
             }
             
-            let remoteFilesFetchRequest = RemoteFile.fetchRequest() as! NSFetchRequest<RemoteFile>
+            Logger.sync.notice("RecordController Records \(records.count):\n\(output, privacy: .public)")
             
+            let remoteFilesFetchRequest = RemoteFile.fetchRequest() as! NSFetchRequest<RemoteFile>
             let remoteFiles = try! context.fetch(remoteFilesFetchRequest)
-            print("Remote Files:", remoteFiles.count, remoteFiles.map { $0.localRecord?.objectID.uriRepresentation().lastPathComponent ?? "nil" })
+
+            let remoteFilesOutput: String = remoteFiles.map { $0.identifier + " (" + ($0.localRecord?.objectID.uriRepresentation().lastPathComponent ?? "nil") + " )" }.joined(separator: "\n")
+            Logger.sync.notice("RecordController Remote Files \(remoteFiles.count):\n\(remoteFilesOutput, privacy: .public)")
         }
     }
     
@@ -469,7 +478,7 @@ extension RecordController
             }
             catch
             {
-                print("Failed to update store metadata:", error)
+                Logger.sync.error("Failed to update store metadata. \(error.localizedDescription, privacy: .public)")
                 completionHandler(.failure(DatabaseError(error)))
             }
         }
@@ -545,7 +554,15 @@ extension RecordController
         }
         catch
         {
-            print(error)
+            if #available(iOS 15, *)
+            {
+                let recordIDs = recordIDs.map { $0.description }
+                Logger.sync.error("Failed to update managed records \(recordIDs.formatted(.list(type: .or)), privacy: .public)")
+            }
+            else
+            {
+                print(error)
+            }
         }
     }
 
@@ -605,7 +622,7 @@ extension RecordController
                     }
                     catch
                     {
-                        print(error)
+                        Logger.sync.error("Failed to create LocalRecord for recorded object \(objectURI, privacy: .public). \(error.localizedDescription, privacy: .public)")
                     }
                 }
             }
@@ -616,8 +633,16 @@ extension RecordController
             }
         }
         catch
-        {
-            print(error)
+        {            
+            if #available(iOS 15, *)
+            {
+                let recordIDs = recordedObjectIDs.map { $0.description }
+                Logger.sync.error("Failed to update LocalRecords for recorded objects \(recordIDs.formatted(.list(type: .or)), privacy: .public). \(error.localizedDescription, privacy: .public)")
+            }
+            else
+            {
+                print(error)
+            }
         }
     }
 }

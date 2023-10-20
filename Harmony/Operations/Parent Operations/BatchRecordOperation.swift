@@ -75,7 +75,7 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                     {
                                         remainingRecordsOutputQueue.async {
                                             remainingRecordsCount = remainingRecordsCount - 1
-                                            print("Remaining \(type(of: self)) operations:", remainingRecordsCount)
+                                            Logger.sync.debug("Remaining \(type(of: self)) operations: \(remainingRecordsCount)")
                                         }
                                     }
                                 }

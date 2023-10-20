@@ -45,11 +45,20 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                         
                         if UserDefaults.standard.isDebugModeEnabled
                         {
-                            for record in updatedRecords
+                            let output = updatedRecords.map { "\($0.recordID) (\($0.sha1Hash))" }
+                            
+                            let outputText: String
+                            if #available(iOS 15, *)
                             {
-                                print("Fetched RecordID: \(record.recordID). Hash: \(record.sha1Hash).")
+                                outputText = output.formatted(.list(type: .and))
                             }
-                        }                        
+                            else
+                            {
+                                outputText = output.joined(separator: "\n")
+                            }
+                            
+                            Logger.sync.notice("Fetched changed remote records:\n\(outputText, privacy: .public)")
+                        }
                         
                         if let recordIDs = deletedRecordIDs
                         {

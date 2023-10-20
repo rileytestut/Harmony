@@ -59,7 +59,7 @@ class DeleteRecordsOperation: BatchRecordOperation<Void, DeleteRecordOperation>
                 }
                 catch
                 {
-                    print("Harmony failed to delete file at URL:", file.fileURL)
+                    Logger.sync.error("Failed to delete file \(file.identifier, privacy: .public) at \(file.fileURL, privacy: .public). \(error.localizedDescription, privacy: .public)")
                 }
             }
         }

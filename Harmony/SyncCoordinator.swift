@@ -57,7 +57,7 @@ public final class SyncCoordinator
             }
             catch
             {
-                print("Failed to fetch managed account.", error)
+                Logger.sync.error("Failed to fetch managed account. \(error.localizedDescription, privacy: .public)")
                 return nil
             }
         }
@@ -105,7 +105,7 @@ public final class SyncCoordinator
         }
         catch
         {
-            print("Failed to stop SyncCoordinator.", error)
+            Logger.sync.error("Failed to stop SyncCoordinator. \(error.localizedDescription, privacy: .public)")
         }
     }
 }
@@ -252,7 +252,7 @@ public extension SyncCoordinator
                     }
                     catch
                     {
-                        print("Failed to save account.", account, error)
+                        Logger.sync.error("Failed to save account \(account.emailAddress ?? "nil", privacy: .private(mask: .hash)). \(error.localizedDescription, privacy: .public)")
                     }
                 }
                 

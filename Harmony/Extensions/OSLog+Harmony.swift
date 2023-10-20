@@ -6,12 +6,13 @@
 //  Copyright © 2023 Riley Testut. All rights reserved.
 //
 
-import OSLog
+@_exported import OSLog
 
 @available(iOS 14, *)
 extension OSLog.Category
 {
     static let migration = "Migration"
+    static let sync = "Sync"
 }
 
 @available(iOS 14, *)
@@ -20,4 +21,5 @@ public extension Logger
     public static let harmonySubsystem: String = "com.rileytestut.Harmony"
     
     static let migration = Logger(subsystem: harmonySubsystem, category: OSLog.Category.migration)
+    static let sync = Logger(subsystem: harmonySubsystem, category: OSLog.Category.sync)
 }

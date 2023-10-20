@@ -399,7 +399,7 @@ private extension LocalRecord
         }
         catch
         {
-            print(error)
+            Logger.sync.error("Failed to resolve recorded object. \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }

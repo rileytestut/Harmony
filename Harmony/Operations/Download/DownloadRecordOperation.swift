@@ -30,7 +30,7 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
         
         if UserDefaults.standard.isDebugModeEnabled
         {
-            print("Started downloading record: ", self.record.recordID)
+            Logger.sync.notice("Started downloading record \(self.record.recordID, privacy: .public)...")
         }
         
         // Download record.
@@ -81,7 +81,12 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
         
         if UserDefaults.standard.isDebugModeEnabled
         {
-            print("Finished downloading record: ", self.record.recordID)
+            switch self.result
+            {
+            case .success: Logger.sync.notice("Finished downloading record \(self.record.recordID, privacy: .public)")
+            case .failure(let error): Logger.sync.error("Failed to download record \(self.record.recordID, privacy: .public). \(error.localizedDescription, privacy: .public)")
+            case nil: Logger.sync.notice("Unknown result after downloading record \(self.record.recordID, privacy: .public)")
+            }
         }
     }
 }

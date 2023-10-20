@@ -35,7 +35,7 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
         
         if UserDefaults.standard.isDebugModeEnabled
         {
-            print("Started uploading record: ", self.record.recordID)
+            Logger.sync.notice("Started uploading record \(self.record.recordID, privacy: .public)...")
         }
         
         func upload()
@@ -109,7 +109,12 @@ class UploadRecordOperation: RecordOperation<RemoteRecord>
         
         if UserDefaults.standard.isDebugModeEnabled
         {
-            print("Finished uploading record: ", self.record.recordID)
+            switch self.result 
+            {
+            case .success: Logger.sync.notice("Finished uploading record \(self.record.recordID, privacy: .public)")
+            case .failure(let error): Logger.sync.error("Failed to upload record \(self.record.recordID, privacy: .public). \(error.localizedDescription, privacy: .public)")
+            case nil: Logger.sync.notice("Unknown result after uploading record \(self.record.recordID, privacy: .public)")
+            }
         }
     }
 }
