@@ -18,7 +18,7 @@ extension OSLog.Category
 @available(iOS 14, *)
 public extension Logger
 {
-    public static let harmonySubsystem: String = "com.rileytestut.Harmony"
+    static let harmonySubsystem: String = "com.rileytestut.Harmony"
     
     static let migration = Logger(subsystem: harmonySubsystem, category: OSLog.Category.migration)
     static let sync = Logger(subsystem: harmonySubsystem, category: OSLog.Category.sync)
