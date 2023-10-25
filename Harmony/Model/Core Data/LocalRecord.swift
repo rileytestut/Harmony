@@ -49,7 +49,7 @@ public class LocalRecord: RecordRepresentation, Codable
 {
     /* Properties */
     @NSManaged var recordedObjectURI: URL
-    @NSManaged var modificationDate: Date
+    @NSManaged public internal(set) var modificationDate: Date
     
     @NSManaged var versionIdentifier: String?
     @NSManaged var versionDate: Date?
