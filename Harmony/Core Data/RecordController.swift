@@ -419,31 +419,31 @@ extension RecordController
             
             for record in records
             {
-                var string = "Record: \(record.recordID)"
+                var string = "\(record.recordID)"
                 
                 if let localRecord = record.localRecord
                 {
-                    string += " LR: \(localRecord.status.rawValue)"
+                    string += " Local: \(localRecord.status)"
                     
                     if let version = localRecord.version
                     {
                         string += " (\(version.identifier))"
                     }
                     
-                    string += " (\(localRecord.managedRecord?.objectID.uriRepresentation().lastPathComponent ?? "none"))"
+                    string += " (\(localRecord.objectID.uriRepresentation().lastPathComponent ?? "none"))"
                 }
                 else
                 {
-                    string += " LR: nil"
+                    string += " Local: nil"
                 }
                 
                 if let remoteRecord = record.remoteRecord
                 {
-                    string += " RR: \(remoteRecord.status.rawValue) (\(remoteRecord.version.identifier)) (\(remoteRecord.managedRecord?.objectID.uriRepresentation().lastPathComponent ?? "none"))"
+                    string += " Remote: \(remoteRecord.status) (\(remoteRecord.version.identifier)) (\(remoteRecord.objectID.uriRepresentation().lastPathComponent ?? "none"))"
                 }
                 else
                 {
-                    string += " RR: nil"
+                    string += " Remote: nil"
                 }
                 
                 if !output.isEmpty
@@ -454,13 +454,12 @@ extension RecordController
                 output += string
             }
             
-            Logger.sync.info("RecordController Records \(records.count):\n\(output, privacy: .public)")
+            Logger.sync.info("RecordController Records: \(records.count)")
+            Logger.sync.debug("\(output, privacy: .public)")
             
             let remoteFilesFetchRequest = RemoteFile.fetchRequest() as! NSFetchRequest<RemoteFile>
             let remoteFiles = try! context.fetch(remoteFilesFetchRequest)
-
-            let remoteFilesOutput: String = remoteFiles.map { $0.identifier + " (" + ($0.localRecord?.objectID.uriRepresentation().lastPathComponent ?? "nil") + " )" }.joined(separator: "\n")
-            Logger.sync.info("RecordController Remote Files \(remoteFiles.count):\n\(remoteFilesOutput, privacy: .public)")
+            Logger.sync.info("RecordController Remote Files: \(remoteFiles.count)")
         }
     }
     
