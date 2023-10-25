@@ -285,13 +285,13 @@ private extension RecordController
                                 {
                                     if recordedObject.objectID != localRecord.recordedObjectID
                                     {
-                                        Logger.migration.notice("Changing \(localRecord.recordID, privacy: .public)'s URI from \(localRecord.recordedObjectID?.uriRepresentation().absoluteString ?? "nil", privacy: .public) to \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
+                                        Logger.migration.info("Changing \(localRecord.recordID, privacy: .public)'s URI from \(localRecord.recordedObjectID?.uriRepresentation().absoluteString ?? "nil", privacy: .public) to \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
                                         
                                         localRecord.recordedObjectURI = recordedObject.objectID.uriRepresentation()
                                     }
                                     else
                                     {
-                                        Logger.migration.notice("\(localRecord.recordID, privacy: .public)'s URI is the same: \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
+                                        Logger.migration.info("\(localRecord.recordID, privacy: .public)'s URI is the same: \(recordedObject.objectID.uriRepresentation(), privacy: .public)")
                                     }
                                 }
                                 else
@@ -454,13 +454,13 @@ extension RecordController
                 output += string
             }
             
-            Logger.sync.notice("RecordController Records \(records.count):\n\(output, privacy: .public)")
+            Logger.sync.info("RecordController Records \(records.count):\n\(output, privacy: .public)")
             
             let remoteFilesFetchRequest = RemoteFile.fetchRequest() as! NSFetchRequest<RemoteFile>
             let remoteFiles = try! context.fetch(remoteFilesFetchRequest)
 
             let remoteFilesOutput: String = remoteFiles.map { $0.identifier + " (" + ($0.localRecord?.objectID.uriRepresentation().lastPathComponent ?? "nil") + " )" }.joined(separator: "\n")
-            Logger.sync.notice("RecordController Remote Files \(remoteFiles.count):\n\(remoteFilesOutput, privacy: .public)")
+            Logger.sync.info("RecordController Remote Files \(remoteFiles.count):\n\(remoteFilesOutput, privacy: .public)")
         }
     }
     

@@ -151,10 +151,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
             
             self.finish()
             
-            if UserDefaults.standard.isDebugModeEnabled
-            {
-                self.recordController.printRecords()
-            }
+            self.recordController.printRecords()
         }
     }
     
@@ -184,7 +181,7 @@ private extension SyncRecordsOperation
     {
         switch result
         {
-        case .success: Logger.sync.notice("\(debugTitle, privacy: .public) Success")
+        case .success: Logger.sync.info("\(debugTitle, privacy: .public) Success")
         case .failure(let error): Logger.sync.error("\(debugTitle, privacy: .public) Failed! \(error.localizedDescription, privacy: .public)")
         }
         
@@ -241,7 +238,7 @@ private extension SyncRecordsOperation
     {
         switch result
         {
-        case .success: Logger.sync.notice("\(debugTitle, privacy: .public) Success")
+        case .success: Logger.sync.info("\(debugTitle, privacy: .public) Success")
         case .failure(let error): Logger.sync.error("\(debugTitle, privacy: .public) Failed! \(error.localizedDescription, privacy: .public)")
         }
         
