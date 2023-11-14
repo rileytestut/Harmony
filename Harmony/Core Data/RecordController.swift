@@ -455,7 +455,11 @@ extension RecordController
             }
             
             Logger.sync.info("RecordController Records: \(records.count)")
-            Logger.sync.debug("\(output, privacy: .public)")
+            
+            if !records.isEmpty
+            {
+                Logger.sync.debug("\(output, privacy: .public)")
+            }
             
             let remoteFilesFetchRequest = RemoteFile.fetchRequest() as! NSFetchRequest<RemoteFile>
             let remoteFiles = try! context.fetch(remoteFilesFetchRequest)
