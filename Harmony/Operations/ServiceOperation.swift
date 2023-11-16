@@ -93,7 +93,7 @@ private extension ServiceOperation
                     return
                 }
                 
-                print("Retrying request after delay:", self.retryDelay)
+                Logger.sync.info("Retrying request after delay: \(self.retryDelay)")
                 
                 self.progress.completedUnitCount = 0
                 

@@ -128,7 +128,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
                 }
                 catch
                 {
-                    print(error)
+                    Logger.sync.error("Failed to fetch conflicted ManagedRecords. \(error.localizedDescription, privacy: .public)")
                 }
             }
             
@@ -151,10 +151,7 @@ class SyncRecordsOperation: Operation<[Record<NSManagedObject>: Result<Void, Rec
             
             self.finish()
             
-            if UserDefaults.standard.isDebugModeEnabled
-            {
-                self.recordController.printRecords()
-            }
+            self.recordController.printRecords()
         }
     }
     
@@ -182,7 +179,11 @@ private extension SyncRecordsOperation
 {
     func finishOperation<T, U: HarmonyError>(_ result: Result<T, U>, debugTitle: String, perform: ((T) throws -> Void)? = nil)
     {
-        print(debugTitle, result)
+        switch result
+        {
+        case .success: Logger.sync.info("\(debugTitle, privacy: .public) Success")
+        case .failure(let error): Logger.sync.error("\(debugTitle, privacy: .public) Failed! \(error.localizedDescription, privacy: .public)")
+        }
         
         do
         {
@@ -208,7 +209,7 @@ private extension SyncRecordsOperation
     {
         self.finishOperation(result, debugTitle: debugTitle) { (_, changeToken) in
             
-            if let managedAccount = try self.coordinator.managedAccount, let context = managedAccount.managedObjectContext
+            if let managedAccount = self.coordinator.managedAccount, let context = managedAccount.managedObjectContext
             {
                 // First, save change token.
                 try context.performAndWait {
@@ -235,7 +236,11 @@ private extension SyncRecordsOperation
     
     func finishRecordOperation<T>(_ result: Result<[AnyRecord: Result<T, RecordError>], Error>, debugTitle: String)
     {
-        print(debugTitle, result)
+        switch result
+        {
+        case .success: Logger.sync.info("\(debugTitle, privacy: .public) Success")
+        case .failure(let error): Logger.sync.error("\(debugTitle, privacy: .public) Failed! \(error.localizedDescription, privacy: .public)")
+        }
         
         do
         {

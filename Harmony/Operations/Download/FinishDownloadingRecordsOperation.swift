@@ -199,7 +199,7 @@ private extension FinishDownloadingRecordsOperation
             }
             catch
             {
-                print(error)
+                Logger.sync.error("Failed to delete unknown file \(file.identifier, privacy: .public) for record \(localRecord.recordID, privacy: .public). \(error.localizedDescription, privacy: .public)")
             }
         }
         
@@ -280,14 +280,14 @@ private extension FinishDownloadingRecordsOperation
             }
             catch
             {
-                print(error)
+                Logger.sync.error("Failed to restore backed-up file \(file.identifier, privacy: .public) to \(file.fileURL, privacy: .public). \(error.localizedDescription, privacy: .public)")
             }
         }
     }
     
     func removeBackupFiles(_ backupFiles: [File: URL])
     {
-        for (_, temporaryURL) in backupFiles
+        for (file, temporaryURL) in backupFiles
         {
             guard FileManager.default.fileExists(atPath: temporaryURL.path) else { continue }
             
@@ -297,7 +297,7 @@ private extension FinishDownloadingRecordsOperation
             }
             catch
             {
-                print(error)
+                Logger.sync.error("Failed to delete backed-up file \(file.identifier, privacy: .public) from \(temporaryURL, privacy: .public). \(error.localizedDescription, privacy: .public)")
             }
         }
     }

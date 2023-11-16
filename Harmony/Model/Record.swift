@@ -15,6 +15,18 @@ import CoreData
     case deleted
 }
 
+extension RecordStatus: CustomStringConvertible
+{
+    public var description: String {
+        switch self
+        {
+        case .normal: return "Normal"
+        case .updated: return "Updated"
+        case .deleted: return "Deleted"
+        }
+    }
+}
+
 public typealias AnyRecord = Record<NSManagedObject>
 
 public struct RecordID: Hashable, Codable, CustomStringConvertible

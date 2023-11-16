@@ -28,10 +28,7 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
     {
         super.main()
         
-        if UserDefaults.standard.isDebugModeEnabled
-        {
-            print("Started downloading record: ", self.record.recordID)
-        }
+        Logger.sync.info("Started downloading record \(self.record.recordID, privacy: .public)...")
         
         // Download record.
         self.downloadRecord { (result) in
@@ -79,9 +76,11 @@ class DownloadRecordOperation: RecordOperation<LocalRecord>
     {
         super.finish()
         
-        if UserDefaults.standard.isDebugModeEnabled
+        switch self.result
         {
-            print("Finished downloading record: ", self.record.recordID)
+        case .success: Logger.sync.info("Finished downloading record \(self.record.recordID, privacy: .public)")
+        case .failure(let error): Logger.sync.error("Failed to download record \(self.record.recordID, privacy: .public). \(error.localizedDescription, privacy: .public)")
+        case nil: Logger.sync.info("Unknown result after downloading record \(self.record.recordID, privacy: .public)")
         }
     }
 }

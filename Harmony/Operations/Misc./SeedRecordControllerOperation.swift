@@ -51,10 +51,7 @@ class SeedRecordControllerOperation: Operation<Void, DatabaseError>
                     self.progress.completedUnitCount += 1
                 }
                 
-                if UserDefaults.standard.isDebugModeEnabled
-                {
-                    self.recordController.printRecords()
-                }
+                self.recordController.printRecords()
                 
                 self.recordController.setIsSeeded(true) { result in
                     self.result = result

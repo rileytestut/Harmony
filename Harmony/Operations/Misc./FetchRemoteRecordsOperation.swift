@@ -43,13 +43,11 @@ class FetchRemoteRecordsOperation: Operation<(Set<RemoteRecord>, Data), FetchErr
                     {
                         var records = updatedRecords
                         
-                        if UserDefaults.standard.isDebugModeEnabled
-                        {
-                            for record in updatedRecords
-                            {
-                                print("Fetched RecordID: \(record.recordID). Hash: \(record.sha1Hash).")
-                            }
-                        }                        
+                        let output = updatedRecords.map { "\($0.recordID) (\($0.sha1Hash))" }
+                        let outputText = output.joined(separator: "\n")
+                        
+                        Logger.sync.info("Fetched changed remote records:\n\(records.count)")
+                        Logger.sync.debug("Remote Records:\n\(outputText, privacy: .public)")
                         
                         if let recordIDs = deletedRecordIDs
                         {

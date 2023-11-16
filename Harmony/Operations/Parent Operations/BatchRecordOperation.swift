@@ -71,12 +71,9 @@ class BatchRecordOperation<ResultType, OperationType: RecordOperation<ResultType
                                     self.recordResults[record] = result
                                     dispatchGroup.leave()
                                     
-                                    if UserDefaults.standard.isDebugModeEnabled
-                                    {
-                                        remainingRecordsOutputQueue.async {
-                                            remainingRecordsCount = remainingRecordsCount - 1
-                                            print("Remaining \(type(of: self)) operations:", remainingRecordsCount)
-                                        }
+                                    remainingRecordsOutputQueue.async {
+                                        remainingRecordsCount = remainingRecordsCount - 1
+                                        Logger.sync.debug("Remaining \(type(of: self)) operations: \(remainingRecordsCount)")
                                     }
                                 }
                                 
