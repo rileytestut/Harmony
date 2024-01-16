@@ -22,7 +22,7 @@ extension Notification.Name
 public final class RecordController: RSTPersistentContainer
 {
     public var isSeeded: Bool {
-        guard let metadata = self.persistentStoreCoordinator.persistentStores.first?.metadata else { return false }
+        guard let metadata = self.harmonyPersistentStore?.metadata else { return false }
         
         let isSeeded = metadata[isHarmonySeededKey] as? Bool
         return isSeeded ?? false
@@ -36,6 +36,13 @@ public final class RecordController: RSTPersistentContainer
     
     private var processingContext: NSManagedObjectContext?
     private let processingDispatchGroup = DispatchGroup()
+    
+    private var harmonyPersistentStore: NSPersistentStore? {
+        let harmonyDescription = self.persistentStoreDescriptions[0]
+        
+        let persistentStore = self.persistentStoreCoordinator.persistentStores.first(where: { $0.url == harmonyDescription.url })
+        return persistentStore
+    }
     
     init(persistentContainer: NSPersistentContainer)
     {
@@ -499,7 +506,7 @@ extension RecordController
     
     func setIsSeeded(_ isSeeded: Bool, completionHandler: @escaping (Result<Void, DatabaseError>) -> Void)
     {
-        guard let store = self.persistentStoreCoordinator.persistentStores.first else { return completionHandler(.failure(DatabaseError.notLoaded)) }
+        guard let store = self.harmonyPersistentStore else { return completionHandler(.failure(DatabaseError.notLoaded)) }
         store.metadata[isHarmonySeededKey] = isSeeded
         
         // Must save a context for store metadata to update.
