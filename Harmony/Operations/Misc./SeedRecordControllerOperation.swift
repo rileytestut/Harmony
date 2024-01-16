@@ -31,6 +31,8 @@ class SeedRecordControllerOperation: Operation<Void, DatabaseError>
             return
         }
         
+        Logger.sync.info("Seeding Harmony database for initial sync...")
+        
         let syncableEntityNames = Array(entities.lazy.filter { NSClassFromString($0.managedObjectClassName) is Syncable.Type }.compactMap { $0.name })
         self.progress.totalUnitCount = Int64(syncableEntityNames.count)
         

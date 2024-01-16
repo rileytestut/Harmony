@@ -125,11 +125,16 @@ internal extension RecordController
             // Explicitly migrate LocalRecord URIs whenever a database migration occurs.
             UserDefaults.standard.isLocalRecordMigrationRequired = true
         }
-                
+        
         self.loadPersistentStores { (description, error) in
-            if let error = error, databaseError == nil
+            if let error = error
             {
-                databaseError = error
+                Logger.sync.error("Failed to load Harmony persistent store \(description.url?.absoluteString ?? description.description, privacy: .public). \(error.localizedDescription, privacy: .public)")
+                
+                if databaseError == nil
+                {
+                    databaseError = error
+                }
             }
             
             dispatchGroup.leave()
@@ -213,7 +218,18 @@ internal extension RecordController
     {
         guard self.isStarted else { return }
         
-        try self.persistentStoreCoordinator.persistentStores.forEach(self.persistentStoreCoordinator.remove)
+        for store in self.persistentStoreCoordinator.persistentStores
+        {
+            do
+            {
+                try self.persistentStoreCoordinator.remove(store)
+            }
+            catch
+            {
+                Logger.sync.error("Failed to remove Harmony persistent store \(store.url?.absoluteString ?? store.description, privacy: .public). \(error.localizedDescription, privacy: .public)")
+                throw error
+            }
+        }
         
         NotificationCenter.default.removeObserver(self, name: .NSManagedObjectContextDidSave, object: nil)
         
